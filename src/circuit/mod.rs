@@ -1,9 +1,10 @@
-use std::fmt;
+use std::{fmt, cmp};
 
 mod circuit_errors;
 
 use circuit_errors::CircuitError;
 
+#[derive(PartialEq)]
 enum GateType {
     H,
     CNOT,
@@ -29,7 +30,7 @@ struct Gate {
 }
 
 impl Gate {
-    fn new(gate_type: String, qubit_1: u32, qubit_2: Option<u32>) -> Result<Gate, CircuitError> {
+    fn new(gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) -> Result<Gate, CircuitError> {
 
         let gate_type = match gate_type.as_str() {
             "H" => GateType::H,
@@ -40,9 +41,14 @@ impl Gate {
                         }}
             "S" => GateType::S,
             "T" => GateType::T,
-            _ => return Err(CircuitError { message: "{gate_type} has not been implemented, 
-                                                    please use H, CNOT, S, or T".to_string()})
+            _ => return Err(CircuitError { message: format!("{gate_type} has not been implemented, 
+                                                    please use H, CNOT, S, or T") })
         };
+
+
+        if gate_type != GateType::CNOT && qubit_2.is_some() {
+            return Err(CircuitError { message: format!("{gate_type} gate must have one qubit") });
+        }
         
         Ok(Gate {
             gate_type,
@@ -61,7 +67,6 @@ impl fmt::Display for Gate {
     }
 }
 
-
 // TODO: Deal with moments
 pub struct Circuit {
     gates: Vec<Gate>,
@@ -77,13 +82,24 @@ impl Circuit {
         }
     }
 
-    pub fn add_gate(&mut self, gate_type: String, qubit_1: u32, qubit_2: Option<u32>) -> Result<(), CircuitError> {
-    
-        let new_gate = Gate::new(gate_type, qubit_1, qubit_2)?;
+    pub fn add_gate(&mut self, gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) {
+
+        let new_gate = match Gate::new(gate_type, qubit_1, qubit_2) {
+            Ok(gate) => gate,
+            Err(e) => {
+                eprintln!("Could not add gate to circuit: {}", e);
+                return;
+            }
+        };
+
+        self.num_qubits = cmp::max(self.num_qubits, qubit_1);
+
+        if let Some(qubit_2) = qubit_2 {
+            self.num_qubits = cmp::max(self.num_qubits, qubit_2);
+        }
 
         self.gates.push(new_gate);
 
-        Ok(())
     }
 
 }
@@ -91,7 +107,7 @@ impl Circuit {
 impl fmt::Display for Circuit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
-        write!(f, "Circuit:\n")?;
+        write!(f, "Circuit with {} qubits:\n", self.num_qubits)?;
 
         for gate in &self.gates {
             write!(f, " {}\n", gate)?;
