@@ -1,3 +1,15 @@
+
+mod circuit;
+
+use circuit::Circuit;
+
 fn main() {
-    println!("Hello, world!");
+
+    let mut circuit = Circuit::new();
+
+    let _  = circuit.add_gate("H".to_string(), 1, None);
+
+
+    println!("{}", circuit);
+
 }
