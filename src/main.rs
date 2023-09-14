@@ -1,10 +1,10 @@
 mod circuit;
 mod input_parser;
+mod simulator;
 
 use input_parser::parse_file;
 
 fn main() {
-
 
     let file_path = String::from("/Users/lucas/Dev/thesis/circuits/first.txt");
     // let file_path = String::from("/Users/lucas/Dev/thesis/circuits/wrong.txt");

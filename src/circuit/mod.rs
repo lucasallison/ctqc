@@ -5,7 +5,7 @@ mod circuit_errors;
 use circuit_errors::CircuitError;
 
 #[derive(PartialEq)]
-enum GateType {
+pub enum GateType {
     H,
     CNOT,
     S,
@@ -23,14 +23,14 @@ impl fmt::Display for GateType {
     }
 }
 
-struct Gate {
-    gate_type: GateType,
-    qubit_1: u32, // Gate applies to at least one qubit
-    qubit_2: Option<u32>,
+pub struct Gate {
+    pub gate_type: GateType,
+    pub qubit_1: u32, // Gate applies to at least one qubit
+    pub qubit_2: Option<u32>,
 }
 
 impl Gate {
-    fn new(gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) -> Result<Gate, CircuitError> {
+    pub fn new(gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) -> Result<Gate, CircuitError> {
 
         let gate_type = match gate_type.as_str() {
             "H" => GateType::H,

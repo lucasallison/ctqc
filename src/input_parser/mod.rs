@@ -31,7 +31,7 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, ()> {
                 Ok(qubit_1) => qubit_1,
                 Err(_) => { eprintln!("Failed to add '{}', as qubit_1 is not a valid u32", line); return; }
             };
-
+        // TODO refactor?
         if gate.len() == 3 {
             qubit_2 = match gate[2].parse::<u32>() {
                 Ok(qubit_2) => Some(qubit_2),
