@@ -1,6 +1,5 @@
 use std::fmt;
 
-// TODO make general gate?
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum PauliGate {
     I,
@@ -20,6 +19,7 @@ impl fmt::Display for PauliGate {
     }
 }
 
+#[derive(Eq, Hash, Clone)]
 pub struct PauliString {
     pstr: Vec<PauliGate>,
 }

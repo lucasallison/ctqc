@@ -4,7 +4,7 @@ mod circuit_errors;
 
 use circuit_errors::CircuitError;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum GateType {
     H,
     CNOT,
@@ -23,6 +23,7 @@ impl fmt::Display for GateType {
     }
 }
 
+#[derive(Clone)]
 pub struct Gate {
     pub gate_type: GateType,
     pub qubit_1: u32, // Gate applies to at least one qubit
@@ -70,7 +71,7 @@ impl fmt::Display for Gate {
 // TODO: Deal with moments
 pub struct Circuit {
     gates: Vec<Gate>,
-    num_qubits: u32,
+    pub num_qubits: u32,
 }
 
 impl Circuit {
@@ -92,14 +93,20 @@ impl Circuit {
             }
         };
 
-        self.num_qubits = cmp::max(self.num_qubits, qubit_1);
+        self.num_qubits = cmp::max(self.num_qubits, qubit_1 + 1);
 
         if let Some(qubit_2) = qubit_2 {
-            self.num_qubits = cmp::max(self.num_qubits, qubit_2);
+            self.num_qubits = cmp::max(self.num_qubits, qubit_2 + 1);
         }
 
         self.gates.push(new_gate);
+    }
 
+    pub fn iter(&self) -> CircuitIterator {
+        CircuitIterator {
+            circuit: self,
+            gate_index: 0,
+        }
     }
 
 }
@@ -117,3 +124,24 @@ impl fmt::Display for Circuit {
     }
     
 }
+
+
+pub struct CircuitIterator<'a> {
+    circuit: &'a Circuit,
+    gate_index: usize,
+}
+
+impl<'a> Iterator for CircuitIterator<'a> {
+    type Item = &'a Gate;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.gate_index < self.circuit.gates.len() {
+            let gate = &self.circuit.gates[self.gate_index];
+            self.gate_index += 1;
+            Some(gate)
+        } else {
+            None
+        }
+    }
+}
+
