@@ -45,6 +45,7 @@ impl Simulator {
         println!("{}", self.gen_cmpts);
 
         for gate in self.circuit.iter() {
+            println!("Apply {}", gate);
             self.gen_cmpts.conjugate(gate);
             println!("{}", self.gen_cmpts);
         }

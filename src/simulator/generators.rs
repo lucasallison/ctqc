@@ -13,7 +13,8 @@ lazy_static! {
 struct GeneratorInfo {
     generator_index: u32,
     coefficient: f64,
-    i: bool,
+    // TODO 
+    // i: bool,
 }
 
 impl GeneratorInfo {
@@ -21,7 +22,7 @@ impl GeneratorInfo {
         GeneratorInfo {
             generator_index: generator_index,
             coefficient: 1.0,
-            i: false,
+            // i: false,
         }
     }
 }
