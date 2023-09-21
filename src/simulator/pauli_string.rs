@@ -49,22 +49,6 @@ impl PauliString {
         }
     }
 
-    pub fn from_str(string: &str) -> PauliString {
-
-        let mut pstr = PauliString::new(string.len());
-
-        for (index, char) in string.chars().enumerate() {
-            match char {
-                'I' => pstr.set_pauli_gate(index, PauliGate::I),
-                'X' => pstr.set_pauli_gate(index, PauliGate::X),
-                'Y' => pstr.set_pauli_gate(index, PauliGate::Y),
-                'Z' => pstr.set_pauli_gate(index, PauliGate::Z),
-                _ => panic!("Invalid character in Pauli string"),
-            }
-        }
-        pstr
-    }
-
 }
 
 impl PartialEq for PauliString {

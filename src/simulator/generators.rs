@@ -378,16 +378,35 @@ fn cnot_conjugation(component: &mut Component, gate: &Gate) -> bool {
 
 // ---------------------------------------------------------------
 
+#[cfg(test)]
 mod tests {
 
-    use super::*; 
+    use super::*;
+
+
+    fn from_str(string: &str) -> PauliString {
+
+        let mut pstr = PauliString::new(string.len());
+
+        for (index, char) in string.chars().enumerate() {
+            match char {
+                'I' => pstr.set_pauli_gate(index, PauliGate::I),
+                'X' => pstr.set_pauli_gate(index, PauliGate::X),
+                'Y' => pstr.set_pauli_gate(index, PauliGate::Y),
+                'Z' => pstr.set_pauli_gate(index, PauliGate::Z),
+                _ => panic!("Invalid character in Pauli string"),
+            }
+        }
+        pstr
+    }
+
 
     #[test]
     // Conjugate with Hadamard
     fn conjugate_with_h_xizii() {
 
-        let input = PauliString::from_str("XIZII");
-        let output = PauliString::from_str("XIXII");
+        let input = from_str("XIZII");
+        let output = from_str("XIXII");
 
         let hadamard = Gate::new(&"H".to_string(), 2, None).unwrap();
 
@@ -402,8 +421,8 @@ mod tests {
     #[test]
     fn conjugate_with_h_yizii() {
 
-        let input = PauliString::from_str("YIZII");
-        let output = PauliString::from_str("YIZII");
+        let input = from_str("YIZII");
+        let output = from_str("YIZII");
 
         let hadamard = Gate::new(&"H".to_string(), 0, None).unwrap();
 
@@ -425,8 +444,8 @@ mod tests {
     #[test]
     fn conjugate_with_s_y() {
 
-        let input = PauliString::from_str("Y");
-        let output = PauliString::from_str("X");
+        let input = from_str("Y");
+        let output = from_str("X");
 
         let s_gate = Gate::new(&"S".to_string(), 0, None).unwrap();
 
@@ -447,8 +466,8 @@ mod tests {
     #[test]
     fn conjugate_with_cnot_ixizi() {
 
-        let input = PauliString::from_str("IXIZI");
-        let output = PauliString::from_str("IXIZI");
+        let input = from_str("IXIZI");
+        let output = from_str("IXIZI");
 
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(3)).unwrap();
 
@@ -462,8 +481,8 @@ mod tests {
     #[test]
     fn conjugate_with_cnot_ixizii() {
 
-        let input = PauliString::from_str("IXIZII");
-        let output = PauliString::from_str("IXIZXI");
+        let input = from_str("IXIZII");
+        let output = from_str("IXIZXI");
 
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4)).unwrap();
 
@@ -478,14 +497,14 @@ mod tests {
     #[test]
     fn test_merge() {
 
-        let input1 = PauliString::from_str("IXIZII");
+        let input1 = from_str("IXIZII");
         let mut c1 = Component::new(input1);
         c1.generator_info.push(GeneratorInfo::new(0));
         c1.generator_info.push(GeneratorInfo::new(1));
         c1.generator_info.push(GeneratorInfo::new(3));
 
 
-        let input2 = PauliString::from_str("IXIZII");
+        let input2 = from_str("IXIZII");
         let mut c2 = Component::new(input2);
         c2.generator_info.push(GeneratorInfo::new(0));
         c2.generator_info.push(GeneratorInfo::new(1));
