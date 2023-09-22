@@ -1,4 +1,5 @@
-use std::fmt;
+use std::{fmt, f32::consts::E};
+use std::error::Error;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
 
@@ -13,8 +14,6 @@ lazy_static! {
 struct GeneratorInfo {
     generator_index: u32,
     coefficient: f64,
-    // TODO 
-    // i: bool,
 }
 
 impl GeneratorInfo {
@@ -22,7 +21,6 @@ impl GeneratorInfo {
         GeneratorInfo {
             generator_index: generator_index,
             coefficient: 1.0,
-            // i: false,
         }
     }
 }
@@ -43,7 +41,7 @@ impl Component {
 
     // The bool indicates whether the pauli string in the 
     // component has changed
-    fn conjugate_clifford(&mut self, gate: &Gate) -> bool {
+    fn conjugate_clifford(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
         match gate.gate_type {
             GateType::H => {
                 return h_s_conjugation(self, gate);
@@ -55,8 +53,8 @@ impl Component {
                 return h_s_conjugation(self, gate);
             },
             _ => {
-                // TODO 
-                panic!("Cannot conjugate a non clifford gate")
+                Err(Box::from(ConjugationError
+                    {message: "Cannot use 'conjugate_clifford' function for a non clifford gate".to_string()}))
             },
         }
     }
@@ -66,10 +64,10 @@ impl Component {
     // but just update self. The second component does represent a different Pauli string, for which 
     // we create a new component. Since the component does not change when we conjugate an 
     // I, Z we return None in that case and leave self unchanged.
-    fn conjugate_t_gate(&mut self, target_qubit: u32) -> Option<Component> {
+    fn conjugate_t_gate(&mut self, target_qubit: u32) -> Result<Option<Component>, Box<dyn Error>> {
 
-        let target_gate = self.pstr.get_pauli_gate(target_qubit as usize);
-
+        let target_gate = self.pstr.get_pauli_gate(target_qubit as usize)?;
+        
         match target_gate {
 
             // TXT^{\dagger} -> 1/sqrt(2) (X + Y)
@@ -82,7 +80,7 @@ impl Component {
                 let mut new_component = self.clone();
                 new_component.pstr.set_pauli_gate(target_qubit as usize, PauliGate::Y);
 
-                return Some(new_component);
+                return Ok(Some(new_component));
             },
 
             // TYT^{\dagger} -> 1/sqrt(2) (Y - X)
@@ -98,11 +96,11 @@ impl Component {
                     generator_info.coefficient *= -1.0;
                 }
 
-                return Some(new_component);
+                return Ok(Some(new_component));
             },
 
             _  => {
-                return None
+                return Ok(None);
             },
         }
     }
@@ -170,7 +168,7 @@ impl GeneratorComponents {
         generator_components
     }
 
-    pub fn conjugate(&mut self, gate: &Gate) {
+    pub fn conjugate(&mut self, gate: &Gate) -> Result<(), Box<dyn Error>> {
 
         let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
 
@@ -179,7 +177,7 @@ impl GeneratorComponents {
             match gate.gate_type {
                 GateType::T => {
 
-                    let new_component= component.conjugate_t_gate(gate.qubit_1);
+                    let new_component= component.conjugate_t_gate(gate.qubit_1)?;
 
                     if let Some(new_component) = new_component {
                         Self::insert_or_merge(&mut gcs_after_conjugation, &new_component);
@@ -195,6 +193,7 @@ impl GeneratorComponents {
         }
 
         self.generator_components = gcs_after_conjugation;
+        Ok(())
     }
 
     // TODO create a map that does this
@@ -271,20 +270,20 @@ lazy_static! {
 }
 
 // Return true if the pauli string changed
-fn h_s_conjugation(component: &mut Component, gate: &Gate) -> bool {
+fn h_s_conjugation(component: &mut Component, gate: &Gate) -> Result<bool, Box<dyn Error>> {
 
-    let target_pauli_gate = component.pstr.get_pauli_gate(gate.qubit_1 as usize);
+    let target_pauli_gate = component.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
 
     // Identity gate does not change from conjugation
-    if *target_pauli_gate == PauliGate::I {
-        return false;
+    if target_pauli_gate == PauliGate::I {
+        return Ok(false);
     } 
 
     // Look up how the pauli string changes as a result of the conjugation
     // TODO unwrap
     let look_up_output = match gate.gate_type {
-        GateType::H => H_CONJ_UPD_RULES.get(target_pauli_gate).unwrap(),
-        GateType::S => S_CONJ_UPD_RULES.get(target_pauli_gate).unwrap(),
+        GateType::H => H_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap(),
+        GateType::S => S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap(),
         _ => panic!("This should not happen"),
     };
 
@@ -297,13 +296,13 @@ fn h_s_conjugation(component: &mut Component, gate: &Gate) -> bool {
 
     // No change; return immediately
     if !look_up_output.pstr_changed {
-        return false;
+        return Ok(false);
     }
     
     // We update the pauli string with the gate resulting from the conjugation
     component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.p_gate);
 
-    true
+    Ok(true) 
 }
 
 // No coefficient change
@@ -345,38 +344,53 @@ lazy_static! {
     };
 }
 
-fn cnot_conjugation(component: &mut Component, gate: &Gate) -> bool {
+fn cnot_conjugation(component: &mut Component, gate: &Gate) -> Result<bool, Box<dyn Error>> {
 
     let qubit_2 = match gate.qubit_2 {
         Some(qubit_2) => qubit_2,
-        // TODO error handling? 
-        None => panic!("CNOT gate must have two qubits"),
+        None => { return Err(Box::from(ConjugationError{message: "CNOT gate must have a control qubit".to_string()})); }, 
     }; 
 
-    let q1_target_pauli_gate = component.pstr.get_pauli_gate(gate.qubit_1 as usize);
-    let q2_target_pauli_gate = component.pstr.get_pauli_gate(qubit_2 as usize);
+    let q1_target_pauli_gate = component.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
+    let q2_target_pauli_gate = component.pstr.get_pauli_gate(qubit_2 as usize)?;
 
     // The pauli string does not change from conjugation
-    if !CNOT_CONJ_UPD_RULES.contains_key(&(*q1_target_pauli_gate, *q2_target_pauli_gate)) {
-        return false;
+    if !CNOT_CONJ_UPD_RULES.contains_key(&(q1_target_pauli_gate, q2_target_pauli_gate)) {
+        return Ok(false);
     }
 
-    let look_up_output = CNOT_CONJ_UPD_RULES.get(&(*q1_target_pauli_gate, *q2_target_pauli_gate)).unwrap();
+    let look_up_output = CNOT_CONJ_UPD_RULES.get(&(q1_target_pauli_gate, q2_target_pauli_gate)).unwrap();
 
     // The pauli string does not change from conjugation
     // TODO maybe just remove them from the map?
     if !look_up_output.pstr_changed {
-        return false;
+        return Ok(false);
     }
 
     // We update the pauli string with the gate resulting from the conjugation
     component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate);
     component.pstr.set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate);
 
-    true
+    Ok(true)
 }
 
-// ---------------------------------------------------------------
+
+// ------------------ ERRORS --------------------------------------
+
+#[derive(Debug)]
+pub struct ConjugationError {
+    pub message: String,
+}
+
+impl fmt::Display for ConjugationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Conjugation error: {}", self.message)
+    }
+}
+
+impl Error for ConjugationError {}
+
+// ------------------ TESTS ---------------------------------------
 
 #[cfg(test)]
 mod tests {
@@ -384,16 +398,16 @@ mod tests {
     use super::*;
 
 
-    fn from_str(string: &str) -> PauliString {
+    fn pauli_from_str(string: &str) -> PauliString {
 
         let mut pstr = PauliString::new(string.len());
 
         for (index, char) in string.chars().enumerate() {
             match char {
-                'I' => pstr.set_pauli_gate(index, PauliGate::I),
-                'X' => pstr.set_pauli_gate(index, PauliGate::X),
-                'Y' => pstr.set_pauli_gate(index, PauliGate::Y),
-                'Z' => pstr.set_pauli_gate(index, PauliGate::Z),
+                'I' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
+                'X' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
+                'Y' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
+                'Z' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
                 _ => panic!("Invalid character in Pauli string"),
             }
         }
@@ -405,8 +419,8 @@ mod tests {
     // Conjugate with Hadamard
     fn conjugate_with_h_xizii() {
 
-        let input = from_str("XIZII");
-        let output = from_str("XIXII");
+        let input = pauli_from_str("XIZII");
+        let output = pauli_from_str("XIXII");
 
         let hadamard = Gate::new(&"H".to_string(), 2, None).unwrap();
 
@@ -415,14 +429,14 @@ mod tests {
         let res = c.conjugate_clifford(&hadamard);
 
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
-        assert!(res == true);
+        assert!(res.unwrap() == true);
     }
 
     #[test]
     fn conjugate_with_h_yizii() {
 
-        let input = from_str("YIZII");
-        let output = from_str("YIZII");
+        let input = pauli_from_str("YIZII");
+        let output = pauli_from_str("YIZII");
 
         let hadamard = Gate::new(&"H".to_string(), 0, None).unwrap();
 
@@ -433,7 +447,7 @@ mod tests {
 
         let res = c.conjugate_clifford(&hadamard);
 
-        assert!(res == false);
+        assert!(res.unwrap() == false);
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
 
         for generator_info in &c.generator_info {
@@ -444,8 +458,8 @@ mod tests {
     #[test]
     fn conjugate_with_s_y() {
 
-        let input = from_str("Y");
-        let output = from_str("X");
+        let input = pauli_from_str("Y");
+        let output = pauli_from_str("X");
 
         let s_gate = Gate::new(&"S".to_string(), 0, None).unwrap();
 
@@ -455,7 +469,7 @@ mod tests {
 
         let res = c.conjugate_clifford(&s_gate);
 
-        assert!(res == true);
+        assert!(res.unwrap() == true);
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
 
         for generator_info in &c.generator_info {
@@ -466,30 +480,30 @@ mod tests {
     #[test]
     fn conjugate_with_cnot_ixizi() {
 
-        let input = from_str("IXIZI");
-        let output = from_str("IXIZI");
+        let input = pauli_from_str("IXIZI");
+        let output = pauli_from_str("IXIZI");
 
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(3)).unwrap();
 
         let mut c = Component::new(input);
         let res = c.conjugate_clifford(&cnot);
 
-        assert!(res == false);
+        assert!(res.unwrap() == false);
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
     }
 
     #[test]
     fn conjugate_with_cnot_ixizii() {
 
-        let input = from_str("IXIZII");
-        let output = from_str("IXIZXI");
+        let input = pauli_from_str("IXIZII");
+        let output = pauli_from_str("IXIZXI");
 
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4)).unwrap();
 
         let mut c = Component::new(input);
         let res = c.conjugate_clifford(&cnot);
 
-        assert!(res == true);
+        assert!(res.unwrap() == true);
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
     }
 
@@ -497,14 +511,14 @@ mod tests {
     #[test]
     fn test_merge() {
 
-        let input1 = from_str("IXIZII");
+        let input1 = pauli_from_str("IXIZII");
         let mut c1 = Component::new(input1);
         c1.generator_info.push(GeneratorInfo::new(0));
         c1.generator_info.push(GeneratorInfo::new(1));
         c1.generator_info.push(GeneratorInfo::new(3));
 
 
-        let input2 = from_str("IXIZII");
+        let input2 = pauli_from_str("IXIZII");
         let mut c2 = Component::new(input2);
         c2.generator_info.push(GeneratorInfo::new(0));
         c2.generator_info.push(GeneratorInfo::new(1));
@@ -512,8 +526,6 @@ mod tests {
         c2.generator_info.push(GeneratorInfo::new(3));
 
         c1.merge(&c2);
-
-
 
         for generator_info in &c1.generator_info {
             println!("Generator index: {}, coefficient: {}", generator_info.generator_index, generator_info.coefficient);
