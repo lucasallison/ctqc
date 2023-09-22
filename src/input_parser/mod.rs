@@ -1,15 +1,14 @@
-use std::fs;
+use std::{error::Error, fs};
 
 use crate::circuit::Circuit;
 
-pub fn parse_file(file_path: &String) -> Result<Circuit, ()> {
+pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
     
     let mut circuit = Circuit::new();
 
     let contents = match fs::read_to_string(file_path) {
         Ok(contents) => contents,
-        // TODO Better error handling
-        Err(_) => { eprintln!("Could not read file"); return Err(()) }
+        Err(e) => { return Err(Box::new(e)); },
     };
 
     contents.lines().for_each(|line| {
@@ -22,7 +21,7 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, ()> {
 
         if gate.len() < 2 || gate.len() > 3 {
             eprintln!("Failed to add '{}', as it is not formatted correctly. 
-                        Expected: 'gate_type qubit_1 qubit_2'", line);
+                        Expected: '<gate> <qubit_1> <qubit_2>'", line);
             return;
         }
 
