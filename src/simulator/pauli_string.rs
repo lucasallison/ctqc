@@ -45,9 +45,11 @@ impl PauliString {
                 { message: "Index out of bounds while setting Pauli gate".to_string() })
         }
 
+
         let (b1, b2) = PauliString::pauli_gate_as_tuple(gate);
         self.pstr.set(i, b1);
         self.pstr.set(i+1, b2);
+
         Ok(())
     }
 
@@ -170,8 +172,6 @@ mod tests {
         for (gate, index) in set_gates.iter() {
             pstr.set_pauli_gate(*index as usize, *gate).unwrap();
         }
-
-        println!("AAAAAAAAAAA {}", pstr);
 
         for (pos, gate) in pstr.iter().enumerate() {
             assert!(gate == target[pos], "Expected: {}, got: {} at index {}", target[pos], gate, pos);

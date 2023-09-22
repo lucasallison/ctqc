@@ -1,4 +1,4 @@
-use std::{fmt, f32::consts::E};
+use std::fmt;
 use std::error::Error;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
@@ -78,7 +78,7 @@ impl Component {
                 }
 
                 let mut new_component = self.clone();
-                new_component.pstr.set_pauli_gate(target_qubit as usize, PauliGate::Y);
+                new_component.pstr.set_pauli_gate(target_qubit as usize, PauliGate::Y)?;
 
                 return Ok(Some(new_component));
             },
@@ -90,7 +90,7 @@ impl Component {
                 }
 
                 let mut new_component = self.clone();
-                new_component.pstr.set_pauli_gate(target_qubit as usize, PauliGate::X);
+                new_component.pstr.set_pauli_gate(target_qubit as usize, PauliGate::X)?;
 
                 for generator_info in new_component.generator_info.iter_mut(){
                     generator_info.coefficient *= -1.0;
@@ -155,7 +155,7 @@ impl GeneratorComponents {
 
             // II..IZI..II -> pauli string with Z on ith place
             let mut generator = PauliString::new(num_qubits as usize);
-            generator.set_pauli_gate(i as usize, PauliGate::Z);
+            generator.set_pauli_gate(i as usize, PauliGate::Z).unwrap();
             
             // Create component for this pauli string and associate it
             // to the ith generator
@@ -185,7 +185,7 @@ impl GeneratorComponents {
 
                 },
                 _ => {
-                    component.conjugate_clifford(gate);
+                    component.conjugate_clifford(gate)?;
                 }, 
             }
 
@@ -300,7 +300,7 @@ fn h_s_conjugation(component: &mut Component, gate: &Gate) -> Result<bool, Box<d
     }
     
     // We update the pauli string with the gate resulting from the conjugation
-    component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.p_gate);
+    component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.p_gate)?;
 
     Ok(true) 
 }
@@ -368,8 +368,8 @@ fn cnot_conjugation(component: &mut Component, gate: &Gate) -> Result<bool, Box<
     }
 
     // We update the pauli string with the gate resulting from the conjugation
-    component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate);
-    component.pstr.set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate);
+    component.pstr.set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate)?;
+    component.pstr.set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate)?;
 
     Ok(true)
 }
@@ -401,13 +401,14 @@ mod tests {
     fn pauli_from_str(string: &str) -> PauliString {
 
         let mut pstr = PauliString::new(string.len());
+        println!("String: {}", string);
 
         for (index, char) in string.chars().enumerate() {
             match char {
                 'I' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
-                'X' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
-                'Y' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
-                'Z' => { pstr.set_pauli_gate(index, PauliGate::I).unwrap(); },
+                'X' => { pstr.set_pauli_gate(index, PauliGate::X).unwrap(); },
+                'Y' => { pstr.set_pauli_gate(index, PauliGate::Y).unwrap(); },
+                'Z' => { pstr.set_pauli_gate(index, PauliGate::Z).unwrap(); },
                 _ => panic!("Invalid character in Pauli string"),
             }
         }
@@ -498,12 +499,14 @@ mod tests {
         let input = pauli_from_str("IXIZII");
         let output = pauli_from_str("IXIZXI");
 
+        println!("Input: {}", input);
+
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4)).unwrap();
 
         let mut c = Component::new(input);
-        let res = c.conjugate_clifford(&cnot);
-
-        assert!(res.unwrap() == true);
+        let res = c.conjugate_clifford(&cnot).unwrap();
+    
+        assert!(res == true);
         assert!(c.pstr == output, "Expected: {}, got: {}", output, c.pstr);
     }
 

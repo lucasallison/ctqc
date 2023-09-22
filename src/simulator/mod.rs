@@ -26,7 +26,10 @@ impl Simulator {
 
         for gate in self.circuit.iter() {
             println!("Apply {}", gate);
-            self.gen_cmpts.conjugate(gate);
+            if let Err(e) = self.gen_cmpts.conjugate(gate) {
+                eprintln!("SIMULATION STOPPED PREEMPTIVELY -- {}", e);
+                return;
+            }
             println!("{}", self.gen_cmpts);
         }
 
