@@ -119,7 +119,7 @@ impl fmt::Display for PauliString {
     }
 }
 
-// ------------------ Iterators ------------------------------------
+// ------------------ Iterator ------------------------------------
 
 pub struct PauliStringIterator<'a> {
     ps: &'a PauliString,

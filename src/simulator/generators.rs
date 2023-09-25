@@ -2,8 +2,8 @@ use std::fmt;
 use std::error::Error;
 use std::collections::HashMap;
 
-use super::pauli_string::{PauliString, PauliGate};
-use super::component::{Component, GeneratorInfo};
+use super::pauli_string::PauliString;
+use super::component::Component;
 use crate::circuit::{Gate, GateType};
 
 pub struct GeneratorComponents {
@@ -18,25 +18,18 @@ impl GeneratorComponents {
         }
     }
 
-    pub fn all_zero_state_generators(num_qubits: u32) -> GeneratorComponents {
+    pub fn all_zero_state_generators(num_qubits: u32) -> Result<GeneratorComponents, Box<dyn Error>> {
 
         let mut generator_components = GeneratorComponents::new();
 
         for i in 0..num_qubits {
 
-            // II..IZI..II -> Pauli string with Z on ith place
-            let mut generator = PauliString::new(num_qubits as usize);
-            generator.set_pauli_gate(i as usize, PauliGate::Z).unwrap();
-            
-            // Create component for this Pauli string and associate it
-            // to the ith generator
-            let mut comp = Component::new(generator.copy()); 
-            comp.generator_info.push(GeneratorInfo::new(i));
-            
-            generator_components.generator_components.insert(generator, comp);
+            let comp = Component::all_zero_state_generator(num_qubits, i)?;
+
+            generator_components.generator_components.insert(comp.pstr.copy(), comp);
         }
 
-        generator_components
+        Ok(generator_components)
     }
 
     pub fn conjugate(&mut self, gate: &Gate) -> Result<(), Box<dyn Error>> {
@@ -67,7 +60,6 @@ impl GeneratorComponents {
         Ok(())
     }
 
-    // TODO create a map that does this
     fn insert_or_merge(map: &mut HashMap<PauliString, Component>, component: &Component) {
         match map.get_mut(&component.pstr) {
             Some(c) => {
@@ -102,7 +94,8 @@ impl fmt::Display for GeneratorComponents {
 mod tests {
 
     use super::*;
-
+    use crate::simulator::pauli_string::PauliGate;
+    use crate::simulator::component::GeneratorInfo;
 
     fn pauli_from_str(string: &str) -> PauliString {
 
@@ -123,7 +116,6 @@ mod tests {
 
 
     #[test]
-    // Conjugate with Hadamard
     fn conjugate_with_h_xizii() {
 
         let input = pauli_from_str("XIZII");

@@ -5,7 +5,7 @@ use lazy_static::lazy_static;
 
 use super::pauli_string::{PauliGate, PauliString};
 use crate::circuit::{Gate, GateType};
-use super::simulator_errors::ConjugationError;
+use super::simulator_errors::{ComponentError, ConjugationError};
 
 lazy_static! {
     static ref ONE_OVER_SQRT_TWO: f64 = 1.0 / f64::sqrt(2.0);
@@ -48,6 +48,23 @@ impl Component {
         }
     }
 
+    // Returns a compolnent representing the ith generator of the all zero state.
+    // I.e., II..IZI..II -> Pauli string with Z on ith place
+    pub fn all_zero_state_generator(num_qubits: u32, i: u32) -> Result<Component, ComponentError> {
+
+        if i >= num_qubits {
+            return Err(ComponentError { message: format!("Tried creating the ith generator of the all zero state, 
+                                                          but in a circuit of {num_qubits} qubits there are only {num_qubits} generators. ") });
+        }
+
+        let mut generator = PauliString::new(num_qubits as usize);
+        generator.set_pauli_gate(i as usize, PauliGate::Z).unwrap();
+
+        let mut comp = Component::new(generator); 
+        comp.generator_info.push(GeneratorInfo::new(i));
+
+        Ok(comp)
+    }
 
     // The bool indicates whether the pauli string in the 
     // component has changed
@@ -79,12 +96,11 @@ impl Component {
             return Ok(false);
         } 
 
-        // Look up how the pauli string changes as a result of the conjugation
-        // TODO unwrap
+        // Look up how the Pauli string changes as a result of the conjugation
         let look_up_output = match gate.gate_type {
             GateType::H => H_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap(),
             GateType::S => S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap(),
-            _ => panic!("This should not happen"),
+            _ => return Err(Box::from(ConjugationError{message: "Cannot use 'h_s_conjugation' function for a non H or S gate".to_string()})),
         };
 
         // If applicable we update the coefficient

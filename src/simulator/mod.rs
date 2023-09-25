@@ -4,6 +4,7 @@ mod pauli_string;
 mod generators;
 mod component;
 mod simulator_errors;
+mod component_bucket;
 
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;
@@ -18,9 +19,16 @@ impl Simulator {
 
     pub fn new(circuit: Circuit, verbose: bool) -> Simulator {
         let num_qubits = circuit.num_qubits;
+        let gc = match GeneratorComponents::all_zero_state_generators(num_qubits) {
+            Ok(gc) => gc,
+            Err(e) => {
+                panic!("Error while creating generator components: {}", e)
+            },
+        };
+            
         Simulator {
             circuit,
-            gen_cmpts: GeneratorComponents::all_zero_state_generators(num_qubits),
+            gen_cmpts: gc,
             verbose: verbose,
         }
     }
