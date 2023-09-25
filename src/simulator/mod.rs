@@ -1,3 +1,4 @@
+use std::io::{stdout, Write};
 
 mod pauli_string;
 mod generators;
@@ -10,13 +11,6 @@ pub struct Simulator {
     gen_cmpts: GeneratorComponents,
     verbose: bool,
 }
-
-use std::{
-    io::{stdout, Write},
-    thread::sleep,
-    time::Duration,
-};
-
 
 impl Simulator {
 

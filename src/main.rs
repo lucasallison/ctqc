@@ -11,7 +11,7 @@ use simulator::Simulator;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Optional flag to run the simulation in verbose mode
+    /// Optional flag to run the simulation in verbose mode.
     #[arg(short, default_value_t = false)]
     v: bool,
 

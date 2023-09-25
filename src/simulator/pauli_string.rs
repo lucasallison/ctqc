@@ -155,7 +155,7 @@ impl fmt::Display for PauliStringError {
 
 impl Error for PauliStringError {}
 
-// ------------------ TESTS ---------------------------------------
+// ------------------ Tests ---------------------------------------
 
 #[cfg(test)]
 mod tests {
