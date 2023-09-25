@@ -2,6 +2,8 @@ use std::io::{stdout, Write};
 
 mod pauli_string;
 mod generators;
+mod component;
+mod simulator_errors;
 
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;
@@ -38,7 +40,6 @@ impl Simulator {
                 println!("Apply {}", gate);
             }
 
-
             if let Err(e) = self.gen_cmpts.conjugate(gate) {
                 eprintln!("SIMULATION STOPPED PREEMPTIVELY -- {}", e);
                 return;
@@ -47,7 +48,8 @@ impl Simulator {
             if self.verbose {
                 println!("{}", self.gen_cmpts);
             } else {
-                print!("\rSimulating... {}%", (i as f64 / num_gates as f64 * 100.0) as u32);
+                print!("\rSimulating... {}% -- {} components", 
+                      (i as f64 / num_gates as f64 * 100.0) as u32, self.gen_cmpts.len());
                 stdout.flush().unwrap();
             }
         }
