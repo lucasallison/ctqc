@@ -1,4 +1,4 @@
-use std::env;
+use clap::Parser;
 
 mod circuit;
 mod input_parser;
@@ -7,37 +7,24 @@ mod simulator;
 use input_parser::parse_file;
 use simulator::Simulator;
 
+/// Quantum circuit simulator
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Optional flag to run the simulation in verbose mode
+    #[arg(short, default_value_t = false)]
+    v: bool,
 
-fn print_usage() {
-    eprintln!("Usage: cargo run <input_file>");
-    eprintln!("Or optionally run it verbose mode: cargo run -v <input_file>");
+    /// File containing the circuit to simulate
+    #[arg(short)]
+    f: String,
 }
 
 fn main() {
 
-    let args: Vec<String> = env::args().collect();
-
-    let mut verbose = false;
-    let mut file_path = String::new();
-
-
-    match args.len() {
-        2 => {
-            file_path = args[1].clone();
-        },
-        3 => {
-            file_path = args[1].clone();
-
-            if args[2] == "-v" {
-                verbose = true;
-            } else { return; }
-        },
-        _ => { print_usage(); return; },
-    }
-
-    println!("Parsing circuit from file...");
+    let args = Args::parse();
     
-    let circuit = match parse_file(&file_path) {
+    let circuit = match parse_file(&args.f) {
         Ok(circuit) => circuit,
         Err(e) => {
             eprintln!("Could not parse file: {}", e);
@@ -45,12 +32,8 @@ fn main() {
         }
     };
 
-
-    println!("Parsing complete. Simulating circuit...");
-
-    let mut simulator = Simulator::new(circuit, verbose);
+    let mut simulator = Simulator::new(circuit, args.v);
     simulator.simulate();
 
-    println!("Simulation complete.");
 
 }

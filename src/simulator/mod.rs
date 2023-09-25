@@ -11,6 +11,13 @@ pub struct Simulator {
     verbose: bool,
 }
 
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+    time::Duration,
+};
+
+
 impl Simulator {
 
     pub fn new(circuit: Circuit, verbose: bool) -> Simulator {
@@ -24,11 +31,14 @@ impl Simulator {
 
     pub fn simulate(&mut self) {
 
+        let mut stdout = stdout();
+        let num_gates = self.circuit.len();
+
         if self.verbose {
             println!("{}", self.gen_cmpts);
         }
 
-        for gate in self.circuit.iter() {
+        for (i, gate) in self.circuit.iter().enumerate() {
 
             if self.verbose {
                 println!("Apply {}", gate);
@@ -42,8 +52,13 @@ impl Simulator {
 
             if self.verbose {
                 println!("{}", self.gen_cmpts);
+            } else {
+                print!("\rSimulating... {}%", (i as f64 / num_gates as f64 * 100.0) as u32);
+                stdout.flush().unwrap();
             }
         }
+
+        println!("\rSimulation complete");
 
     }
     

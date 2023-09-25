@@ -102,6 +102,10 @@ impl Circuit {
         self.gates.push(new_gate);
     }
 
+    pub fn len(&self) -> usize {
+        self.gates.len()
+    }
+
     pub fn iter(&self) -> CircuitIterator {
         CircuitIterator {
             circuit: self,
