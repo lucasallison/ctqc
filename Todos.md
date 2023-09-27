@@ -5,3 +5,6 @@
 - Properly use custom errors
 
 - Use trait for component bucket?
+
+
+- Look at vec::with_capacity?
