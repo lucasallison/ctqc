@@ -8,28 +8,25 @@ mod component_bucket;
 
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;
+use generators::Stats;
 
 pub struct Simulator {
     circuit: Circuit,
     gen_cmpts: GeneratorComponents,
     verbose: bool,
+    stats: Stats,
 }
 
 impl Simulator {
 
     pub fn new(circuit: Circuit, verbose: bool) -> Simulator {
         let num_qubits = circuit.num_qubits;
-        let gc = match GeneratorComponents::all_zero_state_generators(num_qubits) {
-            Ok(gc) => gc,
-            Err(e) => {
-                panic!("Error while creating generator components: {}", e)
-            },
-        };
-            
+
         Simulator {
-            circuit,
-            gen_cmpts: gc,
+            circuit: circuit,
+            gen_cmpts: GeneratorComponents::new(num_qubits),
             verbose: verbose,
+            stats: Stats::new(),
         }
     }
 
@@ -48,7 +45,7 @@ impl Simulator {
                 println!("Apply {}", gate);
             }
 
-            if let Err(e) = self.gen_cmpts.conjugate(gate) {
+            if let Err(e) = self.gen_cmpts.conjugate(gate, &mut self.stats) {
                 eprintln!("SIMULATION STOPPED PREEMPTIVELY -- {}", e);
                 return;
             }
@@ -56,8 +53,8 @@ impl Simulator {
             if self.verbose {
                 println!("{}", self.gen_cmpts);
             } else {
-                print!("\rSimulating... {}% -- {} components", 
-                      (i as f64 / num_gates as f64 * 100.0) as u32, self.gen_cmpts.len());
+                print!("\rSimulating... {}% -- {} components {} merges", 
+                      (i as f64 / num_gates as f64 * 100.0) as u32, self.gen_cmpts.len(), self.stats.num_merges);
                 stdout.flush().unwrap();
             }
         }

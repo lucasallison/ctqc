@@ -6,33 +6,44 @@ use super::pauli_string::PauliString;
 use super::component::Component;
 use crate::circuit::{Gate, GateType};
 
+// TODO just for development, remove later
+pub struct Stats {
+    pub num_merges: usize,
+}
+
+impl Stats {
+    pub fn new() -> Stats {
+        Stats {
+            num_merges: 0,
+        }
+    }
+}
+
 pub struct GeneratorComponents {
     generator_components: HashMap<PauliString, Component>,
 }
 
 impl GeneratorComponents {
 
-    fn new() -> GeneratorComponents {
-        GeneratorComponents {
+    pub fn new(num_qubits: u32) -> GeneratorComponents {
+        let mut gcs = GeneratorComponents {
             generator_components: HashMap::new(),
-        }
+        };
+
+        gcs.all_zero_state_generators(num_qubits);
+        gcs
     }
 
-    pub fn all_zero_state_generators(num_qubits: u32) -> Result<GeneratorComponents, Box<dyn Error>> {
-
-        let mut generator_components = GeneratorComponents::new();
+    fn all_zero_state_generators(&mut self, num_qubits: u32) {
 
         for i in 0..num_qubits {
 
-            let comp = Component::all_zero_state_generator(num_qubits, i)?;
-
-            generator_components.generator_components.insert(comp.pstr.copy(), comp);
+            let comp = Component::all_zero_state_generator(num_qubits, i).unwrap();
+            self.generator_components.insert(comp.pstr.copy(), comp);
         }
-
-        Ok(generator_components)
     }
 
-    pub fn conjugate(&mut self, gate: &Gate) -> Result<(), Box<dyn Error>> {
+    pub fn conjugate(&mut self, gate: &Gate, stats: &mut Stats) -> Result<(), Box<dyn Error>> {
 
         let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
 
@@ -44,7 +55,7 @@ impl GeneratorComponents {
                     let new_component= component.conjugate_t_gate(gate.qubit_1)?;
 
                     if let Some(new_component) = new_component {
-                        Self::insert_or_merge(&mut gcs_after_conjugation, &new_component);
+                        Self::insert_or_merge(&mut gcs_after_conjugation, new_component, stats)?;
                     }
 
                 },
@@ -53,22 +64,28 @@ impl GeneratorComponents {
                 }, 
             }
 
-            Self::insert_or_merge(&mut gcs_after_conjugation, &component);
+            Self::insert_or_merge(&mut gcs_after_conjugation, component.clone(), stats)?;
         }
 
         self.generator_components = gcs_after_conjugation;
         Ok(())
     }
 
-    fn insert_or_merge(map: &mut HashMap<PauliString, Component>, component: &Component) {
+    fn insert_or_merge(map: &mut HashMap<PauliString, Component>, component: Component, stats: &mut Stats) -> Result<(), Box<dyn Error>>{
+        let pstr = component.pstr.copy();
         match map.get_mut(&component.pstr) {
             Some(c) => {
-                c.merge(&component);
+                let valid = c.merge(component)?;
+                stats.num_merges += 1;
+                if !valid {
+                    map.remove(&pstr);
+                }
             },
             None => {
-                map.insert(component.pstr.copy(), component.clone());
+                map.insert(pstr, component);
             },
         }
+        Ok(())
     } 
 
     pub fn len(&self) -> usize {

@@ -1,7 +1,8 @@
-use std::fmt;
+use std::{fmt, hash};
 use std::error::Error;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use lazy_static::lazy_static;
+use ordered_float::OrderedFloat;
 
 use super::pauli_string::{PauliGate, PauliString};
 use crate::circuit::{Gate, GateType};
@@ -11,17 +12,17 @@ lazy_static! {
     static ref ONE_OVER_SQRT_TWO: f64 = 1.0 / f64::sqrt(2.0);
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct GeneratorInfo {
     generator_index: u32,
-    coefficient: f64,
+    coefficient: OrderedFloat<f64>,
 }
 
 impl GeneratorInfo {
     pub fn new(generator_index: u32) -> GeneratorInfo {
         GeneratorInfo {
             generator_index: generator_index,
-            coefficient: 1.0,
+            coefficient: OrderedFloat(1.0),
         }
     }
 
@@ -29,7 +30,7 @@ impl GeneratorInfo {
         self.generator_index
     }
 
-    pub fn get_coefficient(&self) -> f64 {
+    pub fn get_coefficient(&self) -> OrderedFloat<f64> {
         self.coefficient
     }
 }
@@ -37,7 +38,7 @@ impl GeneratorInfo {
 #[derive(Clone)]
 pub struct Component {
     pub pstr: PauliString,
-    pub generator_info: Vec<GeneratorInfo>, 
+    pub generator_info: Vec<GeneratorInfo>
 }
 
 impl Component {
@@ -105,7 +106,7 @@ impl Component {
 
         // If applicable we update the coefficient
         if look_up_output.coefficient != 1{
-            for generator_info in &mut self.generator_info {
+            for generator_info in self.generator_info.iter_mut() {
                 generator_info.coefficient *= look_up_output.coefficient as f64;
             }
         }
@@ -200,22 +201,64 @@ impl Component {
     }
 
 
-    // TODO this function needs to be made more efficient
-    pub fn merge(&mut self, other: &Component) {
+    // Merges two components, returns 'true' this Pauli string is a component
+    // of any generator, i.e., there exists a non zero coefficient of this Pauli
+    // string for a generator.
+    // TODO refactor?
+    pub fn merge(&mut self, other: Component) -> Result<bool, ComponentError> {
 
-        // TODO error handling
-        assert!(self.pstr == other.pstr, "Pauli strings must be equal to merge");
-
-        for generator_info in &other.generator_info {
-            let i = self.generator_info.iter()
-                               .position(|r| r.generator_index == generator_info.generator_index );
-            
-            if let Some(i) = i {
-                self.generator_info[i].coefficient += generator_info.coefficient;
-            } else {
-                self.generator_info.push(generator_info.clone());
-            }
+        if self.pstr != other.pstr  {
+            return Err(ComponentError { message: "Pauli strings must be equal to merge".to_string() } ); 
         }
+
+        if self.generator_info.len() == 0 || other.generator_info.len() == 0 {
+            return Err(ComponentError { message: "Cannot merge components that belong to no generators".to_string() } ); 
+            
+        }
+
+        let mut merged_generator_info = Vec::<GeneratorInfo>::new();
+        let mut ind_self: usize = 0;
+        let mut ind_other: usize = 0; 
+
+        while ind_self < self.generator_info.len() && ind_other < other.generator_info.len() {
+    
+            let self_generator_info = self.generator_info[ind_self];
+            let other_generator_info = other.generator_info[ind_other];
+    
+            if self_generator_info.generator_index == other_generator_info.generator_index {
+                let new_coefficient = self_generator_info.coefficient + other_generator_info.coefficient;
+                if new_coefficient == OrderedFloat(0.0) {
+                    ind_self += 1;
+                    ind_other += 1;
+                    continue;
+                }
+                let mut new_generator_info = self_generator_info;
+                new_generator_info.coefficient += other_generator_info.coefficient;
+                merged_generator_info.push(new_generator_info);
+                ind_self += 1;
+                ind_other += 1;
+            } else if self_generator_info.generator_index < other_generator_info.generator_index {
+                merged_generator_info.push(self_generator_info);
+                ind_self += 1;
+            } else {
+                merged_generator_info.push(other_generator_info);
+                ind_other += 1;
+            }
+                
+        }
+
+        while ind_self < self.generator_info.len() {
+            merged_generator_info.push(self.generator_info[ind_self]);
+            ind_self += 1;
+        }
+
+        while ind_other < other.generator_info.len() {
+            merged_generator_info.push(other.generator_info[ind_other]);
+            ind_other += 1;
+        }
+
+        self.generator_info = merged_generator_info;
+        Ok(self.generator_info.len() > 0)
     }
 
 
@@ -349,7 +392,6 @@ mod tests {
         pstr
     }
 
-
     #[test]
     fn conjugate_with_h_xizii() {
 
@@ -432,8 +474,6 @@ mod tests {
         let input = pauli_from_str("IXIZII");
         let output = pauli_from_str("IXIZXI");
 
-        println!("Input: {}", input);
-
         let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4)).unwrap();
 
         let mut c = Component::new(input);
@@ -461,7 +501,7 @@ mod tests {
         c2.generator_info.push(GeneratorInfo::new(2));
         c2.generator_info.push(GeneratorInfo::new(3));
 
-        c1.merge(&c2);
+        c1.merge(c2).unwrap();
 
         for generator_info in &c1.generator_info {
             if generator_info.get_index() != 2 {
@@ -471,7 +511,36 @@ mod tests {
             }
         }
 
-        assert!(c1.generator_info[3].get_index() == 2)
+        assert!(c1.generator_info[2].get_index() == 2)
+
+    }
+
+    #[test]
+    fn test_merge_2() {
+
+        let p1 = pauli_from_str("XIZII");
+        let p2 = pauli_from_str("XIZII");
+
+        let mut c1 = Component::new(p1);
+        c1.generator_info.push(GeneratorInfo::new(0));
+        c1.generator_info.push(GeneratorInfo::new(3));
+        c1.generator_info.push(GeneratorInfo::new(4));
+
+        let mut c2 = Component::new(p2);
+        c2.generator_info.push(GeneratorInfo::new(0));
+        c2.generator_info[0].coefficient = OrderedFloat(-1.0);
+        c2.generator_info.push(GeneratorInfo::new(3));
+        c2.generator_info.push(GeneratorInfo::new(5));
+
+
+        assert!(c1.merge(c2).unwrap() == true);
+
+
+        let target = vec![GeneratorInfo{generator_index: 3, coefficient: OrderedFloat(2.0)},
+                          GeneratorInfo{generator_index: 4, coefficient: OrderedFloat(1.0)},
+                          GeneratorInfo{generator_index: 5, coefficient: OrderedFloat(1.0)}];
+
+        assert!(c1.generator_info == target);
 
     }
 

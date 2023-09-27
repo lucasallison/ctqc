@@ -141,13 +141,13 @@ impl ComponentBucket {
             return Err(ConjugationError { message: "Cannot merge a component into itself".to_string() });
         }
 
-        if c1_index > c2_index {
-            let (left, right) = self.components.split_at_mut(c1_index);
-            left[c2_index].merge(&right[0]);
-        } else {
-            let (left, right) = self.components.split_at_mut(c2_index);
-            right[0].merge(&left[c1_index]);
-        }
+        // if c1_index > c2_index {
+        //     let (left, right) = self.components.split_at_mut(c1_index);
+        //     left[c2_index].merge(&right[0]);
+        // } else {
+        //     let (left, right) = self.components.split_at_mut(c2_index);
+        //     right[0].merge(&left[c1_index]);
+        // }
 
         Ok(())
     }
