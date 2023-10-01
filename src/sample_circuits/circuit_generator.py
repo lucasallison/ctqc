@@ -5,7 +5,8 @@ DEFAULT_T_GATE_PERCENTAGE = 25
 
 file_name = input("Enter the file name: ")
 max_qubits = int(input("Enter the maximum number of qubits: "))
-circuit_length = int(input("Enter the length of the circuit: "))
+max_qubits = abs(max_qubits)
+circuit_length = abs(int(input("Enter the length of the circuit: ")))
 
 try: 
     t_gate_percentage = int(input("Enter the percentage of T gates [0-100] [Default = 25]: "))

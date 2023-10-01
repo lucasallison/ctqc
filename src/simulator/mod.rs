@@ -4,7 +4,8 @@ mod pauli_string;
 mod generators;
 mod component;
 mod simulator_errors;
-mod distributed_components;
+// mod distributed_components;
+// mod component_bucket;
 
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;

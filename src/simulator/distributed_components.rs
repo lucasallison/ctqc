@@ -104,6 +104,7 @@ impl PauliGatesAtIndex {
                                        PauliGateAtIndex::new(PauliGate::Y), 
                                        PauliGateAtIndex::new(PauliGate::Z)];
 
+
         for pgate in &mut self.pgates_at_index {
 
             match pgate.pgate {

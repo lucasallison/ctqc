@@ -105,7 +105,7 @@ impl Component {
         };
 
         // If applicable we update the coefficient
-        if look_up_output.coefficient != 1{
+        if look_up_output.coefficient != 1 {
             for generator_info in self.generator_info.iter_mut() {
                 generator_info.coefficient *= look_up_output.coefficient as f64;
             }
