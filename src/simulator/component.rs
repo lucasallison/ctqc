@@ -140,6 +140,12 @@ impl Component {
 
         let look_up_output = CNOT_CONJ_UPD_RULES.get(&(q1_target_pauli_gate, q2_target_pauli_gate)).unwrap();
 
+        if look_up_output.coefficient != 1 {
+            for generator_info in self.generator_info.iter_mut() {
+                generator_info.coefficient *= look_up_output.coefficient as f64;
+            }
+        }
+
         // The pauli string does not change from conjugation
         // TODO maybe just remove them from the map?
         if !look_up_output.pstr_changed {
@@ -330,6 +336,8 @@ lazy_static! {
 struct CNOTPauliLookUpOutput {
     q1_p_gate: PauliGate,
     q2_p_gate: PauliGate,
+    // TODO This only has to cost 1 bit
+    coefficient: i32,
     pstr_changed: bool,
 }
 
@@ -340,27 +348,78 @@ lazy_static! {
         // IX -> IX
         m.insert((PauliGate::I, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I, 
                                         q2_p_gate: PauliGate::X, 
+                                        coefficient: 1,
                                         pstr_changed: false});
         // XI -> XX
         m.insert((PauliGate::X, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X, 
                                         q2_p_gate: PauliGate::X, 
+                                        coefficient: 1,
                                         pstr_changed: true});
         // IY -> ZY
         m.insert((PauliGate::I, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z, 
                                         q2_p_gate: PauliGate::Y, 
+                                        coefficient: 1,
                                         pstr_changed: true});
         // YI -> YX
         m.insert((PauliGate::Y, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y, 
                                         q2_p_gate: PauliGate::X, 
+                                        coefficient: 1,
                                         pstr_changed: true},   );
         // IZ -> ZZ
         m.insert((PauliGate::I, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z, 
                                         q2_p_gate: PauliGate::Z, 
+                                        coefficient: 1,
                                         pstr_changed: true});
         // ZI -> ZI
         m.insert((PauliGate::Z, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z, 
                                         q2_p_gate: PauliGate::I, 
+                                        coefficient: 1,
                                         pstr_changed: false});
+        // XX -> II
+        m.insert((PauliGate::X, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I, 
+                                        q2_p_gate: PauliGate::I, 
+                                        coefficient: 1,
+                                        pstr_changed: true});
+        // XY -> -YZ
+        m.insert((PauliGate::X, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y, 
+                                        q2_p_gate: PauliGate::Z, 
+                                        coefficient: -1,
+                                        pstr_changed: true});
+        // XZ -> -YY
+        m.insert((PauliGate::X, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y, 
+                                        q2_p_gate: PauliGate::Y, 
+                                        coefficient: -1,
+                                        pstr_changed: true});
+        // YX -> YI
+        m.insert((PauliGate::Y, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y, 
+                                        q2_p_gate: PauliGate::I, 
+                                        coefficient: 1,
+                                        pstr_changed: true});
+        // YY -> -XZ 
+        m.insert((PauliGate::Y, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X, 
+                                        q2_p_gate: PauliGate::Z, 
+                                        coefficient: -1,
+                                        pstr_changed: true});
+        // YZ -> -XY
+        m.insert((PauliGate::Y, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X, 
+                                        q2_p_gate: PauliGate::Y, 
+                                        coefficient: -1,
+                                        pstr_changed: true});
+        // ZX -> ZX 
+        m.insert((PauliGate::Z, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z, 
+                                        q2_p_gate: PauliGate::X, 
+                                        coefficient: 1,
+                                        pstr_changed: true});
+        // ZY -> IY
+        m.insert((PauliGate::Z, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I, 
+                                        q2_p_gate: PauliGate::Y, 
+                                        coefficient: 1,
+                                        pstr_changed: true});
+        // ZZ -> II
+        m.insert((PauliGate::Z, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I, 
+                                        q2_p_gate: PauliGate::I, 
+                                        coefficient: 1,
+                                        pstr_changed: true});
         m
     };
 }
