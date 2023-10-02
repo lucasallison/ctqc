@@ -70,14 +70,16 @@ impl fmt::Display for Gate {
 
 // TODO: Deal with moments
 pub struct Circuit {
+    pub name: String,
     gates: Vec<Gate>,
     pub num_qubits: u32,
 }
 
 impl Circuit {
 
-    pub fn new() -> Circuit {
+    pub fn new(name: String) -> Circuit {
         Circuit {
+            name: name,
             gates: Vec::new(),
             num_qubits: 0,
         }

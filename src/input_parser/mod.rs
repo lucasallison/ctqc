@@ -4,7 +4,7 @@ use crate::circuit::Circuit;
 
 pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
     
-    let mut circuit = Circuit::new();
+    let mut circuit = Circuit::new(file_path.clone());
 
     let contents = match fs::read_to_string(file_path) {
         Ok(contents) => contents,
