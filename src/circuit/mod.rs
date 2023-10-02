@@ -110,6 +110,15 @@ impl Circuit {
         CircuitIterator {
             circuit: self,
             gate_index: 0,
+            reverse: false,
+        }
+    }
+
+    pub fn rev(&self) -> CircuitIterator {
+        CircuitIterator {
+            circuit: self,
+            gate_index: self.gates.len() - 1,
+            reverse: true,
         }
     }
 
@@ -133,19 +142,33 @@ impl fmt::Display for Circuit {
 pub struct CircuitIterator<'a> {
     circuit: &'a Circuit,
     gate_index: usize,
+    reverse: bool,
 }
 
 impl<'a> Iterator for CircuitIterator<'a> {
     type Item = &'a Gate;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.gate_index < self.circuit.gates.len() {
-            let gate = &self.circuit.gates[self.gate_index];
-            self.gate_index += 1;
-            Some(gate)
-        } else {
-            None
+
+        if self.gate_index >= self.circuit.gates.len() {
+            return None;
         }
+
+        let gate = &self.circuit.gates[self.gate_index];
+
+        if !self.reverse {}
+
+        if self.reverse {
+            if self.gate_index == 0 {
+                // Will cause the iterator to stop
+                self.gate_index = self.circuit.gates.len();
+            } else {
+                self.gate_index -= 1;
+            }
+        } else {
+            self.gate_index += 1;
+        }
+        Some(gate)
     }
 }
 
