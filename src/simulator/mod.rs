@@ -56,12 +56,12 @@ impl Simulator {
         println!("Checking equivalence for circuits U = {} and V = {}", circuit_1.name, circuit_2.name);
 
         if !self.equiv(circuit_1, circuit_2, true, verbose) {
-            println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generator for the all zero state", *DAG_CHAR, *DAG_CHAR);
+            println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
             return;
         }
 
         if !self.equiv(circuit_1, circuit_2, false, verbose) {
-            println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generator for the all plus state", *DAG_CHAR, *DAG_CHAR);
+            println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
             return;
         }
 
