@@ -9,7 +9,7 @@ use simulator::Simulator;
 
 // TODO
 // Floating point error margin 
-static FP_ERROR_MARGIN: f64 = 0.00000000001;
+static FP_ERROR_MARGIN: f64 = 0.0000000000001;
 
 
 /// Quantum circuit simulator

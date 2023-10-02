@@ -1,4 +1,5 @@
 use std::io::{stdout, Write};
+use lazy_static::lazy_static;
 
 mod pauli_string;
 mod generators;
@@ -10,6 +11,10 @@ mod simulator_errors;
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;
 use generators::Stats;
+
+lazy_static! {
+    static ref DAG_CHAR: char = std::char::from_u32(8224).unwrap();
+}
 
 // Holds all the data for simulations/equivalence checks
 struct SimData<'a> {
@@ -44,33 +49,45 @@ impl Simulator {
     pub fn equivalence_check(&self, circuit_1: &Circuit, circuit_2: &Circuit, verbose: bool) {
 
         if circuit_1.num_qubits != circuit_2.num_qubits {
-            eprintln!("Circuits have different number of qubits");
+            eprintln!("Cannot check equivalence: Circuits have different number of qubits");
             return;
         }
 
+        println!("Checking equivalence for circuits U, V");
+
+        if !self.equiv(circuit_1, circuit_2, true, verbose) {
+            println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generator for the all zero state", *DAG_CHAR, *DAG_CHAR);
+            return;
+        }
+
+        if !self.equiv(circuit_1, circuit_2, false, verbose) {
+            println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generator for the all plus state", *DAG_CHAR, *DAG_CHAR);
+            return;
+        }
+
+        println!("Circuits are equivalent")
+    }
+
+    fn equiv(&self, circuit_1: &Circuit, circuit_2: &Circuit, check_zero_state: bool, verbose: bool) -> bool {
+
         let mut sim_data = SimData {
             circuit: circuit_1,
-            gen_cmpts: GeneratorComponents::new(circuit_1.num_qubits, false),
+            gen_cmpts: GeneratorComponents::new(circuit_1.num_qubits, check_zero_state),
             stats: Stats::new(),
             verbose: verbose
         };
 
-        let dag_char = std::char::from_u32(8224).unwrap();
+        let z_x_char = if check_zero_state { 'Z' } else { 'X' };
 
-        println!("Checking equivalence for circuits U, V");
-        // First we simulate the first circuit with the all zero state generators
-        self.sim(&mut sim_data, false, format!("Determining UZU^{}... ", dag_char));
+        // First we simulate the first circuit with the all zero/plus state generators
+        self.sim(&mut sim_data, false, format!("Determining U{}U^{}... ", z_x_char, *DAG_CHAR));
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
         sim_data.circuit = circuit_2;
-        self.sim(&mut sim_data, true, format!("Determining V(UZU^{})^{}... ", dag_char, dag_char));
+        self.sim(&mut sim_data, true, format!("Determining V(U{}U^{})^{}... ", z_x_char, *DAG_CHAR, *DAG_CHAR));
 
-        if !sim_data.gen_cmpts.is_zero_state_generators() {
-            println!("Circuits are not equivalent");
-            return;
-        }
-
+        return sim_data.gen_cmpts.is_x_or_z_generators(check_zero_state);
     }
 
     // Performs a simulation based on the data currently stored in the struct. These values should

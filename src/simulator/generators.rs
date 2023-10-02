@@ -28,13 +28,13 @@ pub struct GeneratorComponents {
 
 impl GeneratorComponents {
 
-    pub fn new(num_qubits: u32, plus_state_generators: bool) -> GeneratorComponents {
+    pub fn new(num_qubits: u32, zero_state_generators: bool) -> GeneratorComponents {
         let mut gcs = GeneratorComponents {
             generator_components: HashMap::new(),
             num_qubits: num_qubits,
         };
 
-        gcs.init_generators(plus_state_generators);
+        gcs.init_generators(zero_state_generators);
         gcs
     }
 
@@ -42,22 +42,14 @@ impl GeneratorComponents {
     // ZII..II, IZI..II ... II..IZ
     // If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
     // XII..II, IXI..II ... II..IX
-    fn init_generators(&mut self, plus_state_generators: bool) {
+    fn init_generators(&mut self, zero_state_generators: bool) {
         for i in 0..self.num_qubits {
-            let comp = Component::ith_generator(self.num_qubits, i, plus_state_generators).unwrap();
+            let comp = Component::ith_generator(self.num_qubits, i, zero_state_generators).unwrap();
             self.generator_components.insert(comp.pstr.copy(), comp);
         }
     }
 
-    pub fn is_zero_state_generators(&mut self) -> bool {
-        return self.is_x_or_z_generators(true)
-    }
-
-    pub fn is_plus_state_generators(&mut self) -> bool {
-        return self.is_x_or_z_generators(false)
-    }
-
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+    pub fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
 
         self.clean();
 

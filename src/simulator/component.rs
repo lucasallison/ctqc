@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, num::NonZeroI128};
 use std::error::Error;
 use std::collections::HashMap;
 use lazy_static::lazy_static;
@@ -53,14 +53,14 @@ impl Component {
     // I.e., II..IZI..II -> Pauli string with Z on ith place
     // If plus_state_generator is true we return the ith generator of the all plus state.
     // I.e., II..IXI..II -> Pauli string with Z on ith place
-    pub fn ith_generator(num_qubits: u32, i: u32, plus_state_generator: bool) -> Result<Component, ComponentError> {
+    pub fn ith_generator(num_qubits: u32, i: u32, zero_state_generator: bool) -> Result<Component, ComponentError> {
 
         if i >= num_qubits {
             return Err(ComponentError { message: format!("Tried creating the ith generator, but in a circuit of 
                                                           {num_qubits} qubits there are only {num_qubits} generators. ") });
         }
 
-        let non_i_gate: PauliGate = if plus_state_generator { PauliGate::X } else { PauliGate::Z };
+        let non_i_gate: PauliGate = if zero_state_generator { PauliGate::Z } else { PauliGate::X };
 
         let mut generator = PauliString::new(num_qubits as usize);
         generator.set_pauli_gate(i as usize, non_i_gate).unwrap();
@@ -94,11 +94,12 @@ impl Component {
 
         for (i, pgate) in self.pstr.iter().enumerate() {
 
-            if i == gen_ind as usize && pgate != target_pauli {
+            if i == (gen_ind as usize) && pgate != target_pauli {
                 return -1;
-            } else { if pgate != PauliGate::I {
+            } 
+            if i != (gen_ind as usize) && pgate != PauliGate::I {
                 return -1;
-            } } 
+            }  
         }
 
         gen_ind as i32
