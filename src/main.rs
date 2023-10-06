@@ -35,22 +35,13 @@ fn main() {
 
     let args = Args::parse();
 
-    let circuit = match parse_qasm(&args.f) {
+    let circuit = match parse_file(&args.f) {
         Ok(circuit) => circuit,
         Err(e) => {
             eprintln!("Could not parse file: {}", e);
             return;
         }
     };
-
-
-    // let circuit = match parse_file(&args.f) {
-    //     Ok(circuit) => circuit,
-    //     Err(e) => {
-    //         eprintln!("Could not parse file: {}", e);
-    //         return;
-    //     }
-    // };
 
     let simulator = Simulator::new();
 
