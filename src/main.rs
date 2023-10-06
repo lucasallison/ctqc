@@ -5,6 +5,7 @@ mod input_parser;
 mod simulator;
 
 use input_parser::parse_file;
+use input_parser::parse_qasm;
 use simulator::Simulator;
 
 // TODO
@@ -33,14 +34,23 @@ struct Args {
 fn main() {
 
     let args = Args::parse();
-    
-    let circuit = match parse_file(&args.f) {
+
+    let circuit = match parse_qasm(&args.f) {
         Ok(circuit) => circuit,
         Err(e) => {
             eprintln!("Could not parse file: {}", e);
             return;
         }
     };
+
+
+    // let circuit = match parse_file(&args.f) {
+    //     Ok(circuit) => circuit,
+    //     Err(e) => {
+    //         eprintln!("Could not parse file: {}", e);
+    //         return;
+    //     }
+    // };
 
     let simulator = Simulator::new();
 

@@ -1,8 +1,6 @@
 use std::fmt;
 use std::error::Error;
 
-// TODO what is the correct way to do this?
-
 #[derive(Debug)]
 pub struct ConjugationError {
     pub message: String,

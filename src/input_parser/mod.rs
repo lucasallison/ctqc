@@ -1,4 +1,6 @@
 use std::{error::Error, fs};
+use qasm::{process, lex, parse};
+use std::path::Path;
 
 use crate::circuit::Circuit;
 
@@ -45,4 +47,26 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
     });
 
     Ok(circuit)
+}
+
+pub fn parse_qasm(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
+
+    let source = fs::read_to_string(file_path)?;
+
+    let file_dir = Path::new(file_path).parent();
+    if file_dir.is_none() {
+        // TODO
+        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Could not get parent directory")));
+    }
+    let file_dir = file_dir.unwrap();
+
+
+    let processed_source = process(&source, file_dir);
+    let mut tokens = lex(&processed_source);
+    let ast = parse(&mut tokens);
+
+    println!("{:?}", ast);
+
+
+    Ok(Circuit::new(file_path.clone()))
 }
