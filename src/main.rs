@@ -5,15 +5,13 @@ mod input_parser;
 mod simulator;
 
 use input_parser::parse_file;
-use input_parser::parse_qasm;
 use simulator::Simulator;
 
 // TODO
-// Floating point error margin 
+// Floating point error margin
 static FP_ERROR_MARGIN: f64 = 0.0000000000001;
 
-
-/// Quantum circuit simulator
+/// Quantum circuit simulator based on the sabilizer formalism
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -32,33 +30,33 @@ struct Args {
 }
 
 fn main() {
-
     let args = Args::parse();
 
     let circuit = match parse_file(&args.f) {
         Ok(circuit) => circuit,
         Err(e) => {
-            eprintln!("Could not parse file: {}", e);
+            eprintln!("Could not parse {}: {}", args.f, e);
             return;
         }
     };
 
     let simulator = Simulator::new();
 
+    // No second file provided, run the simulation
     if args.e.is_empty() {
-        simulator.simulate(&circuit , args.v);
-    } else {
+        simulator.simulate(&circuit, args.v);
+    }
+
+    // Second file provided, run the equivalence check
+    if !args.e.is_empty() {
         let equiv_circuit = match parse_file(&args.e) {
             Ok(circuit) => circuit,
             Err(e) => {
-                eprintln!("Could not parse second file: {}", e);
+                eprintln!("Could not parse {}: {}", args.e, e);
                 return;
             }
         };
-        
+
         simulator.equivalence_check(&circuit, &equiv_circuit, args.v);
     }
-
-
-
 }

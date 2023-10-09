@@ -29,17 +29,7 @@ cargo run --- -f circuit1 -e circuit2
 
 ## Circuit File Formats
 
-Circuits are read from files. The circuits that can be specified withtin these files is currently very limited. There are four gates that can be used: H, S, CNOT and T. Each gate of the circuit should be placed on a sperate line. 
-
-### Example
-
-```
-H 0
-CNOT 0 1
-S 1
-T 2
-H 3
-```
+Circuits are read from files. For a full specification of accepted file format, see the [documentation](doc/circuit_file_format.md).
 
 ## Implemenation (Background)
 

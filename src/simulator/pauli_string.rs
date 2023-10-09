@@ -1,13 +1,13 @@
-use std::fmt;
-use std::error::Error;
 use bitvec::prelude::*;
+use std::error::Error;
+use std::fmt;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum PauliGate {
     I,
-    X, 
+    X,
     Y,
-    Z, 
+    Z,
 }
 
 impl fmt::Display for PauliGate {
@@ -27,28 +27,30 @@ pub struct PauliString {
 }
 
 impl PauliString {
-
     // Creates a new pauli string of size `size` of only identity gates
     pub fn new(size: usize) -> PauliString {
         PauliString {
             // Each gate is represented by 2 bits
-            pstr: bitvec![0; 2*size], 
+            pstr: bitvec![0; 2*size],
         }
     }
 
-    pub fn set_pauli_gate(&mut self, index: usize, gate: PauliGate) -> Result<(), PauliStringError> {
-
+    pub fn set_pauli_gate(
+        &mut self,
+        index: usize,
+        gate: PauliGate,
+    ) -> Result<(), PauliStringError> {
         let i = self.get_internal_index(index);
 
         if i + 1 >= self.pstr.len() {
-            return Err(PauliStringError 
-                { message: "Index out of bounds while setting Pauli gate".to_string() })
+            return Err(PauliStringError {
+                message: "Index out of bounds while setting Pauli gate".to_string(),
+            });
         }
-
 
         let (b1, b2) = PauliString::pauli_gate_as_tuple(gate);
         self.pstr.set(i, b1);
-        self.pstr.set(i+1, b2);
+        self.pstr.set(i + 1, b2);
 
         Ok(())
     }
@@ -57,11 +59,15 @@ impl PauliString {
         let i = self.get_internal_index(index);
 
         if i + 1 >= self.pstr.len() {
-            return Err(PauliStringError 
-                { message: "Index out of bounds while getting Pauli gate".to_string() })
+            return Err(PauliStringError {
+                message: "Index out of bounds while getting Pauli gate".to_string(),
+            });
         }
 
-        Ok(PauliString::pauli_gate_from_tuple(self.pstr[i], self.pstr[i+1]))
+        Ok(PauliString::pauli_gate_from_tuple(
+            self.pstr[i],
+            self.pstr[i + 1],
+        ))
     }
 
     pub fn copy(&self) -> PauliString {
@@ -88,19 +94,15 @@ impl PauliString {
         }
     }
 
-    // Returns the internal index of the first bit of the pauli gate 
+    // Returns the internal index of the first bit of the pauli gate
     // saved in the pauli string
     fn get_internal_index(&self, index: usize) -> usize {
-        2*index
+        2 * index
     }
 
     pub fn iter(&self) -> PauliStringIterator {
-        PauliStringIterator {
-            ps: self,
-            index: 0,
-        }
+        PauliStringIterator { ps: self, index: 0 }
     }
-
 }
 
 impl PartialEq for PauliString {
@@ -131,7 +133,10 @@ impl<'a> Iterator for PauliStringIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index + 1 < self.ps.pstr.len() {
-            let gate = PauliString::pauli_gate_from_tuple(self.ps.pstr[self.index], self.ps.pstr[self.index+1]);
+            let gate = PauliString::pauli_gate_from_tuple(
+                self.ps.pstr[self.index],
+                self.ps.pstr[self.index + 1],
+            );
             self.index += 2;
             Some(gate)
         } else {
@@ -164,9 +169,14 @@ mod tests {
 
     #[test]
     fn set_and_get() {
-
-       let set_gates = [(PauliGate::Z, 4), (PauliGate::X, 2), (PauliGate::Y, 0)];
-       let target = [PauliGate::Y, PauliGate::I, PauliGate::X, PauliGate::I, PauliGate::Z];
+        let set_gates = [(PauliGate::Z, 4), (PauliGate::X, 2), (PauliGate::Y, 0)];
+        let target = [
+            PauliGate::Y,
+            PauliGate::I,
+            PauliGate::X,
+            PauliGate::I,
+            PauliGate::Z,
+        ];
 
         let mut pstr = PauliString::new(5);
         for (gate, index) in set_gates.iter() {
@@ -174,9 +184,13 @@ mod tests {
         }
 
         for (pos, gate) in pstr.iter().enumerate() {
-            assert!(gate == target[pos], "Expected: {}, got: {} at index {}", target[pos], gate, pos);
+            assert!(
+                gate == target[pos],
+                "Expected: {}, got: {} at index {}",
+                target[pos],
+                gate,
+                pos
+            );
         }
-
     }
-
 }

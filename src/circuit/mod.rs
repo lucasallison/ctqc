@@ -1,4 +1,4 @@
-use std::{fmt, cmp};
+use std::{cmp, fmt};
 
 mod circuit_errors;
 
@@ -13,7 +13,7 @@ pub enum GateType {
 }
 
 impl fmt::Display for GateType {
-      fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             GateType::H => write!(f, "H"),
             GateType::CNOT => write!(f, "CNOT"),
@@ -31,26 +31,40 @@ pub struct Gate {
 }
 
 impl Gate {
-    pub fn new(gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) -> Result<Gate, CircuitError> {
-
+    pub fn new(
+        gate_type: &String,
+        qubit_1: u32,
+        qubit_2: Option<u32>,
+    ) -> Result<Gate, CircuitError> {
         let gate_type = match gate_type.as_str() {
             "H" => GateType::H,
-            "CNOT" => { if qubit_2.is_none() {
-                            return Err(CircuitError { message: "CNOT gate must have two qubits".to_string() });
-                        } else {
-                            GateType::CNOT
-                        }}
+            "CNOT" => {
+                if qubit_2.is_none() {
+                    return Err(CircuitError {
+                        message: "CNOT gate must have two qubits".to_string(),
+                    });
+                } else {
+                    GateType::CNOT
+                }
+            }
             "S" => GateType::S,
             "T" => GateType::T,
-            _ => return Err(CircuitError { message: format!("{gate_type} has not been implemented, 
-                                                    please use H, CNOT, S, or T") })
+            _ => {
+                return Err(CircuitError {
+                    message: format!(
+                        "{gate_type} has not been implemented, 
+                                                    please use H, CNOT, S, or T"
+                    ),
+                })
+            }
         };
 
-
         if gate_type != GateType::CNOT && qubit_2.is_some() {
-            return Err(CircuitError { message: format!("{gate_type} gate must have one qubit") });
+            return Err(CircuitError {
+                message: format!("{gate_type} gate must have one qubit"),
+            });
         }
-        
+
         Ok(Gate {
             gate_type,
             qubit_1,
@@ -63,12 +77,11 @@ impl fmt::Display for Gate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.qubit_2 {
             Some(qubit_2) => write!(f, "{} {} {}", self.gate_type, self.qubit_1, qubit_2),
-            None => write!(f, "{} {}", self.gate_type, self.qubit_1), 
+            None => write!(f, "{} {}", self.gate_type, self.qubit_1),
         }
     }
 }
 
-// TODO: Deal with moments
 pub struct Circuit {
     pub name: String,
     gates: Vec<Gate>,
@@ -76,7 +89,6 @@ pub struct Circuit {
 }
 
 impl Circuit {
-
     pub fn new(name: String) -> Circuit {
         Circuit {
             name: name,
@@ -86,7 +98,6 @@ impl Circuit {
     }
 
     pub fn add_gate(&mut self, gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) {
-
         let new_gate = match Gate::new(gate_type, qubit_1, qubit_2) {
             Ok(gate) => gate,
             Err(e) => {
@@ -123,12 +134,10 @@ impl Circuit {
             reverse: true,
         }
     }
-
 }
 
 impl fmt::Display for Circuit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-
         write!(f, "Circuit with {} qubits:\n", self.num_qubits)?;
 
         for gate in &self.gates {
@@ -137,9 +146,7 @@ impl fmt::Display for Circuit {
 
         Ok(())
     }
-    
 }
-
 
 pub struct CircuitIterator<'a> {
     circuit: &'a Circuit,
@@ -151,7 +158,6 @@ impl<'a> Iterator for CircuitIterator<'a> {
     type Item = &'a Gate;
 
     fn next(&mut self) -> Option<Self::Item> {
-
         if self.gate_index >= self.circuit.gates.len() {
             return None;
         }
@@ -173,4 +179,3 @@ impl<'a> Iterator for CircuitIterator<'a> {
         Some(gate)
     }
 }
-

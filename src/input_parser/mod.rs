@@ -1,72 +1,69 @@
 use std::{error::Error, fs};
-use qasm::{process, lex, parse};
-use std::path::Path;
+use snafu::prelude::*;
 
 use crate::circuit::Circuit;
 
+/// Parses a file containing a quantum circuit and returns a Circuit struct
+/// The accepted format 
 pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
-    
-    let mut circuit = Circuit::new(file_path.clone());
 
     let contents = match fs::read_to_string(file_path) {
         Ok(contents) => contents,
-        Err(e) => { return Err(Box::new(e)); },
+        Err(e) => {
+            return Err(Box::new(e));
+        }
     };
 
-    contents.lines().for_each(|line| {
+    let mut circuit = Circuit::new(file_path.clone());
+    let mut gate_type: String;
+    let mut qubit_1: u32;
+    let mut qubit_2: Option<u32>;
 
-        let gate = line.split(" ").collect::<Vec<&str>>(); 
+    for line in contents.lines() {
+        let gate = line.split(" ").collect::<Vec<&str>>();
 
-        let gate_type;
-        let qubit_1; 
-        let qubit_2;
 
         if gate.len() < 2 || gate.len() > 3 {
-            eprintln!("Failed to add '{}', as it is not formatted correctly. 
-                        Expected: '<gate> <qubit_1> <qubit_2>'", line);
-            return;
+            return Err(Box::new(ParseError::InvalidLine { line: line.to_string() }));
         }
 
-        gate_type = gate[0].to_string();
         qubit_1 = match gate[1].parse::<u32>() {
-                Ok(qubit_1) => qubit_1,
-                Err(_) => { eprintln!("Failed to add '{}', as qubit_1 is not a valid u32", line); return; }
-            };
-        // TODO refactor?
+            Ok(qubit_1) => qubit_1,
+            Err(_) => { return Err(Box::new(ParseError::InvalidQubit1 { gate: line.to_string() })); }
+        };
+
         if gate.len() == 3 {
             qubit_2 = match gate[2].parse::<u32>() {
                 Ok(qubit_2) => Some(qubit_2),
-                Err(_) => { eprintln!("Failed to add '{}', as qubit_2 is not a valid u32", line); return; }
+                Err(_) => { return Err(Box::new(ParseError::InvalidQubit2 { gate: line.to_string() })); }
             };
         } else {
             qubit_2 = None;
         }
 
+        gate_type = gate[0].to_string();
+
         circuit.add_gate(&gate_type, qubit_1, qubit_2)
-    
-    });
+    }
 
     Ok(circuit)
 }
 
-pub fn parse_qasm(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
+#[derive(Debug, Snafu)]
+pub enum ParseError {
+    #[snafu(display("Invalid line in file: {}. Expected: '<gate> <qubit_1> <qubit_2>'", line))]
+    InvalidLine { line: String },
 
-    let source = fs::read_to_string(file_path)?;
+    #[snafu(display("Cannot add '{}', as it is not formatted correctly. Expected: '<gate> <qubit>'", gate))]
+    InvalidSingleQubitGate { gate: String },
 
-    let file_dir = Path::new(file_path).parent();
-    if file_dir.is_none() {
-        // TODO
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Could not get parent directory")));
-    }
-    let file_dir = file_dir.unwrap();
+    #[snafu(display("Cannot add '{}', as it is not formatted correctly. Expected: '<gate> <qubit_1> <qubit_2>'", gate))]
+    InvalidTwoQubitGate { gate: String },
 
+    #[snafu(display("Cannot add '{}', as qubit_1 is not a valid u32", gate))]
+    InvalidQubit1 { gate: String },
 
-    let processed_source = process(&source, file_dir);
-    let mut tokens = lex(&processed_source);
-    let ast = parse(&mut tokens);
-
-    println!("{:?}", ast);
-
-
-    Ok(Circuit::new(file_path.clone()))
+    #[snafu(display("Cannot add '{}', as qubit_2 is not a valid u32", gate))]
+    InvalidQubit2 { gate: String },
 }
+

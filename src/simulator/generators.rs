@@ -1,11 +1,11 @@
-use std::fmt;
-use std::error::Error;
-use std::collections::HashMap;
 use bitvec::prelude::*;
+use std::collections::HashMap;
+use std::error::Error;
+use std::fmt;
 
-use super::pauli_string::PauliString;
-use super::pauli_string::PauliGate;
 use super::component::Component;
+use super::pauli_string::PauliGate;
+use super::pauli_string::PauliString;
 use crate::circuit::{Gate, GateType};
 
 // TODO just for development, remove later
@@ -15,9 +15,7 @@ pub struct Stats {
 
 impl Stats {
     pub fn new() -> Stats {
-        Stats {
-            num_merges: 0,
-        }
+        Stats { num_merges: 0 }
     }
 }
 
@@ -27,7 +25,6 @@ pub struct GeneratorComponents {
 }
 
 impl GeneratorComponents {
-
     pub fn new(num_qubits: u32, zero_state_generators: bool) -> GeneratorComponents {
         let mut gcs = GeneratorComponents {
             generator_components: HashMap::new(),
@@ -50,13 +47,11 @@ impl GeneratorComponents {
     }
 
     pub fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
-
         self.clean();
 
         let mut generator_present = bitvec![0; self.num_qubits as usize];
 
         for component in self.generator_components.values() {
-            
             let ind = component.is_generator(check_zero_state);
 
             if ind == -1 {
@@ -72,14 +67,13 @@ impl GeneratorComponents {
             }
         }
         true
-    } 
+    }
 
     // Removes all invalid components
     fn clean(&mut self) {
         let mut to_remove: Vec<PauliString> = Vec::new();
 
         for component in self.generator_components.values_mut() {
-
             component.remove_zero_coefficient_generators();
 
             if !component.valid() {
@@ -92,25 +86,27 @@ impl GeneratorComponents {
         }
     }
 
-    pub fn conjugate(&mut self, gate: &Gate, stats: &mut Stats, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
-
+    pub fn conjugate(
+        &mut self,
+        gate: &Gate,
+        stats: &mut Stats,
+        conjugate_dagger: bool,
+    ) -> Result<(), Box<dyn Error>> {
         let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
 
         for component in self.generator_components.values_mut() {
-
             match gate.gate_type {
                 GateType::T => {
-
-                    let new_component= component.conjugate_t_gate(gate.qubit_1, conjugate_dagger)?;
+                    let new_component =
+                        component.conjugate_t_gate(gate.qubit_1, conjugate_dagger)?;
 
                     if let Some(new_component) = new_component {
                         Self::insert_or_merge(&mut gcs_after_conjugation, new_component, stats)?;
                     }
-
-                },
+                }
                 _ => {
                     component.conjugate_clifford(gate, conjugate_dagger)?;
-                }, 
+                }
             }
 
             Self::insert_or_merge(&mut gcs_after_conjugation, component.clone(), stats)?;
@@ -120,7 +116,11 @@ impl GeneratorComponents {
         Ok(())
     }
 
-    fn insert_or_merge(map: &mut HashMap<PauliString, Component>, component: Component, stats: &mut Stats) -> Result<(), Box<dyn Error>>{
+    fn insert_or_merge(
+        map: &mut HashMap<PauliString, Component>,
+        component: Component,
+        stats: &mut Stats,
+    ) -> Result<(), Box<dyn Error>> {
         let pstr = component.pstr.copy();
         match map.get_mut(&component.pstr) {
             Some(c) => {
@@ -129,18 +129,17 @@ impl GeneratorComponents {
                 if !valid {
                     map.remove(&pstr);
                 }
-            },
+            }
             None => {
                 map.insert(pstr, component);
-            },
+            }
         }
         Ok(())
-    } 
+    }
 
     pub fn len(&self) -> usize {
         self.generator_components.len()
     }
-
 }
 
 impl fmt::Display for GeneratorComponents {
