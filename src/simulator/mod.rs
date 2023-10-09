@@ -35,7 +35,7 @@ impl Simulator {
     pub fn simulate(&self, circuit: &Circuit, verbose: bool) {
         let mut sim_data = SimData {
             circuit: circuit,
-            gen_cmpts: GeneratorComponents::new(circuit.num_qubits, false),
+            gen_cmpts: GeneratorComponents::new(circuit.num_qubits(), false),
             stats: Stats::new(),
             verbose: verbose,
         };
@@ -45,14 +45,14 @@ impl Simulator {
 
     // Returns true if the two circuits are equivalent, false otherwise
     pub fn equivalence_check(&self, circuit_1: &Circuit, circuit_2: &Circuit, verbose: bool) {
-        if circuit_1.num_qubits != circuit_2.num_qubits {
+        if circuit_1.num_qubits() != circuit_2.num_qubits() {
             eprintln!("Cannot check equivalence: Circuits have different number of qubits");
             return;
         }
 
         println!(
             "Checking equivalence for circuits U = {} and V = {}",
-            circuit_1.name, circuit_2.name
+            circuit_1.name(), circuit_2.name()
         );
 
         if !self.equiv(circuit_1, circuit_2, true, verbose) {
@@ -77,7 +77,7 @@ impl Simulator {
     ) -> bool {
         let mut sim_data = SimData {
             circuit: circuit_1,
-            gen_cmpts: GeneratorComponents::new(circuit_1.num_qubits, check_zero_state),
+            gen_cmpts: GeneratorComponents::new(circuit_1.num_qubits(), check_zero_state),
             stats: Stats::new(),
             verbose: verbose,
         };

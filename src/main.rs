@@ -1,4 +1,6 @@
 use clap::Parser;
+use snafu::prelude::*;
+use std::error::Error;
 
 mod circuit;
 mod input_parser;
@@ -23,21 +25,19 @@ struct Args {
     #[arg(short)]
     f: String,
 
-    /// Option flag which will run the equivalence check instead of the simulation
-    /// A second file must be provided right after the flag to run the equivalence check
+    /// Option flag which will run an equivalence check between the circuit 
+    /// specified by the '-f' flag and the file specified this flag, instead of the simulation
     #[arg(short, default_value_t = String::from(""))]
     e: String,
 }
+
 
 fn main() {
     let args = Args::parse();
 
     let circuit = match parse_file(&args.f) {
         Ok(circuit) => circuit,
-        Err(e) => {
-            eprintln!("Could not parse {}: {}", args.f, e);
-            return;
-        }
+        Err(e) => { eprintln!("{}", MError::InvalidFileFormat { file: args.f, err: e }); return; }
     };
 
     let simulator = Simulator::new();
@@ -51,12 +51,17 @@ fn main() {
     if !args.e.is_empty() {
         let equiv_circuit = match parse_file(&args.e) {
             Ok(circuit) => circuit,
-            Err(e) => {
-                eprintln!("Could not parse {}: {}", args.e, e);
-                return;
-            }
+            Err(e) => { eprintln!("{}", MError::InvalidFileFormat { file: args.f, err: e }); return; }
         };
 
         simulator.equivalence_check(&circuit, &equiv_circuit, args.v);
     }
+
+}
+
+
+#[derive(Debug, Snafu)]
+enum MError {
+    #[snafu(display("Failed to parse {}: {} ", file, err))]
+    InvalidFileFormat { file: String, err: Box<dyn Error> },
 }

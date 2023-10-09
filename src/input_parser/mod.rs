@@ -3,8 +3,8 @@ use snafu::prelude::*;
 
 use crate::circuit::Circuit;
 
-/// Parses a file containing a quantum circuit and returns a Circuit struct
-/// The accepted format 
+/// Parses a file containing a quantum circuit and returns a Circuit struct.
+/// The accepted format can be found in the documentation. 
 pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
 
     let contents = match fs::read_to_string(file_path) {
@@ -43,7 +43,7 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
 
         gate_type = gate[0].to_string();
 
-        circuit.add_gate(&gate_type, qubit_1, qubit_2)
+        circuit.add_gate(&gate_type, qubit_1, qubit_2)?;
     }
 
     Ok(circuit)
