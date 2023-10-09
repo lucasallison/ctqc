@@ -4,11 +4,9 @@ use std::error::Error;
 use std::fmt;
 
 use super::component::Component;
-use super::pauli_string::PauliGate;
 use super::pauli_string::PauliString;
 use crate::circuit::{Gate, GateType};
 
-// TODO just for development, remove later
 pub struct Stats {
     pub num_merges: usize,
 }

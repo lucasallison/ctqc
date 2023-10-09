@@ -1,11 +1,13 @@
 use lazy_static::lazy_static;
 use ordered_float::OrderedFloat;
-use std::collections::HashMap;
+use snafu::prelude::*;
 use std::error::Error;
 use std::fmt;
 
+use super::conjugation_look_up_tables::{
+    CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
+};
 use super::pauli_string::{PauliGate, PauliString};
-use super::simulator_errors::{ComponentError, ConjugationError};
 use crate::{
     circuit::{Gate, GateType},
     FP_ERROR_MARGIN,
@@ -62,8 +64,9 @@ impl Component {
         zero_state_generator: bool,
     ) -> Result<Component, ComponentError> {
         if i >= num_qubits {
-            return Err(ComponentError { message: format!("Tried creating the ith generator, but in a circuit of 
-                                                          {num_qubits} qubits there are only {num_qubits} generators. ") });
+            return Err(ComponentError::InvalidGenerator {
+                num_qubits: num_qubits,
+            });
         }
 
         let non_i_gate: PauliGate = if zero_state_generator {
@@ -139,10 +142,7 @@ impl Component {
             GateType::S => {
                 return self.h_s_conjugation(gate, conjugate_dagger);
             }
-            _ => Err(Box::from(ConjugationError {
-                message: "Cannot use 'conjugate_clifford' function for a non clifford gate"
-                    .to_string(),
-            })),
+            _ => Err(Box::from(ConjugationError::InvalidCliffordConjugation {})),
         }
     }
 
@@ -171,12 +171,7 @@ impl Component {
                     S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap()
                 }
             }
-            _ => {
-                return Err(Box::from(ConjugationError {
-                    message: "Cannot use 'h_s_conjugation' function for a non H or S gate"
-                        .to_string(),
-                }))
-            }
+            _ => return Err(Box::from(ConjugationError::InvalidHSConjugation {})),
         };
 
         // If applicable we update the coefficient
@@ -197,14 +192,7 @@ impl Component {
     }
 
     fn cnot_conjugation(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
-        let qubit_2 = match gate.qubit_2 {
-            Some(qubit_2) => qubit_2,
-            None => {
-                return Err(Box::from(ConjugationError {
-                    message: "CNOT gate must have a control qubit".to_string(),
-                }));
-            }
-        };
+        let qubit_2 = gate.qubit_2.unwrap();
 
         let q1_target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
         let q2_target_pauli_gate = self.pstr.get_pauli_gate(qubit_2 as usize)?;
@@ -319,15 +307,11 @@ impl Component {
     // TODO refactor?
     pub fn merge(&mut self, other: Component) -> Result<bool, ComponentError> {
         if self.pstr != other.pstr {
-            return Err(ComponentError {
-                message: "Pauli strings must be equal to merge".to_string(),
-            });
+            return Err(ComponentError::MergeUnequalPStr {});
         }
 
         if self.generator_info.len() == 0 || other.generator_info.len() == 0 {
-            return Err(ComponentError {
-                message: "Cannot merge components that belong to no generators".to_string(),
-            });
+            return Err(ComponentError::MergeComponentWithoutGen {});
         }
 
         let mut merged_generator_info = Vec::<GeneratorInfo>::new();
@@ -389,166 +373,27 @@ impl fmt::Display for Component {
     }
 }
 
-// ---------------- Look up tables for conjugation ------------------
+// ------------------ Errors --------------------------------------
 
-struct HSPauliLookUpOutput {
-    p_gate: PauliGate,
-    // TODO This only has to cost 1 bit
-    coefficient: i32,
-    pstr_changed: bool,
+#[derive(Debug, Snafu)]
+pub enum ComponentError {
+    #[snafu(display("Pauli strings must be equal to merge"))]
+    MergeUnequalPStr {},
+
+    #[snafu(display("Cannot merge components that belong to no generators"))]
+    MergeComponentWithoutGen {},
+
+    #[snafu(display("Tried creating the ith generator, but in a circuit of {} qubits there are only {} generators.", num_qubits, num_qubits))]
+    InvalidGenerator { num_qubits: u32 },
 }
 
-lazy_static! {
-    static ref H_CONJ_UPD_RULES: HashMap<PauliGate, HSPauliLookUpOutput> = {
-        let mut m = HashMap::new();
+#[derive(Debug, Snafu)]
+pub enum ConjugationError {
+    #[snafu(display("Cannot use 'h_s_conjugation' function for a non H or S gate"))]
+    InvalidHSConjugation {},
 
-        // X -> Z
-        m.insert(PauliGate::X, HSPauliLookUpOutput{
-                                    p_gate: PauliGate::Z,
-                                    coefficient: 1,
-                                    pstr_changed: true
-                                });
-
-        // Y -> -Y
-        m.insert(PauliGate::Y, HSPauliLookUpOutput{p_gate: PauliGate::Y,
-                                    coefficient: -1,
-                                    pstr_changed: false});
-
-        // Z -> X
-        m.insert(PauliGate::Z, HSPauliLookUpOutput{p_gate: PauliGate::X,
-                                    coefficient: 1,
-                                    pstr_changed: true});
-        m
-    };
-
-    static ref S_CONJ_UPD_RULES: HashMap<PauliGate, HSPauliLookUpOutput> = {
-        let mut m = HashMap::new();
-
-        // X -> Y
-        m.insert(PauliGate::X, HSPauliLookUpOutput{p_gate: PauliGate::Y,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // Y -> -X
-        m.insert(PauliGate::Y, HSPauliLookUpOutput{p_gate: PauliGate::X,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // Z -> Z
-        m.insert(PauliGate::Z, HSPauliLookUpOutput{p_gate: PauliGate::Z,
-                                        coefficient: 1,
-                                        pstr_changed: false});
-        m
-    };
-
-    static ref S_DAGGER_CONJ_UPD_RULES: HashMap<PauliGate, HSPauliLookUpOutput> = {
-        let mut m = HashMap::new();
-
-        // X -> -Y
-        m.insert(PauliGate::X, HSPauliLookUpOutput{p_gate: PauliGate::Y,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // Y -> X
-        m.insert(PauliGate::Y, HSPauliLookUpOutput{p_gate: PauliGate::X,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // Z -> Z
-        m.insert(PauliGate::Z, HSPauliLookUpOutput{p_gate: PauliGate::Z,
-                                        coefficient: 1,
-                                        pstr_changed: false});
-        m
-    };
-
-}
-
-// No coefficient change
-struct CNOTPauliLookUpOutput {
-    q1_p_gate: PauliGate,
-    q2_p_gate: PauliGate,
-    // TODO This only has to cost 1 bit
-    coefficient: i32,
-    pstr_changed: bool,
-}
-
-lazy_static! {
-    static ref CNOT_CONJ_UPD_RULES: HashMap<(PauliGate, PauliGate), CNOTPauliLookUpOutput> = {
-        let mut m = HashMap::new();
-
-        // IX -> IX
-        m.insert((PauliGate::I, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I,
-                                        q2_p_gate: PauliGate::X,
-                                        coefficient: 1,
-                                        pstr_changed: false});
-        // XI -> XX
-        m.insert((PauliGate::X, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X,
-                                        q2_p_gate: PauliGate::X,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // IY -> ZY
-        m.insert((PauliGate::I, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z,
-                                        q2_p_gate: PauliGate::Y,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // YI -> YX
-        m.insert((PauliGate::Y, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
-                                        q2_p_gate: PauliGate::X,
-                                        coefficient: 1,
-                                        pstr_changed: true},   );
-        // IZ -> ZZ
-        m.insert((PauliGate::I, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z,
-                                        q2_p_gate: PauliGate::Z,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // ZI -> ZI
-        m.insert((PauliGate::Z, PauliGate::I), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z,
-                                        q2_p_gate: PauliGate::I,
-                                        coefficient: 1,
-                                        pstr_changed: false});
-        // XX -> XI
-        m.insert((PauliGate::X, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X,
-                                        q2_p_gate: PauliGate::I,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // XY -> -YZ
-        m.insert((PauliGate::X, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
-                                        q2_p_gate: PauliGate::Z,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // XZ -> -YY
-        m.insert((PauliGate::X, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
-                                        q2_p_gate: PauliGate::Y,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // YX -> YI
-        m.insert((PauliGate::Y, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
-                                        q2_p_gate: PauliGate::I,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // YY -> -XZ
-        m.insert((PauliGate::Y, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X,
-                                        q2_p_gate: PauliGate::Z,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // YZ -> -XY
-        m.insert((PauliGate::Y, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X,
-                                        q2_p_gate: PauliGate::Y,
-                                        coefficient: -1,
-                                        pstr_changed: true});
-        // ZX -> ZX
-        m.insert((PauliGate::Z, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z,
-                                        q2_p_gate: PauliGate::X,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // ZY -> IY
-        m.insert((PauliGate::Z, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I,
-                                        q2_p_gate: PauliGate::Y,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        // ZZ -> IZ
-        m.insert((PauliGate::Z, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I,
-                                        q2_p_gate: PauliGate::Z,
-                                        coefficient: 1,
-                                        pstr_changed: true});
-        m
-    };
+    #[snafu(display("Cannot use 'conjugate_t_gate' function for a non Clifford gate"))]
+    InvalidCliffordConjugation {},
 }
 
 // ------------------ Tests ---------------------------------------

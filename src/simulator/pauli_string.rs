@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use std::error::Error;
+use snafu::prelude::*;
 use std::fmt;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -43,9 +43,7 @@ impl PauliString {
         let i = self.get_internal_index(index);
 
         if i + 1 >= self.pstr.len() {
-            return Err(PauliStringError {
-                message: "Index out of bounds while setting Pauli gate".to_string(),
-            });
+            return Err(PauliStringError::IndexOutOfBounds {});
         }
 
         let (b1, b2) = PauliString::pauli_gate_as_tuple(gate);
@@ -59,9 +57,7 @@ impl PauliString {
         let i = self.get_internal_index(index);
 
         if i + 1 >= self.pstr.len() {
-            return Err(PauliStringError {
-                message: "Index out of bounds while getting Pauli gate".to_string(),
-            });
+            return Err(PauliStringError::IndexOutOfBounds {});
         }
 
         Ok(PauliString::pauli_gate_from_tuple(
@@ -147,18 +143,11 @@ impl<'a> Iterator for PauliStringIterator<'a> {
 
 // ------------------ Errors --------------------------------------
 
-#[derive(Debug)]
-pub struct PauliStringError {
-    pub message: String,
+#[derive(Debug, Snafu)]
+pub enum PauliStringError {
+    #[snafu(display("Index out of bounds."))]
+    IndexOutOfBounds {},
 }
-
-impl fmt::Display for PauliStringError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Pauli string error: {}", self.message)
-    }
-}
-
-impl Error for PauliStringError {}
 
 // ------------------ Tests ---------------------------------------
 

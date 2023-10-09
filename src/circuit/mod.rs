@@ -1,5 +1,5 @@
-use std::{cmp, fmt};
 use snafu::prelude::*;
+use std::{cmp, fmt};
 
 #[derive(Debug, Snafu)]
 pub enum CircuitError {
@@ -10,9 +10,8 @@ pub enum CircuitError {
     MissingSecondQubit {},
 
     #[snafu(display("Two qubits specified for single qubit gate {}", gate_type))]
-    TwoQubitsSingleQubitGate { gate_type: String},
+    TwoQubitsSingleQubitGate { gate_type: String },
 }
-
 
 /// Enum representing the different types of gates in the circuit
 /// H - Hadamard gate
@@ -40,7 +39,7 @@ impl fmt::Display for GateType {
 
 /// Struct representing a gate in the circuit
 /// All gates apply to a single qubit, except for the CNOT gate
-/// which applies to two qubits. 
+/// which applies to two qubits.
 #[derive(Clone)]
 pub struct Gate {
     pub gate_type: GateType,
@@ -58,7 +57,7 @@ impl Gate {
             "H" => GateType::H,
             "CNOT" => {
                 if qubit_2.is_none() {
-                    return Err(CircuitError::MissingSecondQubit { });
+                    return Err(CircuitError::MissingSecondQubit {});
                 } else {
                     GateType::CNOT
                 }
@@ -66,12 +65,16 @@ impl Gate {
             "S" => GateType::S,
             "T" => GateType::T,
             gate_type => {
-                return Err(CircuitError::GateNotImplemented { gate_type: gate_type.to_string() })
+                return Err(CircuitError::GateNotImplemented {
+                    gate_type: gate_type.to_string(),
+                })
             }
         };
 
         if gate_type != GateType::CNOT && qubit_2.is_some() {
-            return Err(CircuitError::TwoQubitsSingleQubitGate { gate_type: gate_type.to_string() });
+            return Err(CircuitError::TwoQubitsSingleQubitGate {
+                gate_type: gate_type.to_string(),
+            });
         }
 
         Ok(Gate {
@@ -109,8 +112,12 @@ impl Circuit {
 
     /// If a valid gate is provided, it is appended to the circuit.
     /// If a gate targets a qubit that is not yet in the circuit, the number of qubits is increased to this qubit.
-    pub fn add_gate(&mut self, gate_type: &String, qubit_1: u32, qubit_2: Option<u32>) -> Result<(), CircuitError> {
-
+    pub fn add_gate(
+        &mut self,
+        gate_type: &String,
+        qubit_1: u32,
+        qubit_2: Option<u32>,
+    ) -> Result<(), CircuitError> {
         let new_gate = Gate::new(gate_type, qubit_1, qubit_2)?;
 
         self.num_qubits = cmp::max(self.num_qubits, qubit_1 + 1);
