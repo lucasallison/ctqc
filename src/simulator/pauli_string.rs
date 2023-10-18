@@ -10,6 +10,29 @@ pub enum PauliGate {
     Z,
 }
 
+impl PauliGate {
+
+    pub fn pauli_gate_as_tuple(gate: PauliGate) -> (bool, bool) {
+        match gate {
+            PauliGate::I => (false, false),
+            PauliGate::X => (true, false),
+            PauliGate::Y => (true, true),
+            PauliGate::Z => (false, true),
+        }
+    }
+
+    pub fn pauli_gate_from_tuple(b1: bool, b2: bool) -> PauliGate {
+        match (b1, b2) {
+            (false, false) => PauliGate::I,
+            (true, false) => PauliGate::X,
+            (true, true) => PauliGate::Y,
+            (false, true) => PauliGate::Z,
+        }
+    }
+
+
+}
+
 impl fmt::Display for PauliGate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -21,7 +44,7 @@ impl fmt::Display for PauliGate {
     }
 }
 
-#[derive(Eq, Hash, Clone)]
+#[derive(Debug, Eq, Hash, Clone)]
 pub struct PauliString {
     pstr: BitVec,
 }
@@ -46,7 +69,7 @@ impl PauliString {
             return Err(PauliStringError::IndexOutOfBounds {});
         }
 
-        let (b1, b2) = PauliString::pauli_gate_as_tuple(gate);
+        let (b1, b2) = PauliGate::pauli_gate_as_tuple(gate);
         self.pstr.set(i, b1);
         self.pstr.set(i + 1, b2);
 
@@ -60,34 +83,10 @@ impl PauliString {
             return Err(PauliStringError::IndexOutOfBounds {});
         }
 
-        Ok(PauliString::pauli_gate_from_tuple(
+        Ok(PauliGate::pauli_gate_from_tuple(
             self.pstr[i],
             self.pstr[i + 1],
         ))
-    }
-
-    pub fn copy(&self) -> PauliString {
-        PauliString {
-            pstr: self.pstr.clone(),
-        }
-    }
-
-    fn pauli_gate_as_tuple(gate: PauliGate) -> (bool, bool) {
-        match gate {
-            PauliGate::I => (false, false),
-            PauliGate::X => (true, false),
-            PauliGate::Y => (true, true),
-            PauliGate::Z => (false, true),
-        }
-    }
-
-    fn pauli_gate_from_tuple(b1: bool, b2: bool) -> PauliGate {
-        match (b1, b2) {
-            (false, false) => PauliGate::I,
-            (true, false) => PauliGate::X,
-            (true, true) => PauliGate::Y,
-            (false, true) => PauliGate::Z,
-        }
     }
 
     // Returns the internal index of the first bit of the pauli gate
@@ -129,7 +128,7 @@ impl<'a> Iterator for PauliStringIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index + 1 < self.ps.pstr.len() {
-            let gate = PauliString::pauli_gate_from_tuple(
+            let gate = PauliGate::pauli_gate_from_tuple(
                 self.ps.pstr[self.index],
                 self.ps.pstr[self.index + 1],
             );

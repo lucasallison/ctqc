@@ -27,9 +27,10 @@ weights = [clifford_percentage + (100 - 3*clifford_percentage - t_gate_percentag
            clifford_percentage, 
            t_gate_percentage]
 
-# TODO Eventhough this is not propper qasm format
-# this will do for now
-f = open(file_name + ".qasm", "w")
+
+# TODO 
+# ctqc = Clifford + T quantum circuit
+f = open(file_name + ".ctqc", "w")
 
 for _ in range(circuit_length):
 

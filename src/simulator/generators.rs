@@ -1,5 +1,6 @@
 use bitvec::prelude::*;
-use std::collections::HashMap;
+use core::panic;
+use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
 
@@ -18,29 +19,29 @@ impl Stats {
 }
 
 pub struct GeneratorComponents {
-    generator_components: HashMap<PauliString, Component>,
+    generator_components: Vec<Component>,
     num_qubits: u32,
 }
 
 impl GeneratorComponents {
     pub fn new(num_qubits: u32, zero_state_generators: bool) -> GeneratorComponents {
         let mut gcs = GeneratorComponents {
-            generator_components: HashMap::new(),
-            num_qubits: num_qubits,
+            generator_components: Vec::with_capacity(num_qubits as usize),
+            num_qubits,
         };
 
         gcs.init_generators(zero_state_generators);
         gcs
     }
 
-    // By default initializes the generator components to all zero state generators, i.e.:
-    // ZII..II, IZI..II ... II..IZ
-    // If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
-    // XII..II, IXI..II ... II..IX
+    /// By default initializes the generator components to all zero state generators, i.e.:
+    /// ZII..II, IZI..II ... II..IZ.
+    /// If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
+    /// XII..II, IXI..II ... II..IX.
     fn init_generators(&mut self, zero_state_generators: bool) {
         for i in 0..self.num_qubits {
             let comp = Component::ith_generator(self.num_qubits, i, zero_state_generators).unwrap();
-            self.generator_components.insert(comp.pstr.copy(), comp);
+            self.generator_components.push(comp);
         }
     }
 
@@ -49,7 +50,7 @@ impl GeneratorComponents {
 
         let mut generator_present = bitvec![0; self.num_qubits as usize];
 
-        for component in self.generator_components.values() {
+        for component in self.generator_components.iter() {
             let ind = component.is_generator(check_zero_state);
 
             if ind == -1 {
@@ -68,20 +69,40 @@ impl GeneratorComponents {
     }
 
     // Removes all invalid components
-    fn clean(&mut self) {
-        let mut to_remove: Vec<PauliString> = Vec::new();
+    pub fn clean(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut comp_map: HashMap<PauliString, usize> = HashMap::new();
+        let len = self.generator_components.len();
+        let mut highest_valid_index: usize = 0;
 
-        for component in self.generator_components.values_mut() {
-            component.remove_zero_coefficient_generators();
+        for i in 0..len {
+            match comp_map.entry(self.generator_components[i].pstr.clone()) {
+                Entry::Occupied(e) => {
+                    let (l, r) = self.generator_components.split_at_mut(i);
 
-            if !component.valid() {
-                to_remove.push(component.pstr.copy());
+                    // TODO
+                    if *e.get() >= l.len() {
+                        panic!("Invalid index");
+                    }
+
+                    let c1 = &mut l[*e.get()];
+                    let c2 = &(r[0]);
+                    c1.merge(c2)?;
+                }
+                Entry::Vacant(e) => {
+                    self.generator_components[i].remove_zero_coefficient_generators();
+
+                    if self.generator_components[i].valid() {
+                        self.generator_components.swap(highest_valid_index, i);
+                        e.insert(highest_valid_index);
+                        highest_valid_index += 1;
+                    }
+                }
             }
         }
 
-        for pstr in to_remove {
-            self.generator_components.remove(&pstr);
-        }
+        self.generator_components.truncate(highest_valid_index);
+
+        Ok(())
     }
 
     pub fn conjugate(
@@ -90,50 +111,53 @@ impl GeneratorComponents {
         stats: &mut Stats,
         conjugate_dagger: bool,
     ) -> Result<(), Box<dyn Error>> {
-        let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
+        let len = self.generator_components.len();
 
-        for component in self.generator_components.values_mut() {
+        for i in 0..len {
+            let component = &mut self.generator_components[i];
+
             match gate.gate_type {
                 GateType::T => {
                     let new_component =
                         component.conjugate_t_gate(gate.qubit_1, conjugate_dagger)?;
 
-                    if let Some(new_component) = new_component {
-                        Self::insert_or_merge(&mut gcs_after_conjugation, new_component, stats)?;
+                    if new_component.is_some() {
+                        self.generator_components.push(new_component.unwrap());
                     }
                 }
                 _ => {
                     component.conjugate_clifford(gate, conjugate_dagger)?;
                 }
             }
-
-            Self::insert_or_merge(&mut gcs_after_conjugation, component.clone(), stats)?;
         }
 
-        self.generator_components = gcs_after_conjugation;
         Ok(())
     }
 
-    fn insert_or_merge(
-        map: &mut HashMap<PauliString, Component>,
-        component: Component,
-        stats: &mut Stats,
-    ) -> Result<(), Box<dyn Error>> {
-        let pstr = component.pstr.copy();
-        match map.get_mut(&component.pstr) {
-            Some(c) => {
-                let valid = c.merge(component)?;
-                stats.num_merges += 1;
-                if !valid {
-                    map.remove(&pstr);
-                }
-            }
-            None => {
-                map.insert(pstr, component);
-            }
-        }
-        Ok(())
-    }
+    // TODO ownsership component
+    // fn insert_or_merge(
+    //     map: &mut HashMap<PauliString, Component>,
+    //     component: Component,
+    //     stats: &mut Stats,
+    // ) -> Result<(), Box<dyn Error>> {
+    //     let pstr = component.pstr.clone();
+    //     match map.entry(pstr) {
+    //         Entry::Occupied(mut c) => {
+    //             let c = c.get_mut();
+
+    //             let valid = c.merge(&component)?;
+
+    //             stats.num_merges += 1;
+    //             if !valid {
+    //                 map.remove(&component.pstr);
+    //             }
+    //         }
+    //         Entry::Vacant(e) => {
+    //             e.insert(component);
+    //         }
+    //     }
+    //     Ok(())
+    // }
 
     pub fn len(&self) -> usize {
         self.generator_components.len()
@@ -142,7 +166,7 @@ impl GeneratorComponents {
 
 impl fmt::Display for GeneratorComponents {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for component in self.generator_components.values() {
+        for component in self.generator_components.iter() {
             write!(f, "{}\n", component)?;
         }
         Ok(())

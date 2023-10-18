@@ -305,9 +305,12 @@ impl Component {
     // of any generator, i.e., there exists a non zero coefficient of this Pauli
     // string for a generator.
     // TODO refactor?
-    pub fn merge(&mut self, other: Component) -> Result<bool, ComponentError> {
+    pub fn merge(&mut self, other: &Component) -> Result<bool, ComponentError> {
         if self.pstr != other.pstr {
-            return Err(ComponentError::MergeUnequalPStr {});
+            return Err(ComponentError::MergeUnequalPStr {
+                pstr_1: self.pstr.clone(),
+                pstr_2: other.pstr.clone(),
+            });
         }
 
         if self.generator_info.len() == 0 || other.generator_info.len() == 0 {
@@ -377,8 +380,15 @@ impl fmt::Display for Component {
 
 #[derive(Debug, Snafu)]
 pub enum ComponentError {
-    #[snafu(display("Pauli strings must be equal to merge"))]
-    MergeUnequalPStr {},
+    #[snafu(display(
+        "Pauli strings must be equal to merge, tried merging: {} and {}",
+        pstr_1,
+        pstr_2
+    ))]
+    MergeUnequalPStr {
+        pstr_1: PauliString,
+        pstr_2: PauliString,
+    },
 
     #[snafu(display("Cannot merge components that belong to no generators"))]
     MergeComponentWithoutGen {},
@@ -538,7 +548,7 @@ mod tests {
         c2.generator_info.push(GeneratorInfo::new(2));
         c2.generator_info.push(GeneratorInfo::new(3));
 
-        c1.merge(c2).unwrap();
+        c1.merge(&c2).unwrap();
 
         for generator_info in &c1.generator_info {
             if generator_info.get_index() != 2 {
@@ -575,7 +585,7 @@ mod tests {
         c2.generator_info.push(GeneratorInfo::new(3));
         c2.generator_info.push(GeneratorInfo::new(5));
 
-        assert!(c1.merge(c2).unwrap() == true);
+        assert!(c1.merge(&c2).unwrap() == true);
 
         let target = vec![
             GeneratorInfo {

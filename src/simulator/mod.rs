@@ -7,6 +7,7 @@ mod component;
 mod conjugation_look_up_tables;
 mod generators;
 mod pauli_string;
+mod pauli_array;
 
 use crate::circuit::Circuit;
 use generators::GeneratorComponents;
@@ -173,6 +174,11 @@ impl Simulator {
             sim_data
                 .gen_cmpts
                 .conjugate(gate, &mut sim_data.stats, inverse)?;
+
+
+            // if i % 100 == 0 {
+            //     sim_data.gen_cmpts.clean();
+            // }
 
             if sim_data.verbose {
                 println!("{}", sim_data.gen_cmpts);

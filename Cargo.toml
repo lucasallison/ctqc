@@ -11,3 +11,4 @@ bitvec = "1"
 ordered-float = "4.1.0"
 clap = { version = "4.4.4", features = ["derive"] }
 snafu = "0.7.5"
+anyhow = "1.0.75"
