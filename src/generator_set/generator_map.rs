@@ -1,9 +1,11 @@
-use lazy_static::lazy_static;
-use ordered_float::OrderedFloat;
-use snafu::prelude::*;
+use bitvec::prelude::*;
+use std::collections::{HashMap, hash_map::Entry};
 use std::error::Error;
 use std::fmt;
+use ordered_float::OrderedFloat;
+use snafu::prelude::*;
 
+use super::GeneratorSet;
 use super::conjugation_look_up_tables::{
     CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
@@ -12,26 +14,152 @@ use crate::{
     circuit::{Gate, GateType},
     FP_ERROR_MARGIN,
 };
+use super::ONE_OVER_SQRT_TWO;
 
-lazy_static! {
-    static ref ONE_OVER_SQRT_TWO: f64 = 1.0 / f64::sqrt(2.0);
+
+pub struct GeneratorMap {
+    generator_components: HashMap<PauliString, Component>,
+    num_qubits: usize,
 }
+
+impl GeneratorMap {
+    pub fn new(num_qubits: usize) -> GeneratorMap {
+        GeneratorMap {
+            generator_components: HashMap::new(),
+            num_qubits,
+        }
+    }
+
+    // Removes all invalid components
+    fn clean(&mut self) {
+        self.generator_components.retain(|_, c| {
+            c.remove_zero_coefficient_generators();
+            c.valid()
+        });
+    }
+
+    // TODO ownsership component
+    fn insert_or_merge(
+        map: &mut HashMap<PauliString, Component>,
+        component: Component,
+    ) -> Result<(), Box<dyn Error>> {
+        let pstr = component.pstr.clone();
+        match map.entry(pstr) {
+            Entry::Occupied(mut c) => {
+                let c = c.get_mut();
+
+                let valid = c.merge(&component)?;
+
+                if !valid {
+                    map.remove(&component.pstr);
+                }
+            }
+            Entry::Vacant(e) => {
+                e.insert(component);
+            }
+        }
+        Ok(())
+    }
+
+}
+
+impl GeneratorSet for GeneratorMap {
+
+    // By default initializes the generator components to all zero state generators, i.e.:
+    // ZII..II, IZI..II ... II..IZ
+    // If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
+    // XII..II, IXI..II ... II..IX
+    fn init_generators(&mut self, zero_state_generators: bool) {
+
+        for i in 0..self.num_qubits {
+            let comp = Component::ith_generator(self.num_qubits, i, zero_state_generators).unwrap();
+            self.generator_components.insert(comp.pstr.clone(), comp);
+        }
+    }
+
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+        self.clean();
+
+        let mut generator_present = bitvec![0; self.num_qubits as usize];
+
+        for component in self.generator_components.values() {
+            let ind = component.is_generator(check_zero_state);
+
+            if ind == -1 {
+                return false;
+            } else {
+                generator_present.set(ind as usize, true);
+            }
+        }
+
+        for gen in generator_present {
+            if !gen {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn conjugate(
+        &mut self,
+        gate: &Gate,
+        conjugate_dagger: bool,
+    ) -> Result<(), Box<dyn Error>> {
+        let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
+
+        for component in self.generator_components.values_mut() {
+            match gate.gate_type {
+                GateType::T => {
+                    let new_component =
+                        component.conjugate_t_gate(gate.qubit_1, conjugate_dagger)?;
+
+                    if let Some(new_component) = new_component {
+                        Self::insert_or_merge(&mut gcs_after_conjugation, new_component)?;
+                    }
+                }
+                _ => {
+                    component.conjugate_clifford(gate, conjugate_dagger)?;
+                }
+            }
+
+            Self::insert_or_merge(&mut gcs_after_conjugation, component.clone())?;
+        }
+
+        self.generator_components = gcs_after_conjugation;
+        Ok(())
+    }
+
+    fn size(&self) -> usize {
+        self.generator_components.len()
+    }
+}
+
+impl fmt::Display for GeneratorMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for component in self.generator_components.values() {
+            write!(f, "{}\n", component)?;
+        }
+        Ok(())
+    }
+}
+
+// ------------------ Components and Generator Info --------------------------------------
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]
 pub struct GeneratorInfo {
-    generator_index: u32,
+    generator_index: usize,
     coefficient: OrderedFloat<f64>,
 }
 
 impl GeneratorInfo {
-    pub fn new(generator_index: u32) -> GeneratorInfo {
+    pub fn new(generator_index: usize) -> GeneratorInfo {
         GeneratorInfo {
             generator_index: generator_index,
             coefficient: OrderedFloat(1.0),
         }
     }
 
-    pub fn get_index(&self) -> u32 {
+    pub fn get_index(&self) -> usize {
         self.generator_index
     }
 
@@ -59,8 +187,8 @@ impl Component {
     // If plus_state_generator is true we return the ith generator of the all plus state.
     // I.e., II..IXI..II -> Pauli string with Z on ith place
     pub fn ith_generator(
-        num_qubits: u32,
-        i: u32,
+        num_qubits: usize,
+        i: usize,
         zero_state_generator: bool,
     ) -> Result<Component, ComponentError> {
         if i >= num_qubits {
@@ -232,7 +360,7 @@ impl Component {
     // I, Z we return None in that case and leave self unchanged.
     pub fn conjugate_t_gate(
         &mut self,
-        target_qubit: u32,
+        target_qubit: usize,
         conjugate_dagger: bool,
     ) -> Result<Option<Component>, Box<dyn Error>> {
         let target_gate = self.pstr.get_pauli_gate(target_qubit as usize)?;
@@ -394,7 +522,7 @@ pub enum ComponentError {
     MergeComponentWithoutGen {},
 
     #[snafu(display("Tried creating the ith generator, but in a circuit of {} qubits there are only {} generators.", num_qubits, num_qubits))]
-    InvalidGenerator { num_qubits: u32 },
+    InvalidGenerator { num_qubits: usize },
 }
 
 #[derive(Debug, Snafu)]
@@ -412,8 +540,6 @@ pub enum ConjugationError {
 mod tests {
 
     use super::*;
-    use crate::simulator::component::GeneratorInfo;
-    use crate::simulator::pauli_string::PauliGate;
 
     fn pauli_from_str(string: &str) -> PauliString {
         let mut pstr = PauliString::new(string.len());

@@ -3,52 +3,30 @@ use snafu::prelude::*;
 use std::error::Error;
 use std::io::{stdout, Write};
 
-mod component;
-mod conjugation_look_up_tables;
-mod generators;
-mod pauli_string;
-mod pauli_array;
-
 use crate::circuit::Circuit;
-use generators::GeneratorComponents;
-use generators::Stats;
+use crate::generator_set::GeneratorSet;
 
 lazy_static! {
     static ref DAG_CHAR: char = std::char::from_u32(8224).unwrap();
 }
 
-/// Holds all the data for simulations/equivalence checks. Initialized and
-/// used by the Simulator struct.
-/// circuit: contains the circuit to simulate.
-/// gen_cmpts: keeps track of the generators of the stabilizers of the state and provides an interface for conjugating them.
-/// stats: keeps track of various statistics during the simulation.
-/// verbose: print verbose output.
-struct SimData<'a> {
-    circuit: &'a Circuit,
-    gen_cmpts: GeneratorComponents,
-    stats: Stats,
+/// Executes the simulation/equivalence check
+pub struct Simulator<T: GeneratorSet> {
+    generator_set: T,
     verbose: bool,
 }
 
-/// Executes the simulation/equivalence check
-pub struct Simulator {}
-
-impl Simulator {
-    pub fn new() -> Simulator {
-        Simulator {}
+impl<T: GeneratorSet> Simulator<T> {
+    pub fn new(generator_set: T, verbose: bool) -> Simulator<T> {
+        Simulator { generator_set, verbose }
     }
 
     /// Simulates the provided ciricuit by setting the generators to the generators of the all zero state
     /// and calling the 'sim' function.
-    pub fn simulate(&self, circuit: &Circuit, verbose: bool) -> Result<(), Box<dyn Error>> {
-        let mut sim_data = SimData {
-            circuit: circuit,
-            gen_cmpts: GeneratorComponents::new(circuit.num_qubits(), false),
-            stats: Stats::new(),
-            verbose: verbose,
-        };
+    pub fn simulate(&mut self, circuit: &Circuit) -> Result<(), Box<dyn Error>> {
+        self.generator_set.init_generators(true);
 
-        self.sim(&mut sim_data, false, String::from("Simulating... "))
+        self.sim(circuit, false, String::from("Simulating... "))
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
@@ -56,10 +34,9 @@ impl Simulator {
     /// If, in both cases, the generators produced by the simulation are the generators we started with, we know
     /// the circuits are equivalent.
     pub fn equivalence_check(
-        &self,
+        &mut self,
         circuit_1: &Circuit,
         circuit_2: &Circuit,
-        verbose: bool,
     ) -> Result<(), Box<dyn Error>> {
         if circuit_1.num_qubits() != circuit_2.num_qubits() {
             return Err(SimulationError::DifferentSizedCiruicuits {
@@ -75,13 +52,13 @@ impl Simulator {
             circuit_2.name()
         );
 
-        let equiv = self.equiv(circuit_1, circuit_2, true, verbose)?;
+        let equiv = self.equiv(circuit_1, circuit_2, true)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
         }
 
-        let equiv = self.equiv(circuit_1, circuit_2, false, verbose)?;
+        let equiv = self.equiv(circuit_1, circuit_2, false)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
@@ -94,21 +71,13 @@ impl Simulator {
     /// Given two circuits U and V the equiv fuction simulates the circuit UV^† and checks whether
     /// the resulting generators are the generators for the all zero state or the all plus state.
     fn equiv(
-        &self,
+        &mut self,
         circuit_1: &Circuit,
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
-        verbose: bool,
     ) -> Result<bool, Box<dyn Error>> {
-        let mut sim_data = SimData {
-            circuit: circuit_1,
-            gen_cmpts: GeneratorComponents::new(
-                circuit_1.num_qubits(),
-                check_zero_state_generators,
-            ),
-            stats: Stats::new(),
-            verbose: verbose,
-        };
+
+        self.generator_set.init_generators(check_zero_state_generators);
 
         let z_x_char = if check_zero_state_generators {
             'Z'
@@ -118,25 +87,23 @@ impl Simulator {
 
         // First we simulate the first circuit with the all zero/plus state generators
         self.sim(
-            &mut sim_data,
+            circuit_1,
             false,
             format!("Determining U{}U^{}... ", z_x_char, *DAG_CHAR),
         )?;
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
-        sim_data.circuit = circuit_2;
         self.sim(
-            &mut sim_data,
+            circuit_2, 
             true,
             format!(
-                "Determining V(U{}U^{})^{}... ",
-                z_x_char, *DAG_CHAR, *DAG_CHAR
+                "Determining V^{}(U{}U^{})V... ",
+                *DAG_CHAR, z_x_char, *DAG_CHAR
             ),
         )?;
 
-        Ok(sim_data
-            .gen_cmpts
+        Ok(self.generator_set
             .is_x_or_z_generators(check_zero_state_generators))
     }
 
@@ -147,59 +114,51 @@ impl Simulator {
     /// The simulation works by sequentially conjugating all the generators stored in the 'gen_cmpts' field of 'sim_data'
     /// with the gates in the circuit.
     fn sim(
-        &self,
-        sim_data: &mut SimData,
+        &mut self,
+        circuit: &Circuit,
         inverse: bool,
         sim_msg: String,
     ) -> Result<(), Box<dyn Error>> {
         let mut stdout = stdout();
-        let num_gates = sim_data.circuit.len();
+        let num_gates = circuit.len();
 
-        if sim_data.verbose {
+        if self.verbose {
             println!("Initial components:");
-            println!("{}", sim_data.gen_cmpts);
+            println!("{}", self.generator_set);
         }
 
         let circ_iter = if inverse {
-            sim_data.circuit.rev()
+            circuit.rev()
         } else {
-            sim_data.circuit.iter()
+            circuit.iter()
         };
 
         for (i, gate) in circ_iter.enumerate() {
-            if sim_data.verbose {
+            if self.verbose {
                 println!("Applied {}", gate);
             }
 
-            sim_data
-                .gen_cmpts
-                .conjugate(gate, &mut sim_data.stats, inverse)?;
 
+            self.generator_set.conjugate(gate, inverse)?;
 
-            // if i % 100 == 0 {
-            //     sim_data.gen_cmpts.clean();
-            // }
-
-            if sim_data.verbose {
-                println!("{}", sim_data.gen_cmpts);
+            if self.verbose {
+                println!("{}", self.generator_set);
             } else {
                 print!(
-                    "\r{}{}% -- {} components {} merges",
+                    "\r{}{}% -- {} components ",
                     sim_msg,
-                    (i as f64 / num_gates as f64 * 100.0) as u32,
-                    sim_data.gen_cmpts.len(),
-                    sim_data.stats.num_merges
+                    (i as f64 / num_gates as f64 * 100.0) as usize,
+                    self.generator_set.size(),
                 );
                 stdout.flush().unwrap();
             }
         }
 
-        if !sim_data.verbose {
+        if !self.verbose {
             println!(
-                "\r{}100% -- {} components {} merges",
+                "\r{}100% -- {} components",
                 sim_msg,
-                sim_data.gen_cmpts.len(),
-                sim_data.stats.num_merges
+                self.generator_set.size()
             );
         }
 
@@ -214,5 +173,9 @@ enum SimulationError {
         n_qubits_c1,
         n_qubits_c2
     ))]
-    DifferentSizedCiruicuits { n_qubits_c1: u32, n_qubits_c2: u32 },
+    DifferentSizedCiruicuits { n_qubits_c1: usize, n_qubits_c2: usize },
+
+    #[snafu(display(
+        "Invalid generator set type: {}", gst))]
+    InvalidGeneratorSetType { gst: String },
 }

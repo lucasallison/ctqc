@@ -5,9 +5,12 @@ use std::error::Error;
 mod circuit;
 mod input_parser;
 mod simulator;
+mod generator_set;
 
 use input_parser::parse_file;
 use simulator::Simulator;
+
+use crate::generator_set::generator_map::GeneratorMap;
 
 // TODO
 // Floating point error margin
@@ -29,11 +32,21 @@ struct Args {
     /// specified by the '-f' flag and the file specified this flag, instead of the simulation
     #[arg(short, default_value_t = String::from(""))]
     e: String,
+
+    /// Provide the type data structure of the GeneratorSet to use for the simulation. Options are: 
+    /// - map: ... 
+    /// - bitvec: ... 
+    #[arg(short, default_value_t = String::from("map"))]
+    t: String,
+
 }
+
 
 fn main() {
     let args = Args::parse();
 
+
+    // Parse the circuit from file
     let circuit = match parse_file(&args.f) {
         Ok(circuit) => circuit,
         Err(e) => {
@@ -48,11 +61,21 @@ fn main() {
         }
     };
 
-    let simulator = Simulator::new();
+
+    let generator_set = match args.t.as_str() {
+        "map" => GeneratorMap::new(circuit.num_qubits()),
+        _ => {
+            eprintln!("Invalid generator set type: {}", args.t);
+            return;
+        }
+    };
+
+
+    let mut simulator = Simulator::new(generator_set, args.v);
 
     // No second file provided, run the simulation
     if args.e.is_empty() {
-        if let Err(e) = simulator.simulate(&circuit, args.v) {
+        if let Err(e) = simulator.simulate(&circuit) {
             eprintln!("{}", MError::SimulationFailed { err: e });
         }
 
@@ -72,7 +95,7 @@ fn main() {
             }
         };
 
-        if let Err(e) = simulator.equivalence_check(&circuit, &equiv_circuit, args.v) {
+        if let Err(e) = simulator.equivalence_check(&circuit, &equiv_circuit) {
             eprintln!("{}", MError::EquivalenceCheckFailed { err: e });
         }
     }

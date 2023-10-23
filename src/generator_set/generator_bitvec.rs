@@ -7,18 +7,18 @@ use std::fmt;
 use super::pauli_string::PauliGate;
 
 
-pub struct PauliArray {
+pub struct GeneratorBitVec {
     pub pauli_strings: BitVec,
     // pub coefficients: Vec<f64>,
     num_qubits: usize,
 }
 
 
-impl PauliArray {
+impl GeneratorBitVec {
 
 
-    pub fn new(num_qubits: usize) -> PauliArray {
-        PauliArray {
+    pub fn new(num_qubits: usize) -> GeneratorBitVec {
+        GeneratorBitVec {
             // TODO
             pauli_strings: bitvec![0; 2*num_qubits*num_qubits],
             // coefficients: Vec::new(),

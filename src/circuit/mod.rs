@@ -43,15 +43,15 @@ impl fmt::Display for GateType {
 #[derive(Clone)]
 pub struct Gate {
     pub gate_type: GateType,
-    pub qubit_1: u32,
-    pub qubit_2: Option<u32>, // Optional: Only used for CNOT
+    pub qubit_1: usize,
+    pub qubit_2: Option<usize>, // Optional: Only used for CNOT
 }
 
 impl Gate {
     pub fn new(
         gate_type: &String,
-        qubit_1: u32,
-        qubit_2: Option<u32>,
+        qubit_1: usize,
+        qubit_2: Option<usize>,
     ) -> Result<Gate, CircuitError> {
         let gate_type = match gate_type.as_str() {
             "H" => GateType::H,
@@ -98,7 +98,7 @@ impl fmt::Display for Gate {
 pub struct Circuit {
     name: String,
     gates: Vec<Gate>,
-    num_qubits: u32,
+    num_qubits: usize,
 }
 
 impl Circuit {
@@ -115,8 +115,8 @@ impl Circuit {
     pub fn add_gate(
         &mut self,
         gate_type: &String,
-        qubit_1: u32,
-        qubit_2: Option<u32>,
+        qubit_1: usize,
+        qubit_2: Option<usize>,
     ) -> Result<(), CircuitError> {
         let new_gate = Gate::new(gate_type, qubit_1, qubit_2)?;
 
@@ -134,7 +134,7 @@ impl Circuit {
         self.gates.len()
     }
 
-    pub fn num_qubits(&self) -> u32 {
+    pub fn num_qubits(&self) -> usize {
         self.num_qubits
     }
 

@@ -15,8 +15,8 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
 
     let mut circuit = Circuit::new(file_path.clone());
     let mut gate_type: String;
-    let mut qubit_1: u32;
-    let mut qubit_2: Option<u32>;
+    let mut qubit_1: usize;
+    let mut qubit_2: Option<usize>;
 
     for line in contents.lines() {
         let gate = line.split(" ").collect::<Vec<&str>>();
@@ -27,7 +27,7 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
             }));
         }
 
-        qubit_1 = match gate[1].parse::<u32>() {
+        qubit_1 = match gate[1].parse::<usize>() {
             Ok(qubit_1) => qubit_1,
             Err(_) => {
                 return Err(Box::new(ParseError::InvalidQubit1 {
@@ -37,7 +37,7 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
         };
 
         if gate.len() == 3 {
-            qubit_2 = match gate[2].parse::<u32>() {
+            qubit_2 = match gate[2].parse::<usize>() {
                 Ok(qubit_2) => Some(qubit_2),
                 Err(_) => {
                     return Err(Box::new(ParseError::InvalidQubit2 {
@@ -77,9 +77,9 @@ pub enum ParseError {
     ))]
     InvalidTwoQubitGate { gate: String },
 
-    #[snafu(display("Cannot add '{}', as qubit_1 is not a valid u32", gate))]
+    #[snafu(display("Cannot add '{}', as qubit_1 is not a valid usize", gate))]
     InvalidQubit1 { gate: String },
 
-    #[snafu(display("Cannot add '{}', as qubit_2 is not a valid u32", gate))]
+    #[snafu(display("Cannot add '{}', as qubit_2 is not a valid usize", gate))]
     InvalidQubit2 { gate: String },
 }

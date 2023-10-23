@@ -5,8 +5,7 @@ use super::pauli_string::PauliGate;
 
 pub struct HSPauliLookUpOutput {
     pub p_gate: PauliGate,
-    // TODO This only has to cost 1 bit/byte
-    pub coefficient: i32,
+    pub coefficient: i8,
     pub pstr_changed: bool,
 }
 
@@ -75,8 +74,7 @@ lazy_static! {
 pub struct CNOTPauliLookUpOutput {
     pub q1_p_gate: PauliGate,
     pub q2_p_gate: PauliGate,
-    // TODO This only has to cost 1 bit/byte
-    pub coefficient: i32,
+    pub coefficient: i8,
     pub pstr_changed: bool,
 }
 
