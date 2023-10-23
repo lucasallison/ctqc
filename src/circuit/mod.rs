@@ -18,7 +18,7 @@ pub enum CircuitError {
 /// CNOT - Controlled NOT gate
 /// S - Phase gate
 /// T - T gate
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum GateType {
     H,
     CNOT,

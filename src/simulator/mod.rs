@@ -11,13 +11,13 @@ lazy_static! {
 }
 
 /// Executes the simulation/equivalence check
-pub struct Simulator<T: GeneratorSet> {
-    generator_set: T,
+pub struct Simulator<'a> {
+    generator_set: &'a mut dyn GeneratorSet,
     verbose: bool,
 }
 
-impl<T: GeneratorSet> Simulator<T> {
-    pub fn new(generator_set: T, verbose: bool) -> Simulator<T> {
+impl<'a> Simulator<'a> {
+    pub fn new(generator_set: &'a mut dyn GeneratorSet, verbose: bool) -> Self {
         Simulator { generator_set, verbose }
     }
 

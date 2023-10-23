@@ -1,5 +1,6 @@
 use clap::Parser;
 use snafu::prelude::*;
+use std::borrow::BorrowMut;
 use std::error::Error;
 
 mod circuit;
@@ -10,7 +11,9 @@ mod generator_set;
 use input_parser::parse_file;
 use simulator::Simulator;
 
+use crate::generator_set::GeneratorSet;
 use crate::generator_set::generator_map::GeneratorMap;
+use crate::generator_set::generator_bitvec::GeneratorBitVec;
 
 // TODO
 // Floating point error margin
@@ -62,8 +65,19 @@ fn main() {
     };
 
 
-    let generator_set = match args.t.as_str() {
-        "map" => GeneratorMap::new(circuit.num_qubits()),
+
+    // let mut generator_set: &mut dyn GeneratorSet = match args.t.as_str() {
+    //     "map" => &GeneratorMap::new(circuit.num_qubits()),
+    //     "bitvec" => &GeneratorBitVec::new(circuit.num_qubits()),
+    //     _ => {
+    //         eprintln!("Invalid generator set type: {}", args.t);
+    //         return;
+    //     }
+    // };
+
+    let mut generator_set: Box<dyn GeneratorSet>= match args.t.as_str() {
+        "map" => Box::new(GeneratorMap::new(circuit.num_qubits())),
+        "bitvec" => Box::new(GeneratorBitVec::new(circuit.num_qubits())),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;
@@ -71,7 +85,7 @@ fn main() {
     };
 
 
-    let mut simulator = Simulator::new(generator_set, args.v);
+    let mut simulator = Simulator::new(generator_set.as_mut(), args.v);
 
     // No second file provided, run the simulation
     if args.e.is_empty() {

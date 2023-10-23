@@ -302,10 +302,7 @@ impl Component {
             _ => return Err(Box::from(ConjugationError::InvalidHSConjugation {})),
         };
 
-        // If applicable we update the coefficient
-        if look_up_output.coefficient != 1 {
-            self.multiply_generator_coefficients(look_up_output.coefficient as f64);
-        }
+        self.multiply_generator_coefficients(look_up_output.coefficient as f64);
 
         // No change; return immediately
         if !look_up_output.pstr_changed {
@@ -334,9 +331,7 @@ impl Component {
             .get(&(q1_target_pauli_gate, q2_target_pauli_gate))
             .unwrap();
 
-        if look_up_output.coefficient != 1 {
-            self.multiply_generator_coefficients(look_up_output.coefficient as f64);
-        }
+        self.multiply_generator_coefficients(look_up_output.coefficient as f64);
 
         // The pauli string does not change from conjugation
         // TODO maybe just remove them from the map?

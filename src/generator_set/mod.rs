@@ -10,7 +10,7 @@ mod pauli_string;
 
 // Implementations of the GeneratorSet trait
 pub mod generator_map;
-// pub mod generator_bitvec;
+pub mod generator_bitvec;
 
 
 // Used for conjugation
