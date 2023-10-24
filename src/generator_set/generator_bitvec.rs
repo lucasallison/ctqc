@@ -9,13 +9,82 @@ use super::GeneratorSet;
 use crate::circuit::{Gate, GateType};
 
 
+struct HSConjugations {
+    map: Vec<[(PauliGate, f64); 3]>,
+}
+
+impl HSConjugations {
+    fn new(num_qubits: usize) -> HSConjugations {
+        let mut m = HSConjugations {
+            map: Vec::with_capacity(num_qubits),
+        };
+
+        // TODO
+        for _ in 0..num_qubits {
+            m.map.push([(PauliGate::X, 1.0), (PauliGate::Y, 1.0), (PauliGate::Z, 1.0)]);
+        }
+
+        m
+    }
+
+    fn reset(&mut self, i: usize) {
+        self.map[i] = [(PauliGate::X, 1.0), (PauliGate::Y, 1.0), (PauliGate::Z, 1.0)];
+    }
+
+    // TODO: what about S^{\dag}?
+    fn update(&mut self, gate: &Gate, conjugate_dagger: bool) {
+
+        for e in self.map[gate.qubit_1].iter_mut() {
+            let target_pauli_gate = e.0;
+
+            // Look up how the Pauli string changes as a result of the conjugation
+            let look_up_output = match gate.gate_type {
+                GateType::H => H_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap(),
+                GateType::S => {
+                    if conjugate_dagger {
+                        S_DAGGER_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap()
+                    } else {
+                        S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap()
+                    }
+                }
+                // TODO
+                _ => panic!(".."),
+            };
+
+            e.0 = look_up_output.p_gate;
+            e.1 *= look_up_output.coefficient;
+        }
+
+    }
+
+    fn get_actual_p_gate(&self, i: usize, p_gate: PauliGate) -> PauliGate {
+        match p_gate {
+            PauliGate::X => { return self.map[i][0].0 },
+            PauliGate::Y => { return self.map[i][1].0 },
+            PauliGate::Z => { return self.map[i][2].0 },
+            PauliGate::I => { return PauliGate::I },
+        }
+    }
+
+    fn get_actual_coefficient_multiplier(&self, i: usize, p_gate: PauliGate) -> f64 {
+        match p_gate {
+            PauliGate::X => { return self.map[i][0].1 },
+            PauliGate::Y => { return self.map[i][1].1 },
+            PauliGate::Z => { return self.map[i][2].1 },
+            PauliGate::I => { 1.0 }
+        }
+    }
+
+    
+}
+
 pub struct GeneratorBitVec {
-    pub pauli_strings: BitVec,
-    pub generator_info: Vec<(usize, f64)>,
+    pauli_strings: BitVec,
+    generator_info: Vec<(usize, f64)>,
+    h_s_conjugations: HSConjugations,
     num_qubits: usize,
     size: usize,
 }
-
 
 impl GeneratorBitVec {
 
@@ -25,6 +94,7 @@ impl GeneratorBitVec {
             // We have num_qubits Pauli strings, each with num_qubits gates. Each gate is represented by 2 bits.
             pauli_strings: bitvec![0; 2*num_qubits*num_qubits],
             generator_info: Vec::with_capacity(num_qubits),
+            h_s_conjugations: HSConjugations::new(num_qubits),
             num_qubits,
             size: 0,
         }
@@ -33,14 +103,14 @@ impl GeneratorBitVec {
     /// Returns the jth gate of the ith Pauli string
     /// WARNING: This function does not check if the index is out of bounds
     fn get_pauli_gate(&self, i: usize, j: usize) -> PauliGate {
-        let index = self.get_p_str_gate_index(i, j).unwrap();
+        let index = self.pstr_gate_index_unchecked(i, j);
         PauliGate::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
     }
 
 
     /// Sets the jth gate of the ith Pauli string
     fn set_pauli_gate(&mut self, p_gate: PauliGate, i: usize, j: usize) {
-        let index = self.get_p_str_gate_index(i, j).unwrap();
+        let index = self.pstr_gate_index_unchecked(i, j);
 
         let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
 
@@ -50,17 +120,16 @@ impl GeneratorBitVec {
     }
 
     /// Get the internal index of the jth gate of the ith Pauli string
-    fn get_p_str_gate_index(&self, i: usize, j: usize) -> Result<usize, GeneratorBitVecError> {
-        let index = 2*i*self.num_qubits + 2*j;
-        if index >= self.pauli_strings.len() {
-            return Err(GeneratorBitVecError::IndexOutOfBounds {});
-        }
-        Ok(index)
+    fn pstr_gate_index_unchecked(&self, i: usize, j: usize) -> usize {
+        2*i*self.num_qubits + 2*j
     }
 
-    /// Equivalent to get_p_str_gate_index but does not check if the index is out of bounds
-    fn get_p_str_gate_index_unchecked(&self, i: usize, j: usize) -> usize {
-        2*i*self.num_qubits + 2*j
+    fn pstr_first_gate_index_unchecked(&self, i: usize) -> usize {
+        2*i*self.num_qubits
+    }
+
+    fn pstr_last_gate_index_unchecked(&self, i: usize) -> usize {
+        self.pstr_first_gate_index_unchecked(i) + 2*self.num_qubits - 1
     }
 
     fn reset(&mut self) {
@@ -128,8 +197,94 @@ impl GeneratorBitVec {
         Ok(())
     }
 
-}
+    fn conjugate_cnot_with_hs_map(&mut self, gate: &Gate) -> Result<(), GeneratorBitVecError> {
 
+        let qubit_2 = gate.qubit_2.unwrap();
+
+        for pstr_index in 0..self.size {
+
+            let q1_current_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
+            let q2_current_p_gate = self.get_pauli_gate(pstr_index, qubit_2);
+
+            let q1_target_pauli_gate = self.h_s_conjugations.get_actual_p_gate(gate.qubit_1, q1_current_p_gate);
+            let q2_target_pauli_gate = self.h_s_conjugations.get_actual_p_gate(qubit_2, q2_current_p_gate);
+            let q1_coefficient_multiplier = self.h_s_conjugations.get_actual_coefficient_multiplier(gate.qubit_1, q1_current_p_gate);
+            let q2_coefficient_multiplier = self.h_s_conjugations.get_actual_coefficient_multiplier(qubit_2, q2_current_p_gate);
+
+            self.h_s_conjugations.reset(gate.qubit_1);
+            self.h_s_conjugations.reset(qubit_2);
+
+
+            let look_up_output = CNOT_CONJ_UPD_RULES
+                .get(&(q1_target_pauli_gate, q2_target_pauli_gate))
+                .unwrap();
+
+            self.generator_info[pstr_index].1 *= look_up_output.coefficient * q1_coefficient_multiplier * q2_coefficient_multiplier;
+
+            self.set_pauli_gate(look_up_output.q1_p_gate, pstr_index, gate.qubit_1);
+            self.set_pauli_gate(look_up_output.q2_p_gate, pstr_index, qubit_2);
+        }
+
+        Ok(())
+    }
+
+    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GeneratorBitVecError> {
+
+        // for pstr_index in 0..self.size {
+
+        //     let target_pauli_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
+
+        //     match target_gate {
+        //         PauliGate::X => {
+        //             if conjugate_dagger {
+        //                 // T^{\dag}XT -> 1/sqrt{2} (X - Y)
+        //                 self.generator_info[pstr_index].1 *= *ONE_OVER_SQRT_TWO;
+        //                 new_component = self.clone();
+
+        //                 self.pauli_strings.push(&self.pauli_strings[self.pstr_first_gate_index_unchecked(pstr_index)..self.pstr_last_gate_index_unchecked(pstr_index)]);
+
+
+        //                 new_component.multiply_generator_coefficients(-1.0);
+        //             } else {
+        //                 // TXT^{\dag} -> 1/sqrt{2} (X + Y)
+        //                 self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
+        //                 new_component = self.clone();
+        //             }
+
+        //             new_component
+        //                 .pstr
+        //                 .set_pauli_gate(target_qubit as usize, PauliGate::Y)?;
+
+        //             return Ok(Some(new_component));
+        //         }
+
+        //         PauliGate::Y => {
+        //             if conjugate_dagger {
+        //                 // T^{\dag}YT -> 1/sqrt(2) (Y + X)
+        //                 self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
+        //                 new_component = self.clone();
+        //             } else {
+        //                 // TYT^{\dag} -> 1/sqrt(2) (Y - X)
+        //                 self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
+        //                 new_component = self.clone();
+        //                 new_component.multiply_generator_coefficients(-1.0);
+        //             }
+
+        //             new_component
+        //                 .pstr
+        //                 .set_pauli_gate(target_qubit as usize, PauliGate::X)?;
+
+        //             return Ok(Some(new_component));
+        //         }
+
+        //         _ => {
+        //             continue;
+        //         }
+        //     }
+        // }
+        Ok(())
+    }
+}
 
 impl GeneratorSet for GeneratorBitVec {
 
@@ -161,9 +316,19 @@ impl GeneratorSet for GeneratorBitVec {
             conjugate_dagger: bool,
         ) -> Result<(), Box<dyn Error>> {
 
+        // match gate.gate_type {
+        //     GateType::H | GateType::S => self.conjugate_h_s(gate, conjugate_dagger)?,
+        //     GateType::CNOT => self.conjugate_cnot(gate)?,
+        //     _ => return Err(GeneratorBitVecError::InvalidConjugationFunction {
+        //         function_called: "conjugate".to_string(),
+        //         gate_type: gate.gate_type.clone(),
+        //     }.into()),
+        // }
+
+        // WITH MAP
         match gate.gate_type {
-            GateType::H | GateType::S => self.conjugate_h_s(gate, conjugate_dagger)?,
-            GateType::CNOT => self.conjugate_cnot(gate)?,
+            GateType::H | GateType::S => { self.h_s_conjugations.update(gate, conjugate_dagger); }
+            GateType::CNOT => self.conjugate_cnot_with_hs_map(gate)?,
             _ => return Err(GeneratorBitVecError::InvalidConjugationFunction {
                 function_called: "conjugate".to_string(),
                 gate_type: gate.gate_type.clone(),
