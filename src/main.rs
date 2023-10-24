@@ -39,7 +39,7 @@ struct Args {
     /// Provide the type data structure of the GeneratorSet to use for the simulation. Options are: 
     /// - map: ... 
     /// - bitvec: ... 
-    #[arg(short, default_value_t = String::from("map"))]
+    #[arg(short, default_value_t = String::from("bitvec"))]
     t: String,
 
 }
