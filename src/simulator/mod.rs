@@ -18,7 +18,10 @@ pub struct Simulator<'a> {
 
 impl<'a> Simulator<'a> {
     pub fn new(generator_set: &'a mut dyn GeneratorSet, verbose: bool) -> Self {
-        Simulator { generator_set, verbose }
+        Simulator {
+            generator_set,
+            verbose,
+        }
     }
 
     /// Simulates the provided ciricuit by setting the generators to the generators of the all zero state
@@ -76,8 +79,8 @@ impl<'a> Simulator<'a> {
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> Result<bool, Box<dyn Error>> {
-
-        self.generator_set.init_generators(check_zero_state_generators);
+        self.generator_set
+            .init_generators(check_zero_state_generators);
 
         let z_x_char = if check_zero_state_generators {
             'Z'
@@ -95,7 +98,7 @@ impl<'a> Simulator<'a> {
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
         self.sim(
-            circuit_2, 
+            circuit_2,
             true,
             format!(
                 "Determining V^{}(U{}U^{})V... ",
@@ -103,7 +106,8 @@ impl<'a> Simulator<'a> {
             ),
         )?;
 
-        Ok(self.generator_set
+        Ok(self
+            .generator_set
             .is_x_or_z_generators(check_zero_state_generators))
     }
 
@@ -137,7 +141,6 @@ impl<'a> Simulator<'a> {
             if self.verbose {
                 println!("Applied {}", gate);
             }
-
 
             self.generator_set.conjugate(gate, inverse)?;
 
@@ -173,9 +176,11 @@ enum SimulationError {
         n_qubits_c1,
         n_qubits_c2
     ))]
-    DifferentSizedCiruicuits { n_qubits_c1: usize, n_qubits_c2: usize },
+    DifferentSizedCiruicuits {
+        n_qubits_c1: usize,
+        n_qubits_c2: usize,
+    },
 
-    #[snafu(display(
-        "Invalid generator set type: {}", gst))]
+    #[snafu(display("Invalid generator set type: {}", gst))]
     InvalidGeneratorSetType { gst: String },
 }

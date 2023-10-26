@@ -1,19 +1,18 @@
 use clap::Parser;
 use snafu::prelude::*;
-use std::borrow::BorrowMut;
 use std::error::Error;
 
 mod circuit;
+mod generator_set;
 mod input_parser;
 mod simulator;
-mod generator_set;
 
 use input_parser::parse_file;
 use simulator::Simulator;
 
-use crate::generator_set::GeneratorSet;
-use crate::generator_set::generator_map::GeneratorMap;
-use crate::generator_set::generator_bitvec::GeneratorBitVec;
+use generator_set::generator_map::GeneratorMap;
+use generator_set::row_wise_bitvec::RowWiseBitVec;
+use generator_set::GeneratorSet;
 
 // TODO
 // Floating point error margin
@@ -36,18 +35,15 @@ struct Args {
     #[arg(short, default_value_t = String::from(""))]
     e: String,
 
-    /// Provide the type data structure of the GeneratorSet to use for the simulation. Options are: 
-    /// - map: ... 
-    /// - bitvec: ... 
+    /// Provide the type data structure of the GeneratorSet to use for the simulation. Options are:
+    /// - map: ...
+    /// - bitvec: ...
     #[arg(short, default_value_t = String::from("bitvec"))]
     t: String,
-
 }
-
 
 fn main() {
     let args = Args::parse();
-
 
     // Parse the circuit from file
     let circuit = match parse_file(&args.f) {
@@ -64,26 +60,14 @@ fn main() {
         }
     };
 
-
-
-    // let mut generator_set: &mut dyn GeneratorSet = match args.t.as_str() {
-    //     "map" => &GeneratorMap::new(circuit.num_qubits()),
-    //     "bitvec" => &GeneratorBitVec::new(circuit.num_qubits()),
-    //     _ => {
-    //         eprintln!("Invalid generator set type: {}", args.t);
-    //         return;
-    //     }
-    // };
-
-    let mut generator_set: Box<dyn GeneratorSet>= match args.t.as_str() {
+    let mut generator_set: Box<dyn GeneratorSet> = match args.t.as_str() {
         "map" => Box::new(GeneratorMap::new(circuit.num_qubits())),
-        "bitvec" => Box::new(GeneratorBitVec::new(circuit.num_qubits())),
+        "bitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;
         }
     };
-
 
     let mut simulator = Simulator::new(generator_set.as_mut(), args.v);
 

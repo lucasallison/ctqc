@@ -11,7 +11,6 @@ pub enum PauliGate {
 }
 
 impl PauliGate {
-
     pub fn pauli_gate_as_tuple(gate: PauliGate) -> (bool, bool) {
         match gate {
             PauliGate::I => (false, false),
@@ -29,8 +28,6 @@ impl PauliGate {
             (false, true) => PauliGate::Z,
         }
     }
-
-
 }
 
 impl fmt::Display for PauliGate {

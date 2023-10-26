@@ -1,21 +1,20 @@
 use bitvec::prelude::*;
-use std::collections::{HashMap, hash_map::Entry};
-use std::error::Error;
-use std::fmt;
 use ordered_float::OrderedFloat;
 use snafu::prelude::*;
+use std::collections::{hash_map::Entry, HashMap};
+use std::error::Error;
+use std::fmt;
 
-use super::GeneratorSet;
 use super::conjugation_look_up_tables::{
     CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
 use super::pauli_string::{PauliGate, PauliString};
+use super::GeneratorSet;
+use super::ONE_OVER_SQRT_TWO;
 use crate::{
     circuit::{Gate, GateType},
     FP_ERROR_MARGIN,
 };
-use super::ONE_OVER_SQRT_TWO;
-
 
 pub struct GeneratorMap {
     generator_components: HashMap<PauliString, Component>,
@@ -60,17 +59,14 @@ impl GeneratorMap {
         }
         Ok(())
     }
-
 }
 
 impl GeneratorSet for GeneratorMap {
-
     // By default initializes the generator components to all zero state generators, i.e.:
     // ZII..II, IZI..II ... II..IZ
     // If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
     // XII..II, IXI..II ... II..IX
     fn init_generators(&mut self, zero_state_generators: bool) {
-
         for i in 0..self.num_qubits {
             let comp = Component::ith_generator(self.num_qubits, i, zero_state_generators).unwrap();
             self.generator_components.insert(comp.pstr.clone(), comp);
@@ -100,11 +96,7 @@ impl GeneratorSet for GeneratorMap {
         true
     }
 
-    fn conjugate(
-        &mut self,
-        gate: &Gate,
-        conjugate_dagger: bool,
-    ) -> Result<(), Box<dyn Error>> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
         let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
 
         for component in self.generator_components.values_mut() {
