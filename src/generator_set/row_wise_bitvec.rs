@@ -354,16 +354,6 @@ impl RowWiseBitVec {
         Ok(())
     }
 
-
-
-
-    /// Merge all duplicate Pauli strings
-    pub fn merge(&mut self) {
-        let map = self.gather();
-        self.scatter(map);
-    }
-
-
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
     fn gather(&mut self) -> HashMap<BitVec,Coeffients,FxBuildHasher> {
 
@@ -444,8 +434,14 @@ impl GeneratorSet for RowWiseBitVec {
             GateType::T => self.conjugate_t_gate(gate, conjugate_dagger)?,
         }
 
-        self.merge();
         Ok(())
+    }
+
+    /// Merges all duplicate Pauli strings and removes all Pauli strings
+    /// with zero coefficients.
+    fn clean(&mut self) {
+        let map = self.gather();
+        self.scatter(map);
     }
 
     fn size(&self) -> usize {

@@ -22,5 +22,6 @@ pub trait GeneratorSet: Display {
     // fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>>;
     // fn measure() -> bool;
+    fn clean(&mut self);
     fn size(&self) -> usize;
 }

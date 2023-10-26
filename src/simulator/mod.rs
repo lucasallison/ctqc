@@ -138,6 +138,11 @@ impl<'a> Simulator<'a> {
         };
 
         for (i, gate) in circ_iter.enumerate() {
+
+            if i % 100 == 0 {
+                self.generator_set.clean();
+            }
+
             if self.verbose {
                 println!("Applied {}", gate);
             }
@@ -156,6 +161,8 @@ impl<'a> Simulator<'a> {
                 stdout.flush().unwrap();
             }
         }
+
+        self.generator_set.clean();
 
         if !self.verbose {
             println!(

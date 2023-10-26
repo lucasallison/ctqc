@@ -29,14 +29,6 @@ impl GeneratorMap {
         }
     }
 
-    // Removes all invalid components
-    fn clean(&mut self) {
-        self.generator_components.retain(|_, c| {
-            c.remove_zero_coefficient_generators();
-            c.valid()
-        });
-    }
-
     // TODO ownsership component
     fn insert_or_merge(
         map: &mut HashMap<PauliString, Component>,
@@ -119,6 +111,14 @@ impl GeneratorSet for GeneratorMap {
 
         self.generator_components = gcs_after_conjugation;
         Ok(())
+    }
+
+    // Removes all invalid components
+    fn clean(&mut self) {
+        self.generator_components.retain(|_, c| {
+            c.remove_zero_coefficient_generators();
+            c.valid()
+        });
     }
 
     fn size(&self) -> usize {
