@@ -138,7 +138,6 @@ impl<'a> Simulator<'a> {
         };
 
         for (i, gate) in circ_iter.enumerate() {
-
             if i % 100 == 0 {
                 self.generator_set.clean();
             }

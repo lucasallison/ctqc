@@ -1,10 +1,10 @@
 use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use snafu::prelude::*;
+use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::collections::{hash_map::Entry, HashMap};
-use fxhash::FxBuildHasher;
 
 use super::conjugation_look_up_tables::{
     CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
@@ -98,22 +98,21 @@ impl HSConjugations {
     }
 }
 
-
 /// A list that can be associated to a Pauli string. The list
-/// keeps track of generators that the Pauli belongs to (i.e., it 
+/// keeps track of generators that the Pauli belongs to (i.e., it
 /// is the generator or if the generator is a sum of Pauli strings
-/// it is one of the Pauli strings that make up the generator) and 
-/// its coefficient. 
+/// it is one of the Pauli strings that make up the generator) and
+/// its coefficient.
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct Coeffients {
-    pub coefficients: Vec<(usize, OrderedFloat<f64>)>
+    pub coefficients: Vec<(usize, OrderedFloat<f64>)>,
 }
 
 impl Coeffients {
     /// Create a new Coeffients list with a single generator.
     pub fn new(generator_index: usize) -> Coeffients {
-        Coeffients { 
-            coefficients: vec![(generator_index, OrderedFloat::from(1.0))]
+        Coeffients {
+            coefficients: vec![(generator_index, OrderedFloat::from(1.0))],
         }
     }
 
@@ -126,8 +125,8 @@ impl Coeffients {
 
     /// Merge the provided coeffiencts list with the current one.
     pub fn merge(&mut self, other: &Coeffients) {
-        
-        let mut merged_coefficients = Vec::with_capacity(self.coefficients.len() + other.coefficients.len());
+        let mut merged_coefficients =
+            Vec::with_capacity(self.coefficients.len() + other.coefficients.len());
         let mut it_self = self.coefficients.iter_mut().peekable();
         let mut it_other = other.coefficients.iter().peekable();
 
@@ -157,7 +156,7 @@ impl Coeffients {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty or if there are only 
+    /// Returns true if the Coeffients list is empty or if there are only
     /// coefficients with value 0.
     pub fn is_empty(&self) -> bool {
         if self.coefficients.is_empty() {
@@ -171,8 +170,6 @@ impl Coeffients {
         }
         true
     }
-
-
 }
 
 pub struct RowWiseBitVec {
@@ -249,9 +246,10 @@ impl RowWiseBitVec {
         let actual_p_gate = self.h_s_conjugations.get_actual_p_gate(j, current_p_gate);
 
         self.set_pauli_gate(actual_p_gate, i, j);
-        self.generator_info[i].multiply(self
-            .h_s_conjugations
-            .get_coefficient_multiplier(j, current_p_gate));
+        self.generator_info[i].multiply(
+            self.h_s_conjugations
+                .get_coefficient_multiplier(j, current_p_gate),
+        );
     }
 
     /// Conjugate each Pauli string in the bitvec with a CNOT gate.
@@ -288,7 +286,6 @@ impl RowWiseBitVec {
         gate: &Gate,
         conjugate_dagger: bool,
     ) -> Result<(), RowWiseBitVecError> {
-
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
 
@@ -314,7 +311,6 @@ impl RowWiseBitVec {
                         self.generator_info.push(new_generator_info);
                     }
 
-
                     self.set_pauli_gate(PauliGate::X, pstr_index, gate.qubit_1);
                     self.set_pauli_gate(PauliGate::Y, self.size, gate.qubit_1);
                     self.size += 1;
@@ -332,7 +328,7 @@ impl RowWiseBitVec {
 
                     // TYT^{\dag} -> 1/sqrt(2) (Y - X)
                     } else {
-                        self.extend_from_within(pstr_index); 
+                        self.extend_from_within(pstr_index);
 
                         let mut new_generator_info = self.generator_info[pstr_index].clone();
                         new_generator_info.multiply(-1.0);
@@ -355,12 +351,13 @@ impl RowWiseBitVec {
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
-    fn gather(&mut self) -> HashMap<BitVec,Coeffients,FxBuildHasher> {
-
-        let mut map = HashMap::<BitVec,Coeffients, FxBuildHasher>::with_capacity_and_hasher(self.size, FxBuildHasher::default());
+    fn gather(&mut self) -> HashMap<BitVec, Coeffients, FxBuildHasher> {
+        let mut map = HashMap::<BitVec, Coeffients, FxBuildHasher>::with_capacity_and_hasher(
+            self.size,
+            FxBuildHasher::default(),
+        );
 
         for pstr_ind in 0..self.size {
-
             let start = self.pstr_first_bit(pstr_ind);
             let end = self.pstr_last_bit(pstr_ind);
 
@@ -380,8 +377,7 @@ impl RowWiseBitVec {
     }
 
     /// Scatter the Pauli strings in the provided map to the bitvec
-    fn scatter(&mut self, map: HashMap<BitVec,Coeffients, FxBuildHasher>) {
-
+    fn scatter(&mut self, map: HashMap<BitVec, Coeffients, FxBuildHasher>) {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
@@ -454,7 +450,6 @@ impl fmt::Display for RowWiseBitVec {
         let mut s = String::new();
 
         for pstr_index in 0..self.size {
-
             let mut coef_multiplier = 1.0;
 
             for qubit_index in 0..self.num_qubits {
@@ -462,7 +457,7 @@ impl fmt::Display for RowWiseBitVec {
                 let actual_p_gate = self
                     .h_s_conjugations
                     .get_actual_p_gate(qubit_index, current_p_gate);
-                
+
                 coef_multiplier *= self
                     .h_s_conjugations
                     .get_coefficient_multiplier(qubit_index, current_p_gate);
@@ -474,7 +469,6 @@ impl fmt::Display for RowWiseBitVec {
 
             for c in self.generator_info[pstr_index].coefficients.iter() {
                 s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
-
             }
             s.push_str(")\n");
         }
@@ -505,28 +499,22 @@ pub enum RowWiseBitVecError {
 #[cfg(test)]
 mod tests {
 
-
-
     use super::*;
     #[test]
     fn test_row_wise_bitvec_merge() {
-
 
         // TODO
 
         // let mut gs = RowWiseBitVec::new(2);
 
         // gs.init_generators(true);
-        
-        
+
         // let h0 = &Gate::new(&"H".to_string(), 0, None).unwrap();
         // let t0 = &Gate::new(&"T".to_string(), 0, None).unwrap();
 
         // gs.conjugate(h0, false).unwrap();
         // gs.conjugate(t0, false).unwrap();
-
     }
-
 
     #[test]
     fn test_coefficient_merge() {
@@ -546,7 +534,6 @@ mod tests {
 
         assert_eq!(c1.coefficients.len(), 3);
 
-
         for (i, coefficient) in c1.coefficients.iter() {
             match i {
                 0 => assert_eq!(coefficient, &OrderedFloat::from(0.5)),
@@ -556,5 +543,4 @@ mod tests {
             }
         }
     }
-
 }
