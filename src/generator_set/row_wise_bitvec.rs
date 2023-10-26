@@ -3,6 +3,8 @@ use ordered_float::OrderedFloat;
 use snafu::prelude::*;
 use std::error::Error;
 use std::fmt;
+use std::collections::{hash_map::Entry, HashMap};
+use fxhash::FxBuildHasher;
 
 use super::conjugation_look_up_tables::{
     CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
@@ -155,8 +157,19 @@ impl Coeffients {
         self.coefficients = merged_coefficients;
     }
 
-    pub fn empty(&self) -> bool {
-        self.coefficients.is_empty()
+    /// Returns true if the Coeffients list is empty or if there are only 
+    /// coefficients with value 0.
+    pub fn is_empty(&self) -> bool {
+        if self.coefficients.is_empty() {
+            return true;
+        }
+        // We consider a Coeffients list empty if all coefficients are 0
+        for (_, coefficient) in self.coefficients.iter() {
+            if *coefficient != OrderedFloat::from(0.0) {
+                return false;
+            }
+        }
+        true
     }
 
 
@@ -204,14 +217,14 @@ impl RowWiseBitVec {
         2 * i * self.num_qubits + 2 * j
     }
 
-    /// Get the index of the first gate of the ith Pauli string
-    fn pstr_first_gate_index(&self, i: usize) -> usize {
+    /// Get the index of the first bit of the ith Pauli string
+    fn pstr_first_bit(&self, i: usize) -> usize {
         2 * i * self.num_qubits
     }
 
-    /// Get the index of the last gate of the ith Pauli string
-    fn pstr_last_gate_index(&self, i: usize) -> usize {
-        self.pstr_first_gate_index(i) + 2 * self.num_qubits - 1
+    /// Get the index of the last bit of the ith Pauli string
+    fn pstr_last_bit(&self, i: usize) -> usize {
+        self.pstr_first_bit(i) + 2 * self.num_qubits - 1
     }
 
     /// Reset the RowWiseBitVec to its initial state
@@ -221,6 +234,13 @@ impl RowWiseBitVec {
         self.generator_info = Vec::with_capacity(self.num_qubits);
         self.h_s_conjugations = HSConjugations::new(self.num_qubits);
         self.size = 0;
+    }
+
+    /// Clones the bits of the ith Pauli string and appends them to the end of the bitvec.
+    fn extend_from_within(&mut self, i: usize) {
+        let start = self.pstr_first_bit(i);
+        let end = self.pstr_last_bit(i);
+        self.pauli_strings.extend_from_within(start..=end);
     }
 
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
@@ -268,6 +288,7 @@ impl RowWiseBitVec {
         gate: &Gate,
         conjugate_dagger: bool,
     ) -> Result<(), RowWiseBitVecError> {
+
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
 
@@ -279,10 +300,7 @@ impl RowWiseBitVec {
 
                     // T^{\dag}XT -> 1/sqrt{2} (X - Y)
                     if conjugate_dagger {
-                        self.pauli_strings.extend_from_within(
-                            self.pstr_first_gate_index(pstr_index)
-                                ..=self.pstr_last_gate_index(pstr_index),
-                        );
+                        self.extend_from_within(pstr_index);
 
                         let mut new_generator_info = self.generator_info[pstr_index].clone();
                         new_generator_info.multiply(-1.0);
@@ -290,14 +308,12 @@ impl RowWiseBitVec {
 
                     // TXT^{\dag} -> 1/sqrt{2} (X + Y)
                     } else {
-                        self.pauli_strings.extend_from_within(
-                            self.pstr_first_gate_index(pstr_index)
-                                ..=self.pstr_last_gate_index(pstr_index),
-                        );
+                        self.extend_from_within(pstr_index);
 
-                        let mut new_generator_info = self.generator_info[pstr_index].clone();
+                        let new_generator_info = self.generator_info[pstr_index].clone();
                         self.generator_info.push(new_generator_info);
                     }
+
 
                     self.set_pauli_gate(PauliGate::X, pstr_index, gate.qubit_1);
                     self.set_pauli_gate(PauliGate::Y, self.size, gate.qubit_1);
@@ -309,19 +325,14 @@ impl RowWiseBitVec {
 
                     // T^{\dag}YT -> 1/sqrt(2) (Y + X)
                     if conjugate_dagger {
-                        self.pauli_strings.extend_from_within(
-                            self.pstr_first_gate_index(pstr_index)
-                                ..=self.pstr_last_gate_index(pstr_index),
-                        );
-                        let mut new_generator_info = self.generator_info[pstr_index].clone();
+                        self.extend_from_within(pstr_index);
+
+                        let new_generator_info = self.generator_info[pstr_index].clone();
                         self.generator_info.push(new_generator_info);
 
                     // TYT^{\dag} -> 1/sqrt(2) (Y - X)
                     } else {
-                        self.pauli_strings.extend_from_within(
-                            self.pstr_first_gate_index(pstr_index)
-                                ..=self.pstr_last_gate_index(pstr_index),
-                        );
+                        self.extend_from_within(pstr_index); 
 
                         let mut new_generator_info = self.generator_info[pstr_index].clone();
                         new_generator_info.multiply(-1.0);
@@ -338,8 +349,61 @@ impl RowWiseBitVec {
                 }
             }
         }
+
         self.h_s_conjugations.reset(gate.qubit_1);
         Ok(())
+    }
+
+
+
+
+    /// Merge all duplicate Pauli strings
+    pub fn merge(&mut self) {
+        let map = self.gather();
+        self.scatter(map);
+    }
+
+
+    /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
+    fn gather(&mut self) -> HashMap<BitVec,Coeffients,FxBuildHasher> {
+
+        let mut map = HashMap::<BitVec,Coeffients, FxBuildHasher>::with_capacity_and_hasher(self.size, FxBuildHasher::default());
+
+        for pstr_ind in 0..self.size {
+
+            let start = self.pstr_first_bit(pstr_ind);
+            let end = self.pstr_last_bit(pstr_ind);
+
+            let pstr = self.pauli_strings[start..=end].to_bitvec();
+            let gen_info = &self.generator_info[pstr_ind];
+
+            match map.entry(pstr) {
+                Entry::Occupied(mut e) => {
+                    e.get_mut().merge(gen_info);
+                }
+                Entry::Vacant(e) => {
+                    e.insert(gen_info.clone());
+                }
+            }
+        }
+        map
+    }
+
+    /// Scatter the Pauli strings in the provided map to the bitvec
+    fn scatter(&mut self, map: HashMap<BitVec,Coeffients, FxBuildHasher>) {
+
+        self.pauli_strings.clear();
+        self.generator_info.clear();
+
+        for (pstr, coefficients) in map.iter() {
+            if coefficients.is_empty() {
+                continue;
+            }
+            self.pauli_strings.extend_from_bitslice(pstr);
+            self.generator_info.push(coefficients.clone());
+        }
+
+        self.size = self.generator_info.len();
     }
 }
 
@@ -378,15 +442,9 @@ impl GeneratorSet for RowWiseBitVec {
             }
             GateType::CNOT => self.conjugate_cnot(gate)?,
             GateType::T => self.conjugate_t_gate(gate, conjugate_dagger)?,
-            _ => {
-                return Err(RowWiseBitVecError::InvalidConjugationFunction {
-                    function_called: "conjugate".to_string(),
-                    gate_type: gate.gate_type.clone(),
-                }
-                .into())
-            }
         }
 
+        self.merge();
         Ok(())
     }
 
@@ -416,7 +474,7 @@ impl fmt::Display for RowWiseBitVec {
                 s.push_str(&format!("{}", actual_p_gate));
             }
 
-            s.push_str("(");
+            s.push_str(" (");
 
             for c in self.generator_info[pstr_index].coefficients.iter() {
                 s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
@@ -454,9 +512,28 @@ mod tests {
 
 
     use super::*;
+    #[test]
+    fn test_row_wise_bitvec_merge() {
+
+
+        // TODO
+
+        // let mut gs = RowWiseBitVec::new(2);
+
+        // gs.init_generators(true);
+        
+        
+        // let h0 = &Gate::new(&"H".to_string(), 0, None).unwrap();
+        // let t0 = &Gate::new(&"T".to_string(), 0, None).unwrap();
+
+        // gs.conjugate(h0, false).unwrap();
+        // gs.conjugate(t0, false).unwrap();
+
+    }
+
 
     #[test]
-    pub fn test_coefficient_merge() {
+    fn test_coefficient_merge() {
         let mut c1 = Coeffients::new(0);
         let mut c2 = Coeffients::new(0);
         let mut c3 = Coeffients::new(1);
