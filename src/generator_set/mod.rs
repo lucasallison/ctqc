@@ -3,6 +3,8 @@ use lazy_static::lazy_static;
 use std::error::Error;
 use std::fmt::Display;
 
+mod h_s_conjugations_map;
+mod coefficient_list;
 mod conjugation_look_up_tables;
 mod pauli_string;
 
