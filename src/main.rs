@@ -12,6 +12,7 @@ use simulator::Simulator;
 
 use generator_set::generator_map::GeneratorMap;
 use generator_set::row_wise_bitvec::RowWiseBitVec;
+use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::GeneratorSet;
 
 // TODO
@@ -36,9 +37,10 @@ struct Args {
     e: String,
 
     /// Provide the type data structure of the GeneratorSet to use for the simulation. Options are:
-    /// - map: ...
-    /// - bitvec: ...
-    #[arg(short, default_value_t = String::from("bitvec"))]
+    /// - map: Map based generator set.
+    /// - rbitvec: Row-wise bitvector.
+    /// - cbitvec: Column-wise bitvector.
+    #[arg(short, default_value_t = String::from("rbitvec"))]
     t: String,
 }
 
@@ -62,7 +64,8 @@ fn main() {
 
     let mut generator_set: Box<dyn GeneratorSet> = match args.t.as_str() {
         "map" => Box::new(GeneratorMap::new(circuit.num_qubits())),
-        "bitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
+        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
+        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits())),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;

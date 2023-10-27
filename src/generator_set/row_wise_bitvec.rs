@@ -13,7 +13,6 @@ use super::coefficient_list::CoefficientList;
 use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 
-
 pub struct RowWiseBitVec {
     pauli_strings: BitVec,
     generator_info: Vec<CoefficientList>,
@@ -245,9 +244,6 @@ impl GeneratorSet for RowWiseBitVec {
         } else {
             PauliGate::X
         };
-
-        // Each Pauli string has num_qubit gates and each gate is represented by 2 bits.
-        self.pauli_strings = bitvec![0; 2*self.num_qubits*self.num_qubits];
 
         for generator_index in 0..self.num_qubits {
             self.set_pauli_gate(p_gate, generator_index, generator_index);

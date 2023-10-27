@@ -11,6 +11,7 @@ mod pauli_string;
 // Implementations of the GeneratorSet trait
 pub mod generator_map;
 pub mod row_wise_bitvec;
+pub mod column_wise_bitvec;
 
 // Used for conjugation
 lazy_static! {
