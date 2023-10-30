@@ -5,11 +5,11 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
 
+use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
-use super::coefficient_list::CoefficientList;
 use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 
@@ -21,7 +21,6 @@ pub struct ColumnWiseBitVec {
 }
 
 impl ColumnWiseBitVec {
-
     pub fn new(num_qubits: usize) -> ColumnWiseBitVec {
         ColumnWiseBitVec {
             columns: vec![bitvec![0; 2*num_qubits]; num_qubits],
@@ -34,7 +33,7 @@ impl ColumnWiseBitVec {
     /// Returns the jth gate of the ith Pauli string
     fn get_pauli_gate(&self, pstr_ind: usize, gate_ind: usize) -> PauliGate {
         let column = &self.columns[gate_ind];
-        PauliGate::pauli_gate_from_tuple(column[2*pstr_ind], column[2*pstr_ind + 1])
+        PauliGate::pauli_gate_from_tuple(column[2 * pstr_ind], column[2 * pstr_ind + 1])
     }
 
     /// Sets the jth gate of the ith Pauli string
@@ -42,8 +41,8 @@ impl ColumnWiseBitVec {
         let column = &mut self.columns[gate_ind];
         let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
 
-        column.set(2*pstr_ind, b1);
-        column.set(2*pstr_ind + 1, b2)
+        column.set(2 * pstr_ind, b1);
+        column.set(2 * pstr_ind + 1, b2)
     }
 
     /// Reset the RowWiseBitVec to its initial state
@@ -57,7 +56,9 @@ impl ColumnWiseBitVec {
     // TODO abstract into trait
     fn apply_h_s_conjugations(&mut self, pstr_ind: usize, gate_ind: usize) {
         let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
-        let actual_p_gate = self.h_s_conjugations_map.get_actual_p_gate(gate_ind, current_p_gate);
+        let actual_p_gate = self
+            .h_s_conjugations_map
+            .get_actual_p_gate(gate_ind, current_p_gate);
 
         self.set_pauli_gate(actual_p_gate, pstr_ind, gate_ind);
         self.generator_info[pstr_ind].multiply(
@@ -66,8 +67,8 @@ impl ColumnWiseBitVec {
         );
     }
 
-    /// Sorts the Pauli strings such that the X and Y gates appear first in 
-    /// the provided column. 
+    /// Sorts the Pauli strings such that the X and Y gates appear first in
+    /// the provided column.
     /// IMPORTANT: Applies the H and S conjugations to the provided columns
     /// and resets the map.
     fn sort(&mut self, col: usize) {
@@ -79,7 +80,6 @@ impl ColumnWiseBitVec {
         // Determine the new order based on the column
 
         for i in 0..self.size() {
-
             self.apply_h_s_conjugations(i, col);
             let pgate_i = self.get_pauli_gate(i, col);
 
@@ -100,18 +100,16 @@ impl ColumnWiseBitVec {
             let mut new_column = bitvec![0; 2*self.size()];
 
             for pstr_ind in 0..self.size() {
-
                 let pgate = self.get_pauli_gate(pstr_ind, gate_ind);
-                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate); 
+                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate);
 
-                new_column.set(2*sorted_order[pstr_ind], b1);
-                new_column.set(2*sorted_order[pstr_ind] + 1, b2);
+                new_column.set(2 * sorted_order[pstr_ind], b1);
+                new_column.set(2 * sorted_order[pstr_ind] + 1, b2);
             }
 
             self.columns[gate_ind] = new_column;
         }
     }
-
 
     fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
@@ -137,22 +135,14 @@ impl ColumnWiseBitVec {
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
-    /// Conjugate each Pauli string in the bitvec with a T gate.
-    /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_t_gate(
-        &mut self,
-        gate: &Gate,
-        conjugate_dagger: bool,
-    ) {
-
-        // First check where X and Y gates are in the column and apply the H and S conjugations
-
+    /// Return all the indices of Pauli strings that have an X or Y gate in the provided column
+    /// IMPORTANT: Applies the H and S conjugations to the provided column
+    fn x_y_in_column(&mut self, col_ind: usize) -> Vec<usize> {
         let mut x_y_pos = Vec::with_capacity(self.size());
-        
-        for pstr_ind in 0..self.size() {
 
-            self.apply_h_s_conjugations(pstr_ind, gate.qubit_1);
-            let pgate = self.get_pauli_gate(pstr_ind, gate.qubit_1);
+        for pstr_ind in 0..self.size() {
+            self.apply_h_s_conjugations(pstr_ind, col_ind);
+            let pgate = self.get_pauli_gate(pstr_ind, col_ind);
 
             match pgate {
                 PauliGate::X | PauliGate::Y => {
@@ -164,103 +154,65 @@ impl ColumnWiseBitVec {
             }
         }
 
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(col_ind);
+        x_y_pos
+    }
+
+    /// Conjugate each Pauli string in the bitvec with a T gate.
+    /// We use the update rules to adjust the Pauli gates and coefficients.
+    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+        // First check where X and Y gates are in the column and apply the H and S conjugations
+        let x_y_pos = self.x_y_in_column(gate.qubit_1);
 
         // Copy the Pauli strings that have X or Y gates in the column
-
-        // Gates to extend the column with
-        // We do not multiply the size with 2 because we likely dont need to duplicate the entire column
-        let mut column_extension: BitVec = BitVec::with_capacity(self.size()); 
-
         for gate_ind in 0..self.columns.len() {
-
             for pstr_ind in x_y_pos.iter() {
-
                 let pgate = self.get_pauli_gate(*pstr_ind, gate_ind);
-                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate);
+                let (b1, mut b2) = PauliGate::pauli_gate_as_tuple(pgate);
 
-                column_extension.push(b1);
-                column_extension.push(b2);
+                // We adjust the coeffients of the old and new Pauli strings based on
+                // the gate that is conjugated with the T gate
+                if gate_ind == gate.qubit_1 {
+                    // Whevenver we conjugate with a T gate, the new Pauli string will
+                    // have the same gates except for the gat that the T gate conjugates.
+                    // There an X gate will become a Y gate and vice versa.
+                    // Since an X is encode as 10 and Y as 11, we can simply flip the second bit.
+                    b2 = !b2;
 
-                // TODO 
-                self.generator_info.push(self.generator_info[*pstr_ind].clone());
+                    // The result is always multiplied by 1 over sqrt 2
+                    self.generator_info[*pstr_ind].multiply(*ONE_OVER_SQRT_TWO);
+
+                    self.generator_info
+                        .push(self.generator_info[*pstr_ind].clone());
+
+                    let new_generator_info = self.generator_info.last_mut().unwrap();
+
+                    match (pgate, conjugate_dagger) {
+                        (PauliGate::X, true) => {
+                            // T^{\dag}XT -> 1/sqrt{2} (X - Y)
+                            new_generator_info.multiply(-1.0);
+                        }
+
+                        (PauliGate::Y, false) => {
+                            // TYT^{\dag} -> 1/sqrt(2) (Y - X)
+                            new_generator_info.multiply(-1.0);
+                        }
+
+                        // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
+                        // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
+                        // with 1/sqrt{2} before.
+                        _ => {}
+                    }
+                }
+
+                self.columns[gate_ind].push(b1);
+                self.columns[gate_ind].push(b2);
             }
-
-            self.columns[gate_ind].extend_from_bitslice(&column_extension);
-
-            // Clear so we do not have to reallocate the memory
-            column_extension.clear();
         }
-
-
-
-        // panic!("......{:?}", self.columns[0]);
-
-        // for pstr_index in 0..self.size() {
-        //     self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-
-        //     let target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-
-        //     match target_p_gate {
-        //         PauliGate::X => {
-        //             self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-
-        //             // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-        //             if conjugate_dagger {
-        //                 self.extend_from_within(pstr_index);
-
-        //                 let mut new_generator_info = self.generator_info[pstr_index].clone();
-        //                 new_generator_info.multiply(-1.0);
-        //                 self.generator_info.push(new_generator_info);
-
-        //             // TXT^{\dag} -> 1/sqrt{2} (X + Y)
-        //             } else {
-        //                 self.extend_from_within(pstr_index);
-
-        //                 let new_generator_info = self.generator_info[pstr_index].clone();
-        //                 self.generator_info.push(new_generator_info);
-        //             }
-
-        //             self.set_pauli_gate(PauliGate::X, pstr_index, gate.qubit_1);
-        //             self.set_pauli_gate(PauliGate::Y, self.size, gate.qubit_1);
-        //             self.size += 1;
-        //         }
-
-        //         PauliGate::Y => {
-        //             self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-
-        //             // T^{\dag}YT -> 1/sqrt(2) (Y + X)
-        //             if conjugate_dagger {
-        //                 self.extend_from_within(pstr_index);
-
-        //                 let new_generator_info = self.generator_info[pstr_index].clone();
-        //                 self.generator_info.push(new_generator_info);
-
-        //             // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-        //             } else {
-        //                 self.extend_from_within(pstr_index);
-
-        //                 let mut new_generator_info = self.generator_info[pstr_index].clone();
-        //                 new_generator_info.multiply(-1.0);
-        //                 self.generator_info.push(new_generator_info);
-        //             }
-
-        //             self.set_pauli_gate(PauliGate::Y, pstr_index, gate.qubit_1);
-        //             self.set_pauli_gate(PauliGate::X, self.size, gate.qubit_1);
-        //             self.size += 1;
-        //         }
-
-        //         _ => {
-        //             continue;
-        //         }
-        //     }
-        }
-
+    }
 }
 
-
 impl GeneratorSet for ColumnWiseBitVec {
-
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.reset();
@@ -273,7 +225,8 @@ impl GeneratorSet for ColumnWiseBitVec {
 
         for generator_index in 0..self.num_qubits {
             self.set_pauli_gate(p_gate, generator_index, generator_index);
-            self.generator_info.push(CoefficientList::new(generator_index));
+            self.generator_info
+                .push(CoefficientList::new(generator_index));
         }
     }
 
@@ -299,14 +252,12 @@ impl GeneratorSet for ColumnWiseBitVec {
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
     // TODO
-    fn clean(&mut self) {
-    }
+    fn clean(&mut self) {}
 
     fn size(&self) -> usize {
         self.columns[0].len() / 2
     }
 }
-
 
 impl fmt::Display for ColumnWiseBitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

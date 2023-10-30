@@ -18,7 +18,11 @@ pub struct Simulator<'a> {
 }
 
 impl<'a> Simulator<'a> {
-    pub fn new(generator_set: &'a mut dyn GeneratorSet, clean_cycles: usize, verbose: bool) -> Self {
+    pub fn new(
+        generator_set: &'a mut dyn GeneratorSet,
+        clean_cycles: usize,
+        verbose: bool,
+    ) -> Self {
         Simulator {
             generator_set,
             clean_cycles,

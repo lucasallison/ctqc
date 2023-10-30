@@ -10,9 +10,9 @@ mod simulator;
 use input_parser::parse_file;
 use simulator::Simulator;
 
+use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
 use generator_set::row_wise_bitvec::RowWiseBitVec;
-use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::GeneratorSet;
 
 // TODO

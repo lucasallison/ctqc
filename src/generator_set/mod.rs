@@ -3,15 +3,15 @@ use lazy_static::lazy_static;
 use std::error::Error;
 use std::fmt::Display;
 
-mod h_s_conjugations_map;
 mod coefficient_list;
 mod conjugation_look_up_tables;
+mod h_s_conjugations_map;
 mod pauli_string;
 
 // Implementations of the GeneratorSet trait
+pub mod column_wise_bitvec;
 pub mod generator_map;
 pub mod row_wise_bitvec;
-pub mod column_wise_bitvec;
 
 // Used for conjugation
 lazy_static! {

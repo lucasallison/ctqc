@@ -5,11 +5,11 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
 
+use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
-use super::coefficient_list::CoefficientList;
 use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 
@@ -84,7 +84,9 @@ impl RowWiseBitVec {
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
     fn apply_h_s_conjugations(&mut self, i: usize, j: usize) {
         let current_p_gate = self.get_pauli_gate(i, j);
-        let actual_p_gate = self.h_s_conjugations_map.get_actual_p_gate(j, current_p_gate);
+        let actual_p_gate = self
+            .h_s_conjugations_map
+            .get_actual_p_gate(j, current_p_gate);
 
         self.set_pauli_gate(actual_p_gate, i, j);
         self.generator_info[i].multiply(
@@ -247,7 +249,8 @@ impl GeneratorSet for RowWiseBitVec {
 
         for generator_index in 0..self.num_qubits {
             self.set_pauli_gate(p_gate, generator_index, generator_index);
-            self.generator_info.push(CoefficientList::new(generator_index));
+            self.generator_info
+                .push(CoefficientList::new(generator_index));
         }
 
         self.size = self.num_qubits;
@@ -278,6 +281,7 @@ impl GeneratorSet for RowWiseBitVec {
         self.scatter(map);
     }
 
+    // TODO
     fn size(&self) -> usize {
         self.size
     }
@@ -354,5 +358,4 @@ mod tests {
         // gs.conjugate(h0, false).unwrap();
         // gs.conjugate(t0, false).unwrap();
     }
-
 }

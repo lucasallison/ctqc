@@ -1,4 +1,3 @@
-
 use super::conjugation_look_up_tables::{
     H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
