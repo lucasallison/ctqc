@@ -55,16 +55,63 @@ impl ColumnWiseBitVec {
 
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
     // TODO abstract into trait
-    fn apply_h_s_conjugations(&mut self, i: usize, j: usize) {
-        let current_p_gate = self.get_pauli_gate(i, j);
-        let actual_p_gate = self.h_s_conjugations_map.get_actual_p_gate(j, current_p_gate);
+    fn apply_h_s_conjugations(&mut self, pstr_ind: usize, gate_ind: usize) {
+        let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
+        let actual_p_gate = self.h_s_conjugations_map.get_actual_p_gate(gate_ind, current_p_gate);
 
-        self.set_pauli_gate(actual_p_gate, i, j);
-        self.generator_info[i].multiply(
+        self.set_pauli_gate(actual_p_gate, pstr_ind, gate_ind);
+        self.generator_info[pstr_ind].multiply(
             self.h_s_conjugations_map
-                .get_coefficient_multiplier(j, current_p_gate),
+                .get_coefficient_multiplier(gate_ind, current_p_gate),
         );
     }
+
+    /// Sorts the Pauli strings such that the X and Y gates appear first in 
+    /// the provided column. 
+    /// IMPORTANT: Applies the H and S conjugations to the provided columns
+    /// and resets the map.
+    fn sort(&mut self, col: usize) {
+        let mut sorted_order = vec![0; self.size()];
+
+        let mut x_y_ind = 0;
+        let mut z_i_ind = self.size() - 1;
+
+        // Determine the new order based on the column
+
+        for i in 0..self.size() {
+
+            self.apply_h_s_conjugations(i, col);
+            let pgate_i = self.get_pauli_gate(i, col);
+
+            if pgate_i == PauliGate::X || pgate_i == PauliGate::Y {
+                sorted_order[i] = x_y_ind;
+                x_y_ind += 1;
+            } else {
+                sorted_order[i] = z_i_ind;
+                z_i_ind = if z_i_ind == 0 { 0 } else { z_i_ind - 1 };
+            }
+        }
+
+        self.h_s_conjugations_map.reset(col);
+
+        // Apply order to each column
+
+        for gate_ind in 0..self.columns.len() {
+            let mut new_column = bitvec![0; 2*self.size()];
+
+            for pstr_ind in 0..self.size() {
+
+                let pgate = self.get_pauli_gate(pstr_ind, gate_ind);
+                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate); 
+
+                new_column.set(2*sorted_order[pstr_ind], b1);
+                new_column.set(2*sorted_order[pstr_ind] + 1, b2);
+            }
+
+            self.columns[gate_ind] = new_column;
+        }
+    }
+
 
     fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
@@ -97,7 +144,58 @@ impl ColumnWiseBitVec {
         gate: &Gate,
         conjugate_dagger: bool,
     ) {
-        // TODO 
+
+        // First check where X and Y gates are in the column and apply the H and S conjugations
+
+        let mut x_y_pos = Vec::with_capacity(self.size());
+        
+        for pstr_ind in 0..self.size() {
+
+            self.apply_h_s_conjugations(pstr_ind, gate.qubit_1);
+            let pgate = self.get_pauli_gate(pstr_ind, gate.qubit_1);
+
+            match pgate {
+                PauliGate::X | PauliGate::Y => {
+                    x_y_pos.push(pstr_ind);
+                }
+                _ => {
+                    continue;
+                }
+            }
+        }
+
+        self.h_s_conjugations_map.reset(gate.qubit_1);
+
+        // Copy the Pauli strings that have X or Y gates in the column
+
+        // Gates to extend the column with
+        // We do not multiply the size with 2 because we likely dont need to duplicate the entire column
+        let mut column_extension: BitVec = BitVec::with_capacity(self.size()); 
+
+        for gate_ind in 0..self.columns.len() {
+
+            for pstr_ind in x_y_pos.iter() {
+
+                let pgate = self.get_pauli_gate(*pstr_ind, gate_ind);
+                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate);
+
+                column_extension.push(b1);
+                column_extension.push(b2);
+
+                // TODO 
+                self.generator_info.push(self.generator_info[*pstr_ind].clone());
+            }
+
+            self.columns[gate_ind].extend_from_bitslice(&column_extension);
+
+            // Clear so we do not have to reallocate the memory
+            column_extension.clear();
+        }
+
+
+
+        // panic!("......{:?}", self.columns[0]);
+
         // for pstr_index in 0..self.size() {
         //     self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
 

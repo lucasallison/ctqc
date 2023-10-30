@@ -42,6 +42,11 @@ struct Args {
     /// - cbitvec: Column-wise bitvector.
     #[arg(short, default_value_t = String::from("rbitvec"))]
     t: String,
+
+    /// Provide after how many gates the simulator should clean the data structure,
+    /// e.g., remove duplicates, removed zero coefficient Pauli strings, ...
+    #[arg(short, default_value_t = 1000)]
+    c: usize,
 }
 
 fn main() {
@@ -72,7 +77,7 @@ fn main() {
         }
     };
 
-    let mut simulator = Simulator::new(generator_set.as_mut(), args.v);
+    let mut simulator = Simulator::new(generator_set.as_mut(), args.c, args.v);
 
     // No second file provided, run the simulation
     if args.e.is_empty() {

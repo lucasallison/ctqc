@@ -27,7 +27,6 @@ weights = [clifford_percentage + (100 - 3*clifford_percentage - t_gate_percentag
            clifford_percentage, 
            t_gate_percentage]
 
-
 # TODO 
 # ctqc = Clifford + T quantum circuit
 f = open(file_name + ".ctqc", "w")

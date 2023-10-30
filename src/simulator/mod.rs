@@ -13,13 +13,15 @@ lazy_static! {
 /// Executes the simulation/equivalence check
 pub struct Simulator<'a> {
     generator_set: &'a mut dyn GeneratorSet,
+    clean_cycles: usize,
     verbose: bool,
 }
 
 impl<'a> Simulator<'a> {
-    pub fn new(generator_set: &'a mut dyn GeneratorSet, verbose: bool) -> Self {
+    pub fn new(generator_set: &'a mut dyn GeneratorSet, clean_cycles: usize, verbose: bool) -> Self {
         Simulator {
             generator_set,
+            clean_cycles,
             verbose,
         }
     }
@@ -138,7 +140,7 @@ impl<'a> Simulator<'a> {
         };
 
         for (i, gate) in circ_iter.enumerate() {
-            if i % 100 == 0 {
+            if i % self.clean_cycles == 0 {
                 self.generator_set.clean();
             }
 
@@ -152,9 +154,11 @@ impl<'a> Simulator<'a> {
                 println!("{}", self.generator_set);
             } else {
                 print!(
-                    "\r{}{}% -- {} components ",
+                    "\r{}{}% ({}/{}) -- {} components ",
                     sim_msg,
                     (i as f64 / num_gates as f64 * 100.0) as usize,
+                    i,
+                    num_gates,
                     self.generator_set.size(),
                 );
                 stdout.flush().unwrap();
@@ -165,7 +169,7 @@ impl<'a> Simulator<'a> {
 
         if !self.verbose {
             println!(
-                "\r{}100% -- {} components",
+                "\r{}100% -- {} Pauli strings",
                 sim_msg,
                 self.generator_set.size()
             );
