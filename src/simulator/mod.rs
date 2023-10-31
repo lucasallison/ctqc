@@ -61,13 +61,13 @@ impl<'a> Simulator<'a> {
             circuit_2.name()
         );
 
-        let equiv = self.equiv_single_generators(circuit_1, circuit_2, true)?;
+        let equiv = self.equiv(circuit_1, circuit_2, true)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
         }
 
-        let equiv = self.equiv_single_generators(circuit_1, circuit_2, false)?;
+        let equiv = self.equiv(circuit_1, circuit_2, false)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
@@ -79,7 +79,8 @@ impl<'a> Simulator<'a> {
 
     /// Given two circuits U and V the equiv fuction simulates the circuit UV^† and checks whether
     /// the resulting generators are the generators for the all zero state or the all plus state.
-    fn equiv(
+    // TODO see if we still use this
+    fn _equiv_all_generators_at_once(
         &mut self,
         circuit_1: &Circuit,
         circuit_2: &Circuit,
@@ -120,12 +121,14 @@ impl<'a> Simulator<'a> {
     /// Conjugates the gates of the circuit UV^† iteratively to all the generators of the all
     /// zero and all plus state. After having conjugated all the gates it checks wheter the generator
     /// it started with has remained unchanged.
-    pub fn equiv_single_generators(
+    pub fn equiv(
         &mut self,
         circuit_1: &Circuit,
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> Result<bool, Box<dyn Error>> {
+        let mut stdout = stdout();
+
         let z_x_char = if check_zero_state_generators {
             'Z'
         } else {
@@ -137,35 +140,35 @@ impl<'a> Simulator<'a> {
                 .init_single_generator(i, check_zero_state_generators);
 
             // First simulate U
-            self.sim(
-                circuit_1,
-                false,
-                format!(
-                    "Determining U{}U^{} ({}th generator)... ",
-                    z_x_char, *DAG_CHAR, i
-                ),
-            )?;
+            self.sim(circuit_1, false, "".to_string())?;
 
             // Then simulate V^†
-            self.sim(
-                circuit_2,
-                true,
-                format!(
-                    "Determining V^{}(U{}U^{})V ({}th generator)...",
-                    *DAG_CHAR, z_x_char, *DAG_CHAR, i
-                ),
-            )?;
+            self.sim(circuit_2, true, "".to_string())?;
 
+            print!(
+                "\rChecking V^{}(U{}U^{})V... {}% (Generator {}/{})",
+                *DAG_CHAR,
+                z_x_char,
+                *DAG_CHAR,
+                ((i + 1) as f64 / circuit_1.num_qubits() as f64 * 100.0) as usize,
+                i + 1,
+                circuit_1.num_qubits()
+            );
+            stdout.flush().unwrap();
 
             if !self
                 .generator_set
                 .is_single_x_or_z_generator(check_zero_state_generators, i)
             {
                 // println!("V^{}(U{}U^{})V ({}th generator) result:\n{}", *DAG_CHAR, z_x_char, *DAG_CHAR, i, self.generator_set);
+                print!("\n");
+                stdout.flush().unwrap();
                 return Ok(false);
             }
         }
 
+        print!("\n");
+        stdout.flush().unwrap();
         Ok(true)
     }
 
@@ -208,7 +211,9 @@ impl<'a> Simulator<'a> {
 
             if self.verbose {
                 println!("{}", self.generator_set);
-            } else {
+            }
+
+            if !self.verbose && !sim_msg.is_empty() {
                 print!(
                     "\r{}{}% ({}/{}) -- {} Pauli strings ",
                     sim_msg,
@@ -223,7 +228,12 @@ impl<'a> Simulator<'a> {
 
         self.generator_set.clean();
 
-        if !self.verbose {
+        if self.verbose {
+            println!("{}", self.generator_set);
+        }
+
+        if !self.verbose && !sim_msg.is_empty() {
+            // TODO
             println!(
                 "\r{}100% -- {} Pauli strings              ",
                 sim_msg,

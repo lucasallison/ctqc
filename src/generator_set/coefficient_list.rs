@@ -1,5 +1,7 @@
 use ordered_float::OrderedFloat;
 
+use crate::FP_ERROR_MARGIN;
+
 /// A set that can be associated to a Pauli string. The list
 /// keeps track of generators that the Pauli belongs to (i.e., it
 /// is the generator or if the generator is a sum of Pauli strings
@@ -58,19 +60,15 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty or if there are only
-    /// coefficients with value 0.
-    pub fn is_empty(&self) -> bool {
-        if self.coefficients.is_empty() {
-            return true;
-        }
-        // We consider a Coeffients list empty if all coefficients are 0
-        for (_, coefficient) in self.coefficients.iter() {
-            if *coefficient != OrderedFloat::from(0.0) {
-                return false;
-            }
-        }
-        true
+    /// Returns true if the Coeffients list is empty, that is there 
+    /// is at least one non zero coefficient. 
+    /// While checking this it removes any zero coefficient.
+    pub fn is_empty(&mut self) -> bool {
+        self.coefficients.retain(|(_, f)| {
+            *f > OrderedFloat(0.0 + FP_ERROR_MARGIN) || *f < OrderedFloat(0.0 - FP_ERROR_MARGIN)
+        });
+
+        self.coefficients.is_empty()
     }
 }
 

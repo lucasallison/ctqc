@@ -66,7 +66,9 @@ impl GeneratorSet for GeneratorMap {
     }
 
     // TODO
-    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {}
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
+        unimplemented!()
+    }
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.clean();
@@ -93,7 +95,7 @@ impl GeneratorSet for GeneratorMap {
 
     // TODO
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
-        true
+        unimplemented!()
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {

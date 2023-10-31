@@ -12,8 +12,8 @@ use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
 use super::ONE_OVER_SQRT_TWO;
-use crate::FP_ERROR_MARGIN;
 use crate::circuit::{Gate, GateType};
+use crate::FP_ERROR_MARGIN;
 
 pub struct RowWiseBitVec {
     pauli_strings: BitVec,
@@ -142,7 +142,9 @@ impl RowWiseBitVec {
         match self.get_pauli_gate(pstr_ind, gate_ind) {
             PauliGate::X => self.set_pauli_gate(PauliGate::Y, pstr_ind, gate_ind),
             PauliGate::Y => self.set_pauli_gate(PauliGate::X, pstr_ind, gate_ind),
-            _ => {panic!("Can only call `flip_x_y` on an X or Y gate")}
+            _ => {
+                panic!("Can only call `flip_x_y` on an X or Y gate")
+            }
         }
     }
 
@@ -162,7 +164,7 @@ impl RowWiseBitVec {
                 continue;
             }
 
-            // Copy the Pauli string and flip the X or Y gate of the new 
+            // Copy the Pauli string and flip the X or Y gate of the new
             // Pauli string
             self.extend_from_within(pstr_index);
             self.flip_x_y(self.size, gate.qubit_1);
@@ -170,7 +172,8 @@ impl RowWiseBitVec {
 
             // Set the generator information appropriately
             self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-            self.generator_info.push(self.generator_info[pstr_index].clone());
+            self.generator_info
+                .push(self.generator_info[pstr_index].clone());
 
             match (target_p_gate, conjugate_dagger) {
                 (PauliGate::X, true) => {
@@ -221,11 +224,11 @@ impl RowWiseBitVec {
     }
 
     /// Scatter the Pauli strings in the provided map to the bitvec
-    fn scatter(&mut self, map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+    fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
-        for (pstr, coefficients) in map.iter() {
+        for (pstr, coefficients) in map.iter_mut() {
             if coefficients.is_empty() {
                 continue;
             }
@@ -384,8 +387,6 @@ pub enum RowWiseBitVecError {
 
 #[cfg(test)]
 mod tests {
-
-    use super::*;
 
     #[test]
     fn test_row_wise_bitvec_merge() {

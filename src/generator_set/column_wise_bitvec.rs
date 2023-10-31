@@ -206,10 +206,10 @@ impl ColumnWiseBitVec {
     }
 
     /// Scatter the Pauli strings in the provided map to the bitvec
-    fn scatter(&mut self, map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+    fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.clear();
 
-        for (pstr, coefficients) in map.iter() {
+        for (pstr, coefficients) in map.iter_mut() {
             if coefficients.is_empty() {
                 continue;
             }
@@ -240,15 +240,22 @@ impl GeneratorSet for ColumnWiseBitVec {
         }
     }
 
-    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {}
+    // TODO
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
+        unimplemented!()
+    }
 
     // TODO
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
-        false
+        unimplemented!()
+    }
+
+    // TODO
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        unimplemented!()
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    // TODO error
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
         match gate.gate_type {
             GateType::H | GateType::S => {
@@ -259,11 +266,6 @@ impl GeneratorSet for ColumnWiseBitVec {
         }
 
         Ok(())
-    }
-
-    // TODO
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
-        true
     }
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings
