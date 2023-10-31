@@ -61,13 +61,13 @@ impl<'a> Simulator<'a> {
             circuit_2.name()
         );
 
-        let equiv = self.equiv(circuit_1, circuit_2, true)?;
+        let equiv = self.equiv_single_generators(circuit_1, circuit_2, true)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
         }
 
-        let equiv = self.equiv(circuit_1, circuit_2, false)?;
+        let equiv = self.equiv_single_generators(circuit_1, circuit_2, false)?;
         if !equiv {
             println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
@@ -117,6 +117,58 @@ impl<'a> Simulator<'a> {
             .is_x_or_z_generators(check_zero_state_generators))
     }
 
+    /// Conjugates the gates of the circuit UV^† iteratively to all the generators of the all
+    /// zero and all plus state. After having conjugated all the gates it checks wheter the generator
+    /// it started with has remained unchanged.
+    pub fn equiv_single_generators(
+        &mut self,
+        circuit_1: &Circuit,
+        circuit_2: &Circuit,
+        check_zero_state_generators: bool,
+    ) -> Result<bool, Box<dyn Error>> {
+        let z_x_char = if check_zero_state_generators {
+            'Z'
+        } else {
+            'X'
+        };
+
+        for i in 0..circuit_1.num_qubits() {
+            self.generator_set
+                .init_single_generator(i, check_zero_state_generators);
+
+            // First simulate U
+            self.sim(
+                circuit_1,
+                false,
+                format!(
+                    "Determining U{}U^{} ({}th generator)... ",
+                    z_x_char, *DAG_CHAR, i
+                ),
+            )?;
+
+            // Then simulate V^†
+            self.sim(
+                circuit_2,
+                true,
+                format!(
+                    "Determining V^{}(U{}U^{})V ({}th generator)...",
+                    *DAG_CHAR, z_x_char, *DAG_CHAR, i
+                ),
+            )?;
+
+
+            if !self
+                .generator_set
+                .is_single_x_or_z_generator(check_zero_state_generators, i)
+            {
+                // println!("V^{}(U{}U^{})V ({}th generator) result:\n{}", *DAG_CHAR, z_x_char, *DAG_CHAR, i, self.generator_set);
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
+    }
+
     /// Performs a simulation based on the data currently stored in the 'sim_data' struct. These values should
     /// be initialized meaningfully by other functions, e.g. simulate or equivalence_check
     /// 'inverse' specifies whether to run the inverse of the circuit
@@ -144,7 +196,7 @@ impl<'a> Simulator<'a> {
         };
 
         for (i, gate) in circ_iter.enumerate() {
-            if i % self.clean_cycles == 0 {
+            if i != 0 && i % self.clean_cycles == 0 {
                 self.generator_set.clean();
             }
 
@@ -158,7 +210,7 @@ impl<'a> Simulator<'a> {
                 println!("{}", self.generator_set);
             } else {
                 print!(
-                    "\r{}{}% ({}/{}) -- {} components ",
+                    "\r{}{}% ({}/{}) -- {} Pauli strings ",
                     sim_msg,
                     (i as f64 / num_gates as f64 * 100.0) as usize,
                     i,
@@ -173,7 +225,7 @@ impl<'a> Simulator<'a> {
 
         if !self.verbose {
             println!(
-                "\r{}100% -- {} Pauli strings",
+                "\r{}100% -- {} Pauli strings              ",
                 sim_msg,
                 self.generator_set.size()
             );

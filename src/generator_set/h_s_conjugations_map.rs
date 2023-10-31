@@ -31,6 +31,13 @@ impl HSConjugationsMap {
         }
     }
 
+    /// Reset the map for all qubits
+    pub fn reset_all(&mut self) {
+        for i in 0..self.map.len() {
+            self.reset(i);
+        }
+    }
+
     /// Reset the map for a given qubit, that is,
     /// undo the conjugations that have been applied.
     /// This function should only be called once the

@@ -1,5 +1,6 @@
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
+use ordered_float::OrderedFloat;
 use snafu::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
@@ -11,6 +12,7 @@ use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
 use super::ONE_OVER_SQRT_TWO;
+use crate::FP_ERROR_MARGIN;
 use crate::circuit::{Gate, GateType};
 
 pub struct RowWiseBitVec {
@@ -22,16 +24,27 @@ pub struct RowWiseBitVec {
 }
 
 impl RowWiseBitVec {
-    // Creates and returns a new RowWiseBitVec with num_qubits qubits.
+    // Creates and returns an empty RowWiseBitVec
     pub fn new(num_qubits: usize) -> RowWiseBitVec {
         RowWiseBitVec {
-            // We have num_qubits Pauli strings, each with num_qubits gates. Each gate is represented by 2 bits.
-            pauli_strings: bitvec![0; 2*num_qubits*num_qubits],
-            generator_info: Vec::with_capacity(num_qubits),
+            pauli_strings: BitVec::new(),
+            generator_info: Vec::new(),
             h_s_conjugations_map: HSConjugationsMap::new(num_qubits),
             num_qubits,
             size: 0,
         }
+    }
+
+    /// Sets the RowWiseBitVec to contain `size` amount of Pauli strings
+    /// consisting of identity gates only. No generator coefficient information is stored,
+    /// only memory is allocated for it.
+    fn set_default(&mut self, size: usize) {
+        // With have `size` number of Pauli strings, each with `num_qubits` number of gates, which are encoded
+        // using two bits.
+        self.size = size;
+        self.pauli_strings = bitvec![0; 2*self.num_qubits*self.size];
+        self.generator_info = Vec::with_capacity(self.size);
+        self.h_s_conjugations_map = HSConjugationsMap::new(self.num_qubits);
     }
 
     /// Returns the jth gate of the ith Pauli string
@@ -65,20 +78,21 @@ impl RowWiseBitVec {
         self.pstr_first_bit(i) + 2 * self.num_qubits - 1
     }
 
-    /// Reset the RowWiseBitVec to its initial state
-    fn reset(&mut self) {
-        self.pauli_strings = bitvec![0; 2*self.num_qubits*self.num_qubits];
-
-        self.generator_info = Vec::with_capacity(self.num_qubits);
-        self.h_s_conjugations_map = HSConjugationsMap::new(self.num_qubits);
-        self.size = 0;
-    }
-
     /// Clones the bits of the ith Pauli string and appends them to the end of the bitvec.
     fn extend_from_within(&mut self, i: usize) {
         let start = self.pstr_first_bit(i);
         let end = self.pstr_last_bit(i);
         self.pauli_strings.extend_from_within(start..=end);
+    }
+
+    /// Apply the H and S conjugations to all the gates of all the Pauli strings.
+    fn apply_all_h_s_conjugations(&mut self) {
+        for pstr_ind in 0..self.size {
+            for gate_ind in 0..self.num_qubits {
+                self.apply_h_s_conjugations(pstr_ind, gate_ind);
+            }
+        }
+        self.h_s_conjugations_map.reset_all();
     }
 
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
@@ -122,6 +136,16 @@ impl RowWiseBitVec {
         Ok(())
     }
 
+    /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
+    /// or vise versa.
+    fn flip_x_y(&mut self, pstr_ind: usize, gate_ind: usize) {
+        match self.get_pauli_gate(pstr_ind, gate_ind) {
+            PauliGate::X => self.set_pauli_gate(PauliGate::Y, pstr_ind, gate_ind),
+            PauliGate::Y => self.set_pauli_gate(PauliGate::X, pstr_ind, gate_ind),
+            _ => {panic!("Can only call `flip_x_y` on an X or Y gate")}
+        }
+    }
+
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_t_gate(
@@ -134,58 +158,35 @@ impl RowWiseBitVec {
 
             let target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
 
-            match target_p_gate {
-                PauliGate::X => {
-                    self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
+            if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
+                continue;
+            }
 
+            // Copy the Pauli string and flip the X or Y gate of the new 
+            // Pauli string
+            self.extend_from_within(pstr_index);
+            self.flip_x_y(self.size, gate.qubit_1);
+            self.size += 1;
+
+            // Set the generator information appropriately
+            self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
+            self.generator_info.push(self.generator_info[pstr_index].clone());
+
+            match (target_p_gate, conjugate_dagger) {
+                (PauliGate::X, true) => {
                     // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-                    if conjugate_dagger {
-                        self.extend_from_within(pstr_index);
-
-                        let mut new_generator_info = self.generator_info[pstr_index].clone();
-                        new_generator_info.multiply(-1.0);
-                        self.generator_info.push(new_generator_info);
-
-                    // TXT^{\dag} -> 1/sqrt{2} (X + Y)
-                    } else {
-                        self.extend_from_within(pstr_index);
-
-                        let new_generator_info = self.generator_info[pstr_index].clone();
-                        self.generator_info.push(new_generator_info);
-                    }
-
-                    self.set_pauli_gate(PauliGate::X, pstr_index, gate.qubit_1);
-                    self.set_pauli_gate(PauliGate::Y, self.size, gate.qubit_1);
-                    self.size += 1;
+                    self.generator_info.last_mut().unwrap().multiply(-1.0);
                 }
 
-                PauliGate::Y => {
-                    self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-
-                    // T^{\dag}YT -> 1/sqrt(2) (Y + X)
-                    if conjugate_dagger {
-                        self.extend_from_within(pstr_index);
-
-                        let new_generator_info = self.generator_info[pstr_index].clone();
-                        self.generator_info.push(new_generator_info);
-
+                (PauliGate::Y, false) => {
                     // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-                    } else {
-                        self.extend_from_within(pstr_index);
-
-                        let mut new_generator_info = self.generator_info[pstr_index].clone();
-                        new_generator_info.multiply(-1.0);
-                        self.generator_info.push(new_generator_info);
-                    }
-
-                    self.set_pauli_gate(PauliGate::Y, pstr_index, gate.qubit_1);
-                    self.set_pauli_gate(PauliGate::X, self.size, gate.qubit_1);
-                    self.size += 1;
+                    self.generator_info.last_mut().unwrap().multiply(-1.0);
                 }
 
-                _ => {
-                    continue;
-                }
+                // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
+                // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
+                // with 1/sqrt{2} before.
+                _ => {}
             }
         }
 
@@ -239,7 +240,7 @@ impl RowWiseBitVec {
 impl GeneratorSet for RowWiseBitVec {
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
-        self.reset();
+        self.set_default(self.num_qubits);
 
         let p_gate = if zero_state_generators {
             PauliGate::Z
@@ -247,18 +248,61 @@ impl GeneratorSet for RowWiseBitVec {
             PauliGate::X
         };
 
+        self.pauli_strings.resize(2 * self.size * self.size, false);
+
         for generator_index in 0..self.num_qubits {
             self.set_pauli_gate(p_gate, generator_index, generator_index);
             self.generator_info
                 .push(CoefficientList::new(generator_index));
         }
+    }
 
-        self.size = self.num_qubits;
+    /// Initialize the RowWiseBitVec with the ith generator of the all zero state or all plus state.
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
+        self.set_default(1);
+
+        if zero_state_generator {
+            self.set_pauli_gate(PauliGate::Z, 0, i);
+        } else {
+            self.set_pauli_gate(PauliGate::X, 0, i);
+        };
+
+        self.generator_info.push(CoefficientList::new(i));
     }
 
     // TODO
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
-        false
+        unimplemented!()
+    }
+
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        self.apply_all_h_s_conjugations();
+
+        if self.size != 1
+            || self.generator_info[0].coefficients.len() != 1
+            || self.generator_info[0].coefficients[0].0 != i
+            || self.generator_info[0].coefficients[0].1 < OrderedFloat(1.0 - FP_ERROR_MARGIN)
+        {
+            return false;
+        }
+
+        for gate_ind in 0..self.num_qubits {
+            let p_gate = self.get_pauli_gate(0, gate_ind);
+
+            if gate_ind == i {
+                if (check_zero_state && p_gate != PauliGate::Z)
+                    || (!check_zero_state && p_gate != PauliGate::X)
+                {
+                    return false;
+                }
+            } else {
+                if p_gate != PauliGate::I {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.

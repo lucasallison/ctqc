@@ -20,9 +20,9 @@ lazy_static! {
 
 pub trait GeneratorSet: Display {
     fn init_generators(&mut self, zero_state_generators: bool);
-    // fn init_single_generator(&mut self, i: usize, zero_state_generators: bool);
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool);
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool;
-    // fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>>;
     // fn measure() -> bool;
     fn clean(&mut self);

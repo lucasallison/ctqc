@@ -51,7 +51,7 @@ impl ColumnWiseBitVec {
         self.h_s_conjugations_map = HSConjugationsMap::new(self.num_qubits);
     }
 
-    /// Clear all information. This only clears the vectors and does not reset the 
+    /// Clear all information. This only clears the vectors and does not reset the
     /// struct to its initial state.
     fn clear(&mut self) {
         for column in self.columns.iter_mut() {
@@ -177,14 +177,13 @@ impl ColumnWiseBitVec {
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
     fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
-
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size(),
             FxBuildHasher::default(),
         );
 
         for pstr_ind in 0..self.size() {
-            let mut pstr: BitVec = BitVec::with_capacity(2*self.num_qubits);
+            let mut pstr: BitVec = BitVec::with_capacity(2 * self.num_qubits);
             for gate_ind in 0..self.num_qubits {
                 let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
                 let (b1, b2) = PauliGate::pauli_gate_as_tuple(current_p_gate);
@@ -207,8 +206,7 @@ impl ColumnWiseBitVec {
     }
 
     /// Scatter the Pauli strings in the provided map to the bitvec
-    fn scatter(&mut self, map: HashMap<BitVec, CoefficientList, FxBuildHasher>) { 
-
+    fn scatter(&mut self, map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.clear();
 
         for (pstr, coefficients) in map.iter() {
@@ -242,6 +240,8 @@ impl GeneratorSet for ColumnWiseBitVec {
         }
     }
 
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {}
+
     // TODO
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         false
@@ -259,6 +259,11 @@ impl GeneratorSet for ColumnWiseBitVec {
         }
 
         Ok(())
+    }
+
+    // TODO
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        true
     }
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings

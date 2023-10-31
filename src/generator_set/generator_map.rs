@@ -65,6 +65,9 @@ impl GeneratorSet for GeneratorMap {
         }
     }
 
+    // TODO
+    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {}
+
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.clean();
 
@@ -85,6 +88,11 @@ impl GeneratorSet for GeneratorMap {
                 return false;
             }
         }
+        true
+    }
+
+    // TODO
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         true
     }
 

@@ -17,7 +17,7 @@ use generator_set::GeneratorSet;
 
 // TODO
 // Floating point error margin
-static FP_ERROR_MARGIN: f64 = 0.0000000000001;
+static FP_ERROR_MARGIN: f64 = 0.0000000001;
 
 /// Quantum circuit simulator based on the sabilizer formalism
 #[derive(Parser, Debug)]
