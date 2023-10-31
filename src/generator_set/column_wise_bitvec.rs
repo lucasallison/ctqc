@@ -1,6 +1,5 @@
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
-use snafu::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
@@ -45,11 +44,20 @@ impl ColumnWiseBitVec {
         column.set(2 * pstr_ind + 1, b2)
     }
 
-    /// Reset the RowWiseBitVec to its initial state
+    /// Reset the ColumnWiseBitVec to its initial state
     fn reset(&mut self) {
         self.columns = vec![bitvec![0; 2*self.num_qubits]; self.num_qubits];
         self.generator_info = Vec::with_capacity(self.num_qubits);
         self.h_s_conjugations_map = HSConjugationsMap::new(self.num_qubits);
+    }
+
+    /// Clear all information. This only clears the vectors and does not reset the 
+    /// struct to its initial state.
+    fn clear(&mut self) {
+        for column in self.columns.iter_mut() {
+            column.clear();
+        }
+        self.generator_info.clear();
     }
 
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
@@ -65,50 +73,6 @@ impl ColumnWiseBitVec {
             self.h_s_conjugations_map
                 .get_coefficient_multiplier(gate_ind, current_p_gate),
         );
-    }
-
-    /// Sorts the Pauli strings such that the X and Y gates appear first in
-    /// the provided column.
-    /// IMPORTANT: Applies the H and S conjugations to the provided columns
-    /// and resets the map.
-    fn sort(&mut self, col: usize) {
-        let mut sorted_order = vec![0; self.size()];
-
-        let mut x_y_ind = 0;
-        let mut z_i_ind = self.size() - 1;
-
-        // Determine the new order based on the column
-
-        for i in 0..self.size() {
-            self.apply_h_s_conjugations(i, col);
-            let pgate_i = self.get_pauli_gate(i, col);
-
-            if pgate_i == PauliGate::X || pgate_i == PauliGate::Y {
-                sorted_order[i] = x_y_ind;
-                x_y_ind += 1;
-            } else {
-                sorted_order[i] = z_i_ind;
-                z_i_ind = if z_i_ind == 0 { 0 } else { z_i_ind - 1 };
-            }
-        }
-
-        self.h_s_conjugations_map.reset(col);
-
-        // Apply order to each column
-
-        for gate_ind in 0..self.columns.len() {
-            let mut new_column = bitvec![0; 2*self.size()];
-
-            for pstr_ind in 0..self.size() {
-                let pgate = self.get_pauli_gate(pstr_ind, gate_ind);
-                let (b1, b2) = PauliGate::pauli_gate_as_tuple(pgate);
-
-                new_column.set(2 * sorted_order[pstr_ind], b1);
-                new_column.set(2 * sorted_order[pstr_ind] + 1, b2);
-            }
-
-            self.columns[gate_ind] = new_column;
-        }
     }
 
     fn conjugate_cnot(&mut self, gate: &Gate) {
@@ -210,6 +174,51 @@ impl ColumnWiseBitVec {
             }
         }
     }
+
+    /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
+    fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
+
+        let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+
+        for pstr_ind in 0..self.size() {
+            let mut pstr: BitVec = BitVec::with_capacity(2*self.num_qubits);
+            for gate_ind in 0..self.num_qubits {
+                let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
+                let (b1, b2) = PauliGate::pauli_gate_as_tuple(current_p_gate);
+
+                pstr.push(b1);
+                pstr.push(b2);
+            }
+
+            match map.entry(pstr) {
+                Entry::Occupied(mut entry) => {
+                    entry.get_mut().merge(&self.generator_info[pstr_ind]);
+                }
+                Entry::Vacant(entry) => {
+                    entry.insert(self.generator_info[pstr_ind].clone());
+                }
+            }
+        }
+
+        map
+    }
+
+    /// Scatter the Pauli strings in the provided map to the bitvec
+    fn scatter(&mut self, map: HashMap<BitVec, CoefficientList, FxBuildHasher>) { 
+
+        self.clear();
+
+        for (pstr, coefficients) in map.iter() {
+            for (gate_ind, bslice) in pstr.chunks_exact(2).enumerate() {
+                self.columns[gate_ind].push(bslice[0]);
+                self.columns[gate_ind].push(bslice[1]);
+            }
+            self.generator_info.push(coefficients.clone());
+        }
+    }
 }
 
 impl GeneratorSet for ColumnWiseBitVec {
@@ -251,8 +260,10 @@ impl GeneratorSet for ColumnWiseBitVec {
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
-    // TODO
-    fn clean(&mut self) {}
+    fn clean(&mut self) {
+        let map = self.gather();
+        self.scatter(map);
+    }
 
     fn size(&self) -> usize {
         self.columns[0].len() / 2
