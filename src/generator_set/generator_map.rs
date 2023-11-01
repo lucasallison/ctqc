@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use snafu::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
@@ -17,21 +18,32 @@ use crate::{
 };
 
 pub struct GeneratorMap {
-    generator_components: HashMap<PauliString, Component>,
+    generator_components: HashMap<PauliString, Component, FxBuildHasher>,
     num_qubits: usize,
 }
 
 impl GeneratorMap {
     pub fn new(num_qubits: usize) -> GeneratorMap {
         GeneratorMap {
-            generator_components: HashMap::new(),
+            generator_components:
+                HashMap::<PauliString, Component, FxBuildHasher>::with_capacity_and_hasher(
+                    num_qubits,
+                    FxBuildHasher::default(),
+                ),
             num_qubits,
         }
     }
 
-    // TODO ownsership component
+    fn set_default(&mut self) {
+        self.generator_components =
+            HashMap::<PauliString, Component, FxBuildHasher>::with_capacity_and_hasher(
+                self.num_qubits,
+                FxBuildHasher::default(),
+            );
+    }
+
     fn insert_or_merge(
-        map: &mut HashMap<PauliString, Component>,
+        map: &mut HashMap<PauliString, Component, FxBuildHasher>,
         component: Component,
     ) -> Result<(), Box<dyn Error>> {
         let pstr = component.pstr.clone();
@@ -54,20 +66,23 @@ impl GeneratorMap {
 }
 
 impl GeneratorSet for GeneratorMap {
-    // By default initializes the generator components to all zero state generators, i.e.:
-    // ZII..II, IZI..II ... II..IZ
-    // If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
-    // XII..II, IXI..II ... II..IX
+    /// By default initializes the generator components to all zero state generators, i.e.:
+    /// ZII..II, IZI..II ... II..IZ
+    /// If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:
+    /// XII..II, IXI..II ... II..IX
     fn init_generators(&mut self, zero_state_generators: bool) {
+        self.set_default();
         for i in 0..self.num_qubits {
             let comp = Component::ith_generator(self.num_qubits, i, zero_state_generators).unwrap();
             self.generator_components.insert(comp.pstr.clone(), comp);
         }
     }
 
-    // TODO
+    /// Initialize the map with the ith generator of the all zero state or all plus state.
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
-        unimplemented!()
+        self.set_default();
+        let comp = Component::ith_generator(self.num_qubits, i, zero_state_generator).unwrap();
+        self.generator_components.insert(comp.pstr.clone(), comp);
     }
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
@@ -93,13 +108,26 @@ impl GeneratorSet for GeneratorMap {
         true
     }
 
-    // TODO
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
-        unimplemented!()
+        self.clean();
+
+        if self.generator_components.len() != 1 {
+            return false;
+        }
+
+        self.generator_components
+            .values()
+            .next()
+            .unwrap()
+            .is_ith_generator(i, check_zero_state)
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
-        let mut gcs_after_conjugation: HashMap<PauliString, Component> = HashMap::new();
+        let mut gcs_after_conjugation: HashMap<PauliString, Component, FxBuildHasher> =
+            HashMap::<PauliString, Component, FxBuildHasher>::with_capacity_and_hasher(
+                self.generator_components.len(),
+                FxBuildHasher::default(),
+            );
 
         for component in self.generator_components.values_mut() {
             match gate.gate_type {
@@ -184,7 +212,7 @@ impl Component {
         }
     }
 
-    // By default returns a componenet representing the ith generator of the all zero state.
+    // By default returns a component representing the ith generator of the all zero state.
     // I.e., II..IZI..II -> Pauli string with Z on ith place
     // If plus_state_generator is true we return the ith generator of the all plus state.
     // I.e., II..IXI..II -> Pauli string with Z on ith place
@@ -247,6 +275,10 @@ impl Component {
         }
 
         gen_ind as i32
+    }
+
+    pub fn is_ith_generator(&self, i: usize, check_zero_state: bool) -> bool {
+        self.is_generator(check_zero_state) == (i as i32)
     }
 
     fn multiply_generator_coefficients(&mut self, coefficient: f64) {
@@ -417,7 +449,9 @@ impl Component {
     // that is, it is part of at least one generator.
     pub fn remove_zero_coefficient_generators(&mut self) -> bool {
         self.generator_info.retain(|generator_info| {
-            generator_info.coefficient - FP_ERROR_MARGIN > OrderedFloat(0.0)
+            generator_info.coefficient > OrderedFloat(0.0 + FP_ERROR_MARGIN)
+                || generator_info.coefficient + FP_ERROR_MARGIN
+                    < OrderedFloat(0.0 - FP_ERROR_MARGIN)
         });
         return self.valid();
     }

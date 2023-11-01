@@ -60,8 +60,8 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty, that is there 
-    /// is at least one non zero coefficient. 
+    /// Returns true if the Coeffients list is empty, that is there
+    /// is at least one non zero coefficient.
     /// While checking this it removes any zero coefficient.
     pub fn is_empty(&mut self) -> bool {
         self.coefficients.retain(|(_, f)| {

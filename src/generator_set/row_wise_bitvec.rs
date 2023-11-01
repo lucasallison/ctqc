@@ -1,7 +1,6 @@
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
-use snafu::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
@@ -111,7 +110,7 @@ impl RowWiseBitVec {
 
     /// Conjugate each Pauli string in the bitvec with a CNOT gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_cnot(&mut self, gate: &Gate) -> Result<(), RowWiseBitVecError> {
+    fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
 
         for pstr_index in 0..self.size {
@@ -133,7 +132,6 @@ impl RowWiseBitVec {
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-        Ok(())
     }
 
     /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
@@ -150,11 +148,7 @@ impl RowWiseBitVec {
 
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_t_gate(
-        &mut self,
-        gate: &Gate,
-        conjugate_dagger: bool,
-    ) -> Result<(), RowWiseBitVecError> {
+    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
 
@@ -194,7 +188,6 @@ impl RowWiseBitVec {
         }
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
-        Ok(())
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
@@ -273,8 +266,7 @@ impl GeneratorSet for RowWiseBitVec {
         self.generator_info.push(CoefficientList::new(i));
     }
 
-    // TODO
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+    fn is_x_or_z_generators(&mut self, _check_zero_state: bool) -> bool {
         unimplemented!()
     }
 
@@ -314,8 +306,8 @@ impl GeneratorSet for RowWiseBitVec {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map.update(gate, conjugate_dagger);
             }
-            GateType::CNOT => self.conjugate_cnot(gate)?,
-            GateType::T => self.conjugate_t_gate(gate, conjugate_dagger)?,
+            GateType::CNOT => self.conjugate_cnot(gate),
+            GateType::T => self.conjugate_t_gate(gate, conjugate_dagger),
         }
 
         Ok(())
@@ -363,24 +355,6 @@ impl fmt::Display for RowWiseBitVec {
         }
         write!(f, "{}", s)
     }
-}
-
-// ------------------ Errors --------------------------------------
-
-#[derive(Debug, Snafu)]
-pub enum RowWiseBitVecError {
-    #[snafu(display("Index out of bounds."))]
-    IndexOutOfBounds {},
-
-    #[snafu(display(
-        "Cannot conjugate {} gate with the function `{}`",
-        gate_type,
-        function_called
-    ))]
-    InvalidConjugationFunction {
-        function_called: String,
-        gate_type: GateType,
-    },
 }
 
 // ------------------ Tests ---------------------------------------

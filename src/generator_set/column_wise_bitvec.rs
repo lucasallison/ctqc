@@ -1,5 +1,6 @@
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
+use ordered_float::OrderedFloat;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
@@ -11,6 +12,9 @@ use super::pauli_string::PauliGate;
 use super::GeneratorSet;
 use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
+use crate::FP_ERROR_MARGIN;
+
+// TODO abstract code with RowWiseBitVec?
 
 pub struct ColumnWiseBitVec {
     columns: Vec<BitVec>,
@@ -44,10 +48,11 @@ impl ColumnWiseBitVec {
         column.set(2 * pstr_ind + 1, b2)
     }
 
-    /// Reset the ColumnWiseBitVec to its initial state
-    fn reset(&mut self) {
-        self.columns = vec![bitvec![0; 2*self.num_qubits]; self.num_qubits];
-        self.generator_info = Vec::with_capacity(self.num_qubits);
+    // Ensures that all columns contain `size` number of identity gates, i.e.,
+    // the datastructure stores `size` number of Pauli strings of only identity gates.
+    fn set_default(&mut self, size: usize) {
+        self.columns = vec![bitvec![0; 2*size]; self.num_qubits];
+        self.generator_info = Vec::with_capacity(size);
         self.h_s_conjugations_map = HSConjugationsMap::new(self.num_qubits);
     }
 
@@ -60,8 +65,17 @@ impl ColumnWiseBitVec {
         self.generator_info.clear();
     }
 
+    /// Apply the H and S conjugations to all the gates of all the Pauli strings.
+    fn apply_all_h_s_conjugations(&mut self) {
+        for pstr_ind in 0..self.size() {
+            for gate_ind in 0..self.num_qubits {
+                self.apply_h_s_conjugations(pstr_ind, gate_ind);
+            }
+        }
+        self.h_s_conjugations_map.reset_all();
+    }
+
     /// Apply the H and S conjugations to the jth gate of the ith Pauli string.
-    // TODO abstract into trait
     fn apply_h_s_conjugations(&mut self, pstr_ind: usize, gate_ind: usize) {
         let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
         let actual_p_gate = self
@@ -225,7 +239,7 @@ impl ColumnWiseBitVec {
 impl GeneratorSet for ColumnWiseBitVec {
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
-        self.reset();
+        self.set_default(self.num_qubits);
 
         let p_gate = if zero_state_generators {
             PauliGate::Z
@@ -240,19 +254,50 @@ impl GeneratorSet for ColumnWiseBitVec {
         }
     }
 
-    // TODO
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
+        self.set_default(1);
+
+        let p_gate = if zero_state_generator {
+            PauliGate::Z
+        } else {
+            PauliGate::X
+        };
+
+        self.set_pauli_gate(p_gate, 0, i);
+        self.generator_info.push(CoefficientList::new(i));
+    }
+
+    fn is_x_or_z_generators(&mut self, _check_zero_state: bool) -> bool {
         unimplemented!()
     }
 
-    // TODO
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
-        unimplemented!()
-    }
-
-    // TODO
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
-        unimplemented!()
+        self.apply_all_h_s_conjugations();
+
+        if self.size() != 1
+            || self.generator_info[0].coefficients.len() != 1
+            || self.generator_info[0].coefficients[0].0 != i
+            || self.generator_info[0].coefficients[0].1 < OrderedFloat(1.0 - FP_ERROR_MARGIN)
+        {
+            return false;
+        }
+
+        for gate_ind in 0..self.num_qubits {
+            let p_gate = self.get_pauli_gate(0, gate_ind);
+            if gate_ind == i {
+                if (check_zero_state && p_gate != PauliGate::Z)
+                    || (!check_zero_state && p_gate != PauliGate::X)
+                {
+                    return false;
+                }
+            } else {
+                if p_gate != PauliGate::I {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.

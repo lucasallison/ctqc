@@ -35,7 +35,7 @@ impl<'a> Simulator<'a> {
     pub fn simulate(&mut self, circuit: &Circuit) -> Result<(), Box<dyn Error>> {
         self.generator_set.init_generators(true);
 
-        self.sim(circuit, false, String::from("Simulating... "))
+        self.sim(circuit, false, &String::from("Simulating... "))
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
@@ -99,7 +99,7 @@ impl<'a> Simulator<'a> {
         self.sim(
             circuit_1,
             false,
-            format!("Determining U{}U^{}... ", z_x_char, *DAG_CHAR),
+            &format!("Determining U{}U^{}... ", z_x_char, *DAG_CHAR).to_string(),
         )?;
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
@@ -107,10 +107,10 @@ impl<'a> Simulator<'a> {
         self.sim(
             circuit_2,
             true,
-            format!(
+            &format!(
                 "Determining V^{}(U{}U^{})V... ",
                 *DAG_CHAR, z_x_char, *DAG_CHAR
-            ),
+            ).to_string(),
         )?;
 
         Ok(self
@@ -127,7 +127,6 @@ impl<'a> Simulator<'a> {
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> Result<bool, Box<dyn Error>> {
-        let mut stdout = stdout();
 
         let z_x_char = if check_zero_state_generators {
             'Z'
@@ -139,13 +138,8 @@ impl<'a> Simulator<'a> {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
 
-            // First simulate U
-            self.sim(circuit_1, false, "".to_string())?;
 
-            // Then simulate V^†
-            self.sim(circuit_2, true, "".to_string())?;
-
-            print!(
+            let sim_msg = format!(
                 "\rChecking V^{}(U{}U^{})V... {}% (Generator {}/{})",
                 *DAG_CHAR,
                 z_x_char,
@@ -154,21 +148,22 @@ impl<'a> Simulator<'a> {
                 i + 1,
                 circuit_1.num_qubits()
             );
-            stdout.flush().unwrap();
+
+            // First simulate U
+            self.sim(circuit_1, false, &sim_msg)?;
+
+            // Then simulate V^†
+            self.sim(circuit_2, true, &sim_msg)?;
+
 
             if !self
                 .generator_set
                 .is_single_x_or_z_generator(check_zero_state_generators, i)
             {
-                // println!("V^{}(U{}U^{})V ({}th generator) result:\n{}", *DAG_CHAR, z_x_char, *DAG_CHAR, i, self.generator_set);
-                print!("\n");
-                stdout.flush().unwrap();
                 return Ok(false);
             }
         }
 
-        print!("\n");
-        stdout.flush().unwrap();
         Ok(true)
     }
 
@@ -182,7 +177,7 @@ impl<'a> Simulator<'a> {
         &mut self,
         circuit: &Circuit,
         inverse: bool,
-        sim_msg: String,
+        sim_msg: &String,
     ) -> Result<(), Box<dyn Error>> {
         let mut stdout = stdout();
         let num_gates = circuit.len();
@@ -213,9 +208,9 @@ impl<'a> Simulator<'a> {
                 println!("{}", self.generator_set);
             }
 
-            if !self.verbose && !sim_msg.is_empty() {
+            if !self.verbose {
                 print!(
-                    "\r{}{}% ({}/{}) -- {} Pauli strings ",
+                    "\r{}{}% ({}/{}) -- {} Pauli strings",
                     sim_msg,
                     (i as f64 / num_gates as f64 * 100.0) as usize,
                     i,
