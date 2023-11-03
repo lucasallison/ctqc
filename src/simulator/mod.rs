@@ -15,6 +15,7 @@ pub struct Simulator<'a> {
     generator_set: &'a mut dyn GeneratorSet,
     clean_cycles: usize,
     verbose: bool,
+    stdout: std::io::Stdout,
 }
 
 impl<'a> Simulator<'a> {
@@ -27,6 +28,14 @@ impl<'a> Simulator<'a> {
             generator_set,
             clean_cycles,
             verbose,
+            stdout: stdout(),
+        }
+    }
+
+    // Ensures the last wirtten line will not be overwritten
+    fn end_overwrite(&mut self) {
+        if !self.verbose {
+            println!("");
         }
     }
 
@@ -35,7 +44,10 @@ impl<'a> Simulator<'a> {
     pub fn simulate(&mut self, circuit: &Circuit) -> Result<(), Box<dyn Error>> {
         self.generator_set.init_generators(true);
 
-        self.sim(circuit, false, &String::from("Simulating... "))
+        self.sim(circuit, false, &String::from("Simulating... "))?;
+
+        self.end_overwrite();
+        Ok(())
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
@@ -134,36 +146,37 @@ impl<'a> Simulator<'a> {
             'X'
         };
 
+        println!("Simulating V^{}(U{}U^{})V...", *DAG_CHAR, z_x_char, *DAG_CHAR);
+
         for i in 0..circuit_1.num_qubits() {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
 
 
-            let sim_msg = format!(
-                "\rChecking V^{}(U{}U^{})V... {}% (Generator {}/{})",
-                *DAG_CHAR,
-                z_x_char,
-                *DAG_CHAR,
-                ((i + 1) as f64 / circuit_1.num_qubits() as f64 * 100.0) as usize,
+            let progress_info = format!(
+                "Generator {}/{} ({}%). ",
                 i + 1,
-                circuit_1.num_qubits()
+                circuit_1.num_qubits(),
+                ((i + 1) as f64 / circuit_1.num_qubits() as f64 * 100.0) as usize
             );
 
             // First simulate U
-            self.sim(circuit_1, false, &sim_msg)?;
+            self.sim(circuit_1, false, &format!("{progress_info}Conjugating U  -> ").to_string())?;
 
             // Then simulate V^†
-            self.sim(circuit_2, true, &sim_msg)?;
+            self.sim(circuit_2, true, &format!("{progress_info}Conjugating V{} -> ", *DAG_CHAR).to_string())?;
 
 
             if !self
                 .generator_set
                 .is_single_x_or_z_generator(check_zero_state_generators, i)
             {
+                self.end_overwrite();
                 return Ok(false);
             }
         }
 
+        self.end_overwrite();
         Ok(true)
     }
 
@@ -179,7 +192,7 @@ impl<'a> Simulator<'a> {
         inverse: bool,
         sim_msg: &String,
     ) -> Result<(), Box<dyn Error>> {
-        let mut stdout = stdout();
+
         let num_gates = circuit.len();
 
         if self.verbose {
@@ -206,9 +219,7 @@ impl<'a> Simulator<'a> {
 
             if self.verbose {
                 println!("{}", self.generator_set);
-            }
-
-            if !self.verbose {
+            } else {
                 print!(
                     "\r{}{}% ({}/{}) -- {} Pauli strings",
                     sim_msg,
@@ -217,24 +228,22 @@ impl<'a> Simulator<'a> {
                     num_gates,
                     self.generator_set.size(),
                 );
-                stdout.flush().unwrap();
             }
+            self.stdout.flush().unwrap();
         }
 
         self.generator_set.clean();
 
         if self.verbose {
             println!("{}", self.generator_set);
-        }
-
-        if !self.verbose && !sim_msg.is_empty() {
-            // TODO
-            println!(
+        } else {
+            print!(
                 "\r{}100% -- {} Pauli strings              ",
                 sim_msg,
                 self.generator_set.size()
             );
         }
+        self.stdout.flush().unwrap();
 
         Ok(())
     }
