@@ -18,6 +18,16 @@ qc_transpiled = result.qasm(formatted=False)
 
 for line in qc_transpiled.splitlines():
     line = line.rstrip()
-    if re.match(r"h", line):
+    if re.match(r"h q\[\d*\];", line):
+        pass
+    elif re.match(r"s q\[\d*\];", line):
+        pass
+    elif re.match(r"cx q\[\d*\],q\[\d*\];", line):
+        pass
+    elif re.match(r"rz(.*) q\[\d*\];", line):
+        pass
+    elif re.match(r"measure q\[\d*\]", line):
+        pass
+    else:
         print(line)
     
