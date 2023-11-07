@@ -16,5 +16,6 @@ Cargo.lock
 # All generated sample circuits
 src/sample_circuits/*
 !src/sample_circuits/circuit_generator.py
+!src/sample_circuits/qasm_to_ctqc.py
 
 .vscode/
