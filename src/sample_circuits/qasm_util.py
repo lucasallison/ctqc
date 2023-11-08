@@ -7,11 +7,12 @@ import time
 from pathlib import Path
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
+import multiprocessing
+import signal
 
-# ~/Dev/thesis/QASMBench/small/
 
 def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
-    print("Transpiling", f_in)
+    print("Transpiling...")
     qc = QuantumCircuit.from_qasm_file(f_in)
 
     result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
@@ -43,7 +44,6 @@ def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
             # TODO
             pass
 
-    print("Transpilation completed")
     f.close()
 
 def run_qasm(args, qasm_file):
@@ -52,12 +52,31 @@ def run_qasm(args, qasm_file):
     clean_rounds = '1000' if args.c is None else args.c
 
     transpile_qasm_to_ctqc(qasm_file, '.tmp.ctqc')
-    print('File: \'{}\''.format(qasm_file))
+    timeout = False 
     start = time.time()
-    subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+
+    if args.timeout is None:
+        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+
+    else:
+        def handler(signum, frame):
+            raise Exception("Simulation timed out")
+
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(args.timeout)
+
+        try:
+            subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+        except Exception as ex:
+            print("\n** ", ex,)
+            timeout = True
+
+        signal.alarm(0)
+
     end = time.time()
     print("-> %s seconds" % round((end-start), 3))
     os.remove('.tmp.ctqc')
+    return timeout
 
 def run_or_transpile(args, file):
     if args.t:
@@ -67,7 +86,7 @@ def run_or_transpile(args, file):
         else:
             transpile_qasm_to_ctqc(file, f_out)
     else:
-        run_qasm(args, file)
+        return run_qasm(args, file)
 
 
 
@@ -90,6 +109,9 @@ if __name__ == "__main__":
     parser.add_argument('-c', type=str,
                         help='Clean parameter to use for the simulation.')
 
+    parser.add_argument('--timeout', type=int,
+                        help='Stops simulation after timeout seconds.')
+
     parser.add_argument('-t', action='store_true',
                         help='If set the provided QASM file(s) will be transpiled to CTQC.')
 
@@ -100,11 +122,21 @@ if __name__ == "__main__":
 
     elif args.d is not None:  
 
+        timeouts = 0
+        total = 0
+
         pathlist = Path(args.d).rglob('*.qasm')
         for p in pathlist:
             path = str(p)
             if not re.search("transpiled", path):
-                run_or_transpile(args, path)
+                print("-------------", path, "------------")
+                
+                if run_or_transpile(args, path):
+                    timeouts += 1
+                total += 1
+                print("")
+        
+        print("Total: ", total, "Timeouts: ", timeouts)
 
     else:
         print("No QASM file(s) provided.")
