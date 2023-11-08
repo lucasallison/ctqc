@@ -3,16 +3,18 @@ import re
 import os
 import subprocess
 import argparse
+import time
 from pathlib import Path
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
 
 # ~/Dev/thesis/QASMBench/small/
 
-def transpile_qasm_to_ctqc(f_in, f_out):
+def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
+    print("Transpiling", f_in)
     qc = QuantumCircuit.from_qasm_file(f_in)
 
-    result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=2, seed_transpiler=1) 
+    result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
     qc_transpiled = result.qasm(formatted=False)
 
     f = open(f_out, 'w')
@@ -41,16 +43,32 @@ def transpile_qasm_to_ctqc(f_in, f_out):
             # TODO
             pass
 
+    print("Transpilation completed")
     f.close()
 
-def run_qasm(qasm_file):
-    datastructure = 'rbitvec'
-    clean_rounds = '1000'
+def run_qasm(args, qasm_file):
+
+    datastructure = 'rbitvec' if args.ds is None else args.ds
+    clean_rounds = '1000' if args.c is None else args.c
 
     transpile_qasm_to_ctqc(qasm_file, '.tmp.ctqc')
-    print('aa')
-    subprocess.run('cargo run --release -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
-    # os.remove('.tmp.ctqc')
+    print('File: \'{}\''.format(qasm_file))
+    start = time.time()
+    subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+    end = time.time()
+    print("-> %s seconds" % round((end-start), 3))
+    os.remove('.tmp.ctqc')
+
+def run_or_transpile(args, file):
+    if args.t:
+        f_out = os.path.splitext(file)[0]+'.ctqc'
+        if args.o is not None:
+            transpile_qasm_to_ctqc(file, f_out, args.o)
+        else:
+            transpile_qasm_to_ctqc(file, f_out)
+    else:
+        run_qasm(args, file)
+
 
 
 if __name__ == "__main__":
@@ -63,31 +81,31 @@ if __name__ == "__main__":
     parser.add_argument('-d', type=str,
                         help='Path to directory containing QASM files to be transpiled to CTQC or run.')
 
+    parser.add_argument('-o', type=int,
+                        help='Optimization level for transpilation.')
+
+    parser.add_argument('-ds', type=str,
+                        help='Datastructure to use for the simulation.')
+
+    parser.add_argument('-c', type=str,
+                        help='Clean parameter to use for the simulation.')
+
     parser.add_argument('-t', action='store_true',
                         help='If set the provided QASM file(s) will be transpiled to CTQC.')
 
     args = parser.parse_args()
 
     if args.f is not None:
-        if args.t:
-            f_out = os.path.splitext(args.f)[0]+'.ctqc'
-            transpile_qasm_to_ctqc(args.f, f_out)
-        else:
-            print('A')
-            run_qasm(args.f)
-        
+        run_or_transpile(args, args.f)
 
-        # # TODO
+    elif args.d is not None:  
 
-        # dir_path = sys.argv[1]
+        pathlist = Path(args.d).rglob('*.qasm')
+        for p in pathlist:
+            path = str(p)
+            if not re.search("transpiled", path):
+                run_or_transpile(args, path)
 
-        # pathlist = Path(dir_path).rglob('*.qasm')
-        # for p in pathlist:
-        #      # because path is object not string
-        #      path = str(p)
-        #      if not re.search("transpiled", path):
-        #         print(path)
-
-        # exit(1)
     else:
         print("No QASM file(s) provided.")
+
