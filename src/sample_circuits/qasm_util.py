@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
-import multiprocessing
+from qiskit import QuantumCircuit, Aer, execute
 import signal
 
 
@@ -46,17 +46,33 @@ def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
 
     f.close()
 
+def sim(args, qc=None):
+    if args.qiskit:
+        backend = Aer.get_backend("qasm_simulator")
+        execute(qc, backend, shots=1)
+    else:
+        datastructure = 'rbitvec' if args.ds is None else args.ds
+        clean_rounds = '1000' if args.c is None else args.c
+        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+
+
+
 def run_qasm(args, qasm_file):
 
-    datastructure = 'rbitvec' if args.ds is None else args.ds
-    clean_rounds = '1000' if args.c is None else args.c
+    optimization_level = 0 if args.o is None else args.o    
 
-    transpile_qasm_to_ctqc(qasm_file, '.tmp.ctqc')
+    # Either transpile to qasm or to ctqc
+    if args.qiskit:
+        qc = QuantumCircuit.from_qasm_file(qasm_file)
+        qc_transpiled = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
+    else:
+        transpile_qasm_to_ctqc(qasm_file, '.tmp.ctqc', optimization_level)
+
     timeout = False 
     start = time.time()
 
     if args.timeout is None:
-        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+        sim(args, qc_transpiled)
 
     else:
         def handler(signum, frame):
@@ -66,7 +82,7 @@ def run_qasm(args, qasm_file):
         signal.alarm(args.timeout)
 
         try:
-            subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+            sim(args, qc_transpiled)
         except Exception as ex:
             print("\n** ", ex,)
             timeout = True
@@ -75,10 +91,12 @@ def run_qasm(args, qasm_file):
 
     end = time.time()
     print("-> %s seconds" % round((end-start), 3))
-    os.remove('.tmp.ctqc')
+    if not args.qiskit:
+        os.remove('.tmp.ctqc')
     return timeout
 
 def run_or_transpile(args, file):
+
     if args.t:
         f_out = os.path.splitext(file)[0]+'.ctqc'
         if args.o is not None:
@@ -87,8 +105,7 @@ def run_or_transpile(args, file):
             transpile_qasm_to_ctqc(file, f_out)
     else:
         return run_qasm(args, file)
-
-
+    
 
 if __name__ == "__main__":
 
@@ -115,6 +132,9 @@ if __name__ == "__main__":
     parser.add_argument('-t', action='store_true',
                         help='If set the provided QASM file(s) will be transpiled to CTQC.')
 
+    parser.add_argument('--qiskit', action='store_true',
+                        help='Simulate using Qiskit instead of CTQC.')
+
     args = parser.parse_args()
 
     if args.f is not None:
@@ -128,6 +148,7 @@ if __name__ == "__main__":
         pathlist = Path(args.d).rglob('*.qasm')
         for p in pathlist:
             path = str(p)
+            # TODO 
             if not re.search("transpiled", path):
                 print("-------------", path, "------------")
                 
