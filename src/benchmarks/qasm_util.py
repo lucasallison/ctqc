@@ -14,29 +14,34 @@ def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
     print("Transpiling...")
     qc = QuantumCircuit.from_qasm_file(f_in)
 
-    result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
+    try:
+        result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
+    except:
+        print("Transpilation failed.")
+        return False 
+    
     qc_transpiled = result.qasm(formatted=False)
 
     f = open(f_out, 'w')
 
     for line in qc_transpiled.splitlines():
         line = line.rstrip()
-        if re.match(r"h q\[\d*\];", line):
-            qubit = int(re.search(r'\d+', line).group())
+        if re.match(r"h .*\[\d*\];", line):
+            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
             f.write("H " + str(qubit) + "\n")
-        elif re.match(r"s q\[\d*\];", line):
-            qubit = int(re.search(r'\d+', line).group())
+        elif re.match(r"s .*\[\d*\];", line):
+            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
             f.write("S " + str(qubit) + "\n")
-        elif re.match(r"cx q\[\d*\],q\[\d*\];", line):
-            qubit_1 = int(re.search(r'\d+', line.split(',')[0]).group())
-            qubit_2 = int(re.search(r'\d+', line.split(',')[1]).group())
+        elif re.match(r"cx .*\[\d*\],.*\[\d*\];", line):
+            qubit_1 = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(',')[0]).group()).group())
+            qubit_2 = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(',')[1]).group()).group())
             f.write("CNOT " + str(qubit_1) + " " + str(qubit_2) + "\n")
-        elif re.match(r"rz(.*) q\[\d*\];", line):
+        elif re.match(r"rz(.*) .*\[\d*\];", line):
             # TODO
             # angle = int(re.search(r'\d+', line.split(' ')[0]).group())
-            qubit = int(re.search(r'\d+', line.split(' ')[1]).group())
+            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(' ')[1]).group()).group())
             f.write("T " + str(qubit) + "\n")
-        elif re.match(r"measure q\[\d*\]", line):
+        elif re.match(r"measure *.\[\d*\]", line):
             pass
         else:
             # print("Failed to parse: ", line, "(ignored)") 
@@ -44,6 +49,7 @@ def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
             pass
 
     f.close()
+    return True
 
 def sim(args, qc=None):
     if args.qiskit:
@@ -99,10 +105,9 @@ def run_or_transpile(args, file):
 
     if args.t:
         f_out = os.path.splitext(file)[0]+'.ctqc'
-        if args.o is not None:
-            transpile_qasm_to_ctqc(file, f_out, args.o)
-        else:
-            transpile_qasm_to_ctqc(file, f_out)
+        op = 0 if args.o is None else args.o
+        if not transpile_qasm_to_ctqc(file, f_out, op):
+            return None
     else:
         return run_qasm(args, file)
     
@@ -152,8 +157,16 @@ if __name__ == "__main__":
             if not re.search("transpiled", path):
                 print("-------------", path, "------------")
                 
-                if run_or_transpile(args, path):
+                res = run_or_transpile(args, path)
+                
+                # Something went wrong
+                if res is None: 
+                    continue
+
+                # Simulation timed out
+                if res:
                     timeouts += 1
+
                 total += 1
                 print("")
         
