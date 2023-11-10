@@ -13,9 +13,4 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 
-# All generated sample circuits
-src/sample_circuits/*
-!src/sample_circuits/circuit_generator.py
-!src/sample_circuits/qasm_util.py
-
 .vscode/
