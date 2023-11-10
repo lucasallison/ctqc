@@ -1,3 +1,4 @@
+import sys
 import re
 import os
 import subprocess
@@ -10,20 +11,24 @@ from qiskit import QuantumCircuit, Aer, execute
 import signal
 
 
-def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
-    print("Transpiling...")
+def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
+
+    if args.v:
+        print("Transpiling...")
+
     qc = QuantumCircuit.from_qasm_file(f_in)
 
     try:
         result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
     except:
-        print("Transpilation failed.")
+        print("Transpilation failed.", file=sys.stderr)
         return False 
     
     qc_transpiled = result.qasm(formatted=False)
 
     f = open(f_out, 'w')
 
+    gates_count = 0
     for line in qc_transpiled.splitlines():
         line = line.rstrip()
         if re.match(r"h .*\[\d*\];", line):
@@ -42,12 +47,14 @@ def transpile_qasm_to_ctqc(f_in, f_out, optimization_level=0):
             qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(' ')[1]).group()).group())
             f.write("T " + str(qubit) + "\n")
         elif re.match(r"measure *.\[\d*\]", line):
-            pass
+            continue
         else:
             # print("Failed to parse: ", line, "(ignored)") 
             # TODO
-            pass
+            continue
+        gates_count += 1
 
+    print(f_in, '-', gates_count, "gates", end=" ")
     f.close()
     return True
 
@@ -58,7 +65,9 @@ def sim(args, qc=None):
     else:
         datastructure = 'rbitvec' if args.ds is None else args.ds
         clean_rounds = '1000' if args.c is None else args.c
-        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=False)
+        if args.v:
+            print("\n")
+        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=(not args.v))
 
 
 
@@ -72,7 +81,7 @@ def run_qasm(args, qasm_file):
         qc = QuantumCircuit.from_qasm_file(qasm_file)
         qc_transpiled = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
     else:
-        transpile_qasm_to_ctqc(qasm_file, '.tmp.ctqc', optimization_level)
+        transpile_qasm_to_ctqc(args, qasm_file, '.tmp.ctqc', optimization_level)
 
     timeout = False 
     start = time.time()
@@ -90,7 +99,9 @@ def run_qasm(args, qasm_file):
         try:
             sim(args, qc_transpiled)
         except Exception as ex:
-            print("\n** ", ex,)
+            if args.v:
+                print("\n")
+            print(" ** ", ex, end=" ")
             timeout = True
 
         signal.alarm(0)
@@ -106,7 +117,7 @@ def run_or_transpile(args, file):
     if args.t:
         f_out = os.path.splitext(file)[0]+'.ctqc'
         op = 0 if args.o is None else args.o
-        if not transpile_qasm_to_ctqc(file, f_out, op):
+        if not transpile_qasm_to_ctqc(args, file, f_out, op):
             return None
     else:
         return run_qasm(args, file)
@@ -137,6 +148,9 @@ if __name__ == "__main__":
     parser.add_argument('-t', action='store_true',
                         help='If set the provided QASM file(s) will be transpiled to CTQC.')
 
+    parser.add_argument('-v', action='store_true',
+                        help='Verbose mode')
+
     parser.add_argument('--qiskit', action='store_true',
                         help='Simulate using Qiskit instead of CTQC.')
 
@@ -155,7 +169,8 @@ if __name__ == "__main__":
             path = str(p)
             # TODO 
             if not re.search("transpiled", path):
-                print("-------------", path, "------------")
+                if args.v:
+                    print("-------------", path, "------------")
                 
                 res = run_or_transpile(args, path)
                 
@@ -168,10 +183,11 @@ if __name__ == "__main__":
                     timeouts += 1
 
                 total += 1
-                print("")
+                if args.v:
+                    print("")
         
         print("Total: ", total, "Timeouts: ", timeouts)
 
     else:
-        print("No QASM file(s) provided.")
+        print("No QASM file(s) provided.", file=sys.stderr)
 
