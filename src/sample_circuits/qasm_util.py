@@ -1,4 +1,3 @@
-import sys
 import re
 import os
 import subprocess
@@ -62,6 +61,7 @@ def run_qasm(args, qasm_file):
     optimization_level = 0 if args.o is None else args.o    
 
     # Either transpile to qasm or to ctqc
+    qc_transpiled = None
     if args.qiskit:
         qc = QuantumCircuit.from_qasm_file(qasm_file)
         qc_transpiled = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
