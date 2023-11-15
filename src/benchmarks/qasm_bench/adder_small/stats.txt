@@ -1,0 +1,7 @@
+adder_n10.qasm - 157 gates -> 0.133 seconds
+adder_n4.qasm - 29 gates -> 0.102 seconds
+adder_n433.qasm - 7348 gates  **  Simulation timed out -> 5.006 seconds
+adder_n118.qasm - 1993 gates -> 2.645 seconds
+adder_n28.qasm - 463 gates -> 0.3 seconds
+adder_n64.qasm - 1075 gates -> 1.111 seconds
+Total:  6 Timeouts:  1

@@ -238,8 +238,10 @@ impl<'a> Simulator<'a> {
             println!("{}", self.generator_set);
         } else {
             print!(
-                "\r{}100% -- {} Pauli strings              ",
+                "\r{}100% ({}/{}) -- {} Pauli strings              ",
                 sim_msg,
+                num_gates,
+                num_gates,
                 self.generator_set.size()
             );
         }
