@@ -4,6 +4,7 @@ use std::error::Error;
 use std::io::{stdout, Write};
 
 use crate::circuit::Circuit;
+use crate::circuit::GateType;
 use crate::generator_set::GeneratorSet;
 
 lazy_static! {
@@ -122,7 +123,8 @@ impl<'a> Simulator<'a> {
             &format!(
                 "Determining V^{}(U{}U^{})V... ",
                 *DAG_CHAR, z_x_char, *DAG_CHAR
-            ).to_string(),
+            )
+            .to_string(),
         )?;
 
         Ok(self
@@ -139,19 +141,20 @@ impl<'a> Simulator<'a> {
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> Result<bool, Box<dyn Error>> {
-
         let z_x_char = if check_zero_state_generators {
             'Z'
         } else {
             'X'
         };
 
-        println!("Simulating V^{}(U{}U^{})V...", *DAG_CHAR, z_x_char, *DAG_CHAR);
+        println!(
+            "Simulating V^{}(U{}U^{})V...",
+            *DAG_CHAR, z_x_char, *DAG_CHAR
+        );
 
         for i in 0..circuit_1.num_qubits() {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
-
 
             let progress_info = format!(
                 "Generator {}/{} ({}%). ",
@@ -161,11 +164,18 @@ impl<'a> Simulator<'a> {
             );
 
             // First simulate U
-            self.sim(circuit_1, false, &format!("{progress_info}Conjugating U  -> ").to_string())?;
+            self.sim(
+                circuit_1,
+                false,
+                &format!("{progress_info}Conjugating U  -> ").to_string(),
+            )?;
 
             // Then simulate V^†
-            self.sim(circuit_2, true, &format!("{progress_info}Conjugating V{} -> ", *DAG_CHAR).to_string())?;
-
+            self.sim(
+                circuit_2,
+                true,
+                &format!("{progress_info}Conjugating V{} -> ", *DAG_CHAR).to_string(),
+            )?;
 
             if !self
                 .generator_set
@@ -192,7 +202,6 @@ impl<'a> Simulator<'a> {
         inverse: bool,
         sim_msg: &String,
     ) -> Result<(), Box<dyn Error>> {
-
         let num_gates = circuit.len();
 
         if self.verbose {
@@ -215,7 +224,21 @@ impl<'a> Simulator<'a> {
                 println!("Applied {}", gate);
             }
 
-            self.generator_set.conjugate(gate, inverse)?;
+            match gate.gate_type {
+                GateType::M => {
+                    let (measurement, p0) = self.generator_set.measure(gate.qubit_1);
+                    print!(
+                        "\rMeasurment of qubit {} -> {} (p0: {}, p1: {})                      \n",
+                        gate.qubit_1,
+                        measurement as u8,
+                        p0,
+                        1.0 - p0
+                    );
+                }
+                _ => {
+                    self.generator_set.conjugate(gate, inverse)?;
+                }
+            }
 
             if self.verbose {
                 println!("{}", self.generator_set);
@@ -235,6 +258,7 @@ impl<'a> Simulator<'a> {
         self.generator_set.clean();
 
         if self.verbose {
+            println!("Final components:");
             println!("{}", self.generator_set);
         } else {
             print!(

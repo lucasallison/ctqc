@@ -139,8 +139,15 @@ impl GeneratorSet for GeneratorMap {
                         Self::insert_or_merge(&mut gcs_after_conjugation, new_component)?;
                     }
                 }
-                _ => {
+                GateType::H | GateType::S | GateType::CNOT => {
                     component.conjugate_clifford(gate, conjugate_dagger)?;
+                }
+                GateType::Rz => {
+                    // TODO
+                    unimplemented!()
+                }
+                _ => {
+                    panic!("Can only conjugate a H, S, CNOT, T or Rz gate")
                 }
             }
 
@@ -149,6 +156,10 @@ impl GeneratorSet for GeneratorMap {
 
         self.generator_components = gcs_after_conjugation;
         Ok(())
+    }
+
+    fn measure(&mut self, _i: usize) -> (bool, f64) {
+        unimplemented!()
     }
 
     // Removes all invalid components
@@ -299,7 +310,7 @@ impl Component {
                 return self.h_s_conjugation(gate, conjugate_dagger);
             }
             GateType::CNOT => {
-                return self.cnot_conjugation(gate);
+                return self.conjugate_cnot(gate);
             }
             GateType::S => {
                 return self.h_s_conjugation(gate, conjugate_dagger);
@@ -350,7 +361,7 @@ impl Component {
         Ok(true)
     }
 
-    fn cnot_conjugation(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
+    fn conjugate_cnot(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
         let qubit_2 = gate.qubit_2.unwrap();
 
         let q1_target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
@@ -601,7 +612,7 @@ mod tests {
         let input = pauli_from_str("XIZII");
         let output = pauli_from_str("XIXII");
 
-        let hadamard = Gate::new(&"H".to_string(), 2, None).unwrap();
+        let hadamard = Gate::new(&"H".to_string(), 2, None, None).unwrap();
 
         let mut c = Component::new(input);
 
@@ -616,7 +627,7 @@ mod tests {
         let input = pauli_from_str("YIZII");
         let output = pauli_from_str("YIZII");
 
-        let hadamard = Gate::new(&"H".to_string(), 0, None).unwrap();
+        let hadamard = Gate::new(&"H".to_string(), 0, None, None).unwrap();
 
         let mut c = Component::new(input);
         c.generator_info.push(GeneratorInfo::new(0));
@@ -642,7 +653,7 @@ mod tests {
         let input = pauli_from_str("Y");
         let output = pauli_from_str("X");
 
-        let s_gate = Gate::new(&"S".to_string(), 0, None).unwrap();
+        let s_gate = Gate::new(&"S".to_string(), 0, None, None).unwrap();
 
         let mut c = Component::new(input);
         c.generator_info.push(GeneratorInfo::new(0));
@@ -667,7 +678,7 @@ mod tests {
         let input = pauli_from_str("IXIZI");
         let output = pauli_from_str("IYIYI");
 
-        let cnot = Gate::new(&"CNOT".to_string(), 1, Some(3)).unwrap();
+        let cnot = Gate::new(&"CNOT".to_string(), 1, Some(3), None).unwrap();
 
         let mut c = Component::new(input);
         let res = c.conjugate_clifford(&cnot, false);
@@ -681,7 +692,7 @@ mod tests {
         let input = pauli_from_str("IXIZII");
         let output = pauli_from_str("IXIZXI");
 
-        let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4)).unwrap();
+        let cnot = Gate::new(&"CNOT".to_string(), 1, Some(4), None).unwrap();
 
         let mut c = Component::new(input);
         let res = c.conjugate_clifford(&cnot, false).unwrap();

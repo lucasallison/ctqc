@@ -308,9 +308,20 @@ impl GeneratorSet for ColumnWiseBitVec {
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::T => self.conjugate_t_gate(gate, conjugate_dagger),
+            GateType::Rz => {
+                // TODO
+                unimplemented!()
+            }
+            _ => {
+                panic!("Can only conjugate a H, S, CNOT, T or Rz gate")
+            }
         }
 
         Ok(())
+    }
+
+    fn measure(&mut self, _i: usize) -> (bool, f64) {
+        unimplemented!()
     }
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings

@@ -31,7 +31,8 @@ pub trait GeneratorSet: Display {
     // TODO Error?
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>>;
 
-    // fn measure() -> bool;
+    /// Return the measurment result and the probability of measuring zero
+    fn measure(&mut self, i: usize) -> (bool, f64);
 
     fn clean(&mut self);
 

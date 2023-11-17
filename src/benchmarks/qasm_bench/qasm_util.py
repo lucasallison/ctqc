@@ -10,7 +10,6 @@ from qiskit.compiler import transpile
 from qiskit import QuantumCircuit, Aer, execute
 import signal
 
-
 def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
 
     if args.v:
@@ -28,9 +27,12 @@ def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
 
     f = open(f_out, 'w')
 
+    transpilation_started = False
+
     gates_count = 0
     for line in qc_transpiled.splitlines():
         line = line.rstrip()
+
         if re.match(r"h .*\[\d*\];", line):
             qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
             f.write("H " + str(qubit) + "\n")
@@ -42,16 +44,19 @@ def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
             qubit_2 = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(',')[1]).group()).group())
             f.write("CNOT " + str(qubit_1) + " " + str(qubit_2) + "\n")
         elif re.match(r"rz(.*) .*\[\d*\];", line):
-            # TODO
-            # angle = int(re.search(r'\d+', line.split(' ')[0]).group())
+            angle = re.search(r'\((.*?)\)', line).group(1)
             qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(' ')[1]).group()).group())
-            f.write("T " + str(qubit) + "\n")
-        elif re.match(r"measure *.\[\d*\]", line):
-            continue
+            f.write("Rz(" + angle + ") " + str(qubit) + "\n")
+        elif re.match(r"measure .*\[\d*\]", line):
+            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
+            f.write("M " + str(qubit) + "\n")
         else:
-            # print("Failed to parse: ", line, "(ignored)") 
-            # TODO
-            continue
+            if transpilation_started: 
+                print("Cannot transpile", line, "(ignored)", file=sys.stderr) 
+            else:
+                continue
+            
+        transpilation_started = True
         gates_count += 1
 
     print(f_in, '-', gates_count, "gates", end=" ")
@@ -61,7 +66,9 @@ def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
 def sim(args, qc=None):
     if args.qiskit:
         backend = Aer.get_backend("qasm_simulator")
-        execute(qc, backend, shots=1)
+        res = execute(qc, backend, shots=1)
+        if args.v:
+            print(res.result().get_counts())
     else:
         datastructure = 'rbitvec' if args.ds is None else args.ds
         clean_rounds = '1000' if args.c is None else args.c

@@ -9,6 +9,7 @@ f_in = sys.argv[1]
 qc = QuantumCircuit.from_qasm_file(f_in)
 backend = Aer.get_backend("qasm_simulator")
 start = time.time()
-execute(qc, backend, shots=1)
+res = execute(qc, backend, shots=1000)
 end = time.time()
 print("-> %s seconds" % round((end-start), 3))
+print(res.result().get_counts())
