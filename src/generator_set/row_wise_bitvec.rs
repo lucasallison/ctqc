@@ -304,18 +304,23 @@ impl RowWiseBitVec {
         ith_generator_index
     }
 
-    /// Returns wheter the pstring contains only identity gates
+    /// Returns wheter the Pauli string contains only identity gates
     /// and a single Z gate at the ith position, i.e.,
     /// I^⊗{i-1}ZI^⊗{n-i}.
     fn is_single_z_pstr(&self, pstr: &BitVec, i: usize) -> bool {
+        // println!("{:?} {}", pstr, i);
         for gate_ind in 0..self.num_qubits {
-            let pgate = PauliGate::pauli_gate_from_tuple(pstr[gate_ind], pstr[gate_ind + 1]);
+            let pgate = PauliGate::pauli_gate_from_tuple(pstr[2*gate_ind], pstr[2*gate_ind + 1]);
+
+            // println!("gate_ind: {}, pgate: {}", gate_ind, pgate);
 
             if gate_ind == i && pgate != PauliGate::Z {
+                // println!("gate_ind == i && pgate != PauliGate::Z");
                 return false;
             }
 
             if gate_ind != i && pgate != PauliGate::I {
+                // println!("gate_ind != i && pgate != PauliGate::I");
                 return false;
             }
         }
