@@ -23,7 +23,13 @@ pub struct GeneratorMap {
 }
 
 impl GeneratorMap {
-    pub fn new(num_qubits: usize) -> GeneratorMap {
+
+    pub fn new(num_qubits: usize, n_threads: usize) -> GeneratorMap {
+
+        if n_threads != 1 {
+            panic!("GeneratorMap does not support multithreading");
+        }
+
         GeneratorMap {
             generator_components:
                 HashMap::<PauliString, Component, FxBuildHasher>::with_capacity_and_hasher(
@@ -66,6 +72,7 @@ impl GeneratorMap {
 }
 
 impl GeneratorSet for GeneratorMap {
+
     /// By default initializes the generator components to all zero state generators, i.e.:
     /// ZII..II, IZI..II ... II..IZ
     /// If plus_state_generators is true, then the generators are initialized to plus state generators, i.e.:

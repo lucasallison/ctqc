@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
-from qiskit import QuantumCircuit, Aer, execute
+from qiskit import QuantumCircuit
 import signal
 
 def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
@@ -64,37 +64,24 @@ def transpile_qasm_to_ctqc(args, f_in, f_out, optimization_level=0):
     return True
 
 def sim(args, qc=None):
-    if args.qiskit:
-        backend = Aer.get_backend("qasm_simulator")
-        res = execute(qc, backend, shots=1)
-        if args.v:
-            print(res.result().get_counts())
-    else:
-        datastructure = 'rbitvec' if args.ds is None else args.ds
-        clean_rounds = '1000' if args.c is None else args.c
-        if args.v:
-            print("\n")
-        subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=(not args.v))
-
+    datastructure = 'rbitvec' if args.ds is None else args.ds
+    clean_rounds = '1000' if args.c is None else args.c
+    if args.v:
+        print("\n")
+    subprocess.run('cargo run --release -q -- -f .tmp.ctqc -t ' + datastructure + ' -c ' + clean_rounds, shell=True, capture_output=(not args.v))
 
 
 def run_qasm(args, qasm_file):
 
     optimization_level = 0 if args.o is None else args.o    
 
-    # Either transpile to qasm or to ctqc
-    qc_transpiled = None
-    if args.qiskit:
-        qc = QuantumCircuit.from_qasm_file(qasm_file)
-        qc_transpiled = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
-    else:
-        transpile_qasm_to_ctqc(args, qasm_file, '.tmp.ctqc', optimization_level)
+    transpile_qasm_to_ctqc(args, qasm_file, '.tmp.ctqc', optimization_level)
 
     timeout = False 
     start = time.time()
 
     if args.timeout is None:
-        sim(args, qc_transpiled)
+        sim(args)
 
     else:
         def handler(signum, frame):
@@ -104,7 +91,7 @@ def run_qasm(args, qasm_file):
         signal.alarm(args.timeout)
 
         try:
-            sim(args, qc_transpiled)
+            sim(args)
         except Exception as ex:
             if args.v:
                 print("\n")
@@ -114,9 +101,8 @@ def run_qasm(args, qasm_file):
         signal.alarm(0)
 
     end = time.time()
-    print("-> %s seconds" % round((end-start), 3))
-    if not args.qiskit:
-        os.remove('.tmp.ctqc')
+    print("\n-> %s seconds" % round((end-start), 3))
+    os.remove('.tmp.ctqc')
     return timeout
 
 def run_or_transpile(args, file):
@@ -157,9 +143,6 @@ if __name__ == "__main__":
 
     parser.add_argument('-v', action='store_true',
                         help='Verbose mode')
-
-    parser.add_argument('--qiskit', action='store_true',
-                        help='Simulate using Qiskit instead of CTQC.')
 
     args = parser.parse_args()
 

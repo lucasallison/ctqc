@@ -16,27 +16,28 @@ use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
 
-/// Implementation of a generator set that stores the
-/// Pauli strings in a single large bitvec.
-pub struct RowWiseBitVec {
+/// A Parallel implementation of the RowWiseBitVec
+pub struct ParallelRowWiseBitVec {
     pauli_strings: BitVec,
     generator_info: Vec<CoefficientList>,
     h_s_conjugations_map: HSConjugationsMap,
     num_qubits: usize,
     size: usize,
+    n_threads: usize,
 }
 
-impl RowWiseBitVec {
+impl ParallelRowWiseBitVec {
 
     // Creates and returns an empty RowWiseBitVec
-    pub fn new(num_qubits: usize) -> RowWiseBitVec {
+    pub fn new(num_qubits: usize, n_threads: usize) -> ParallelRowWiseBitVec {
 
-        RowWiseBitVec {
+        ParallelRowWiseBitVec {
             pauli_strings: BitVec::new(),
             generator_info: Vec::new(),
             h_s_conjugations_map: HSConjugationsMap::new(num_qubits),
             num_qubits,
             size: 0,
+            n_threads: n_threads,
         }
     }
 
@@ -119,26 +120,43 @@ impl RowWiseBitVec {
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
+        
+        // Each process will conjugate self.size / self.n_threads Pauli strings. 
+        // As a single Pauli string is 2 * self.num_qubits bits,
+        // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
+        let chunk_size = (2 * self.num_qubits) * (self.size / self.n_threads);
 
-        for pstr_index in 0..self.size {
-            self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-            self.apply_h_s_conjugations(pstr_index, qubit_2);
+        thread::scope(|scope| {
 
-            let q1_target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-            let q2_target_p_gate = self.get_pauli_gate(pstr_index, qubit_2);
+            for (chunk_offset, chunk) in self.pauli_strings.chunks_mut(chunk_size).enumerate() {
+                scope.spawn(move ||  {
 
-            let look_up_output = CNOT_CONJ_UPD_RULES
-                .get(&(q1_target_p_gate, q2_target_p_gate))
-                .unwrap();
+                    for (pstr_offset, pstr_bits) in chunk.chunks_mut(2 * self.num_qubits).enumerate() {
+                        let mut pstr = pstr_bits.to_bitvec();
 
-            self.generator_info[pstr_index].multiply(look_up_output.coefficient);
+                        let qubit_1 = gate.qubit_1;
+                        let qubit_2 = gate.qubit_2.unwrap();
 
-            self.set_pauli_gate(look_up_output.q1_p_gate, pstr_index, gate.qubit_1);
-            self.set_pauli_gate(look_up_output.q2_p_gate, pstr_index, qubit_2);
-        }
+                        let qubit_1_p_gate = self.get_pauli_gate(qubit_1, qubit_1);
+                        let qubit_2_p_gate = self.get_pauli_gate(qubit_1, qubit_2);
+
+                        let look_up_output = CNOT_CONJ_UPD_RULES.get(&(qubit_1_p_gate, qubit_2_p_gate)).unwrap();
+
+                        let qubit_1_p_gate = look_up_output.qubit_1_p_gate;
+                        let qubit_2_p_gate = look_up_output.qubit_2_p_gate;
+
+                        self.set_pauli_gate(qubit_1_p_gate, qubit_1, qubit_2);
+                        self.set_pauli_gate(qubit_2_p_gate, qubit_1, qubit_1);
+                    } 
+
+                });
+            }
+
+        });
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
+
     }
 
 
@@ -157,42 +175,7 @@ impl RowWiseBitVec {
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        for pstr_index in 0..self.size {
-            self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-
-            let target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-
-            if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
-                continue;
-            }
-
-            // Copy the Pauli string and flip the X or Y gate of the new
-            // Pauli string
-            self.extend_from_within(pstr_index);
-            self.flip_x_y(self.size, gate.qubit_1);
-            self.size += 1;
-
-            // Set the generator information appropriately and create
-            // a new generator info for the new Pauli string
-            self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-            self.generator_info
-                .push(self.generator_info[pstr_index].clone());
-
-            match (target_p_gate, conjugate_dagger) {
-                (PauliGate::X, true) | (PauliGate::Y, false) => {
-                    // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-                    // and
-                    // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-                    self.generator_info.last_mut().unwrap().multiply(-1.0);
-                },
-                // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
-                // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
-                // with 1/sqrt{2} before.
-                _ => {}
-            }
-        }
-
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        unimplemented!()
     }
 
 
@@ -203,49 +186,7 @@ impl RowWiseBitVec {
     /// Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y 
     /// Z and I remain unchanged. 
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        for pstr_index in 0..self.size {
-            self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-
-            let target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-
-            if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
-                continue;
-            }
-
-            // We create a new Pauli string
-            // And ensure the original Pauli string has an X gate at the target qubit
-            // and ensure the copied Pauli string has an Y gate at the target qubit
-            self.extend_from_within(pstr_index);
-            self.set_pauli_gate(PauliGate::X, pstr_index, gate.qubit_1);
-            self.set_pauli_gate(PauliGate::Y, self.size, gate.qubit_1);
-            self.size += 1;
-
-            self.generator_info
-                .push(self.generator_info[pstr_index].clone());
-            
-            // Multiply coeffients with +/- and cos/sin
-            match (target_p_gate, conjugate_dagger) {
-                (PauliGate::X, false)  => {
-                    self.generator_info[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
-                },
-                (PauliGate::Y, false) => {
-                    self.generator_info[pstr_index].multiply(-1.0 * gate.angle.unwrap().sin());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().cos());
-                }
-                (PauliGate::X, true) => {
-                    self.generator_info[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.generator_info.last_mut().unwrap().multiply(-1.0 * gate.angle.unwrap().sin());
-                }
-                (PauliGate::Y, true) => {
-                    self.generator_info[pstr_index].multiply(gate.angle.unwrap().sin());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().cos());
-                }
-                _ => {unreachable!()}
-            }
-        }
-
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        unimplemented!()
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
@@ -420,7 +361,7 @@ impl RowWiseBitVec {
     }
 }
 
-impl GeneratorSet for RowWiseBitVec {
+impl GeneratorSet for ParallelRowWiseBitVec {
 
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
@@ -545,7 +486,7 @@ impl GeneratorSet for RowWiseBitVec {
     }
 }
 
-impl fmt::Display for RowWiseBitVec {
+impl fmt::Display for ParallelRowWiseBitVec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
 
@@ -582,18 +523,6 @@ impl fmt::Display for RowWiseBitVec {
 mod tests {
 
     #[test]
-    fn test_row_wise_bitvec_merge() {
-
-        // TODO
-
-        // let mut gs = RowWiseBitVec::new(2);
-
-        // gs.init_generators(true);
-
-        // let h0 = &Gate::new(&"H".to_string(), 0, None).unwrap();
-        // let t0 = &Gate::new(&"T".to_string(), 0, None).unwrap();
-
-        // gs.conjugate(h0, false).unwrap();
-        // gs.conjugate(t0, false).unwrap();
+    fn t() {
     }
 }

@@ -12,6 +12,7 @@ mod pauli_string;
 pub mod column_wise_bitvec;
 pub mod generator_map;
 pub mod row_wise_bitvec;
+pub mod parallel_row_wise_bitvec;
 
 // Used for conjugation
 lazy_static! {
@@ -19,6 +20,7 @@ lazy_static! {
 }
 
 pub trait GeneratorSet: Display {
+
     fn init_generators(&mut self, zero_state_generators: bool);
 
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool);

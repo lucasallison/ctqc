@@ -16,7 +16,6 @@ pub fn parse_file(file_path: &String) -> Result<Circuit, Box<dyn Error>> {
     let paren_re = Regex::new(r"\((.*)\)").unwrap();    
     let rz_digit_re = Regex::new(r"\d+$").unwrap();
 
-
     let contents = match fs::read_to_string(file_path) {
         Ok(contents) => contents,
         Err(e) => {

@@ -4,7 +4,7 @@ A rust implementation of a quantum circuit simulator based on the stabilizer for
 
 ## Usage
 
-In the future we will explore the possibility of packinging the code as a library or providing Python bindings, but for now the code has to be compiled manually. This can be done using the command 'cargo build'. The application can also be run directly using 'cargo run'. 
+In the future we will explore the possibility of packinging the code as a library or providing Python bindings, but for now the code has to be compiled manually. This can be done using the command `cargo build`. The application can also be run directly using `cargo run`. 
 
 Command line arguments:
 
@@ -18,13 +18,13 @@ Command line arguments:
 Simulate a circuit: 
 
 ```
-cargo run --- -f circuit
+cargo run --release -- -f circuit
 ```
 
 Check equivalence between two circuits:  
  
 ```
-cargo run --- -f circuit1 -e circuit2
+cargo run --release -- -f circuit1 -e circuit2
 ```
 
 ## Circuit File Formats

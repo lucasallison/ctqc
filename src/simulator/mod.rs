@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use snafu::prelude::*;
 use std::error::Error;
 use std::io::{stdout, Write};
+use std::time::Instant;
 
 use crate::circuit::Circuit;
 use crate::circuit::GateType;
@@ -76,13 +77,13 @@ impl<'a> Simulator<'a> {
 
         let equiv = self.equiv(circuit_1, circuit_2, true)?;
         if !equiv {
-            println!("Circuits are not equivalent: V(UZU^{})^{} does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
+            println!("Circuits are not equivalent: V^{}(UZU^{})V does not yield the generators for the all zero state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
         }
 
         let equiv = self.equiv(circuit_1, circuit_2, false)?;
         if !equiv {
-            println!("Circuits are not equivalent: V(UXU^{})^{} does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
+            println!("Circuits are not equivalent: V^{}(UXU^{})V does not yield the generators for the all plus state", *DAG_CHAR, *DAG_CHAR);
             return Ok(());
         }
 
@@ -215,6 +216,8 @@ impl<'a> Simulator<'a> {
             circuit.iter()
         };
 
+        let now = Instant::now();
+
         for (i, gate) in circ_iter.enumerate() {
             if i != 0 && i % self.clean_cycles == 0 {
                 self.generator_set.clean();
@@ -257,15 +260,18 @@ impl<'a> Simulator<'a> {
 
         self.generator_set.clean();
 
+        let elapsed = now.elapsed();
+
         if self.verbose {
             println!("Final components:");
             println!("{}", self.generator_set);
         } else {
             print!(
-                "\r{}100% ({}/{}) -- {} Pauli strings              ",
+                "\r{}100% ({}/{}) ({:.2?}) -- {} Pauli strings              ",
                 sim_msg,
                 num_gates,
                 num_gates,
+                elapsed,
                 self.generator_set.size()
             );
         }

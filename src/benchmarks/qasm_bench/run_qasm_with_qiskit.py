@@ -3,7 +3,6 @@ import time
 from qiskit import QuantumCircuit
 from qiskit import QuantumCircuit, Aer, execute
 
-
 f_in = sys.argv[1]
 
 qc = QuantumCircuit.from_qasm_file(f_in)

@@ -13,6 +13,7 @@ use simulator::Simulator;
 use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
 use generator_set::row_wise_bitvec::RowWiseBitVec;
+use generator_set::parallel_row_wise_bitvec::ParallelRowWiseBitVec;
 use generator_set::GeneratorSet;
 
 // TODO
@@ -40,13 +41,19 @@ struct Args {
     /// - map: Map based generator set.
     /// - rbitvec: Row-wise bitvector.
     /// - cbitvec: Column-wise bitvector.
+    /// - map: Map based generator set.
     #[arg(short, default_value_t = String::from("rbitvec"))]
     t: String,
 
     /// Provide after how many gates the simulator should clean the data structure,
-    /// e.g., remove duplicates, removed zero coefficient Pauli strings, ...
+    /// e.g., remove duplicates, remove zero coefficient Pauli strings, ...
     #[arg(short, default_value_t = 1000)]
     c: usize,
+
+    
+    /// Provide number of threads to use
+    #[arg(long, default_value_t = 1)]
+    threads: usize,
 }
 
 fn main() {
@@ -67,10 +74,11 @@ fn main() {
         }
     };
 
-    let mut generator_set: Box<dyn GeneratorSet> = match args.t.as_str() {
-        "map" => Box::new(GeneratorMap::new(circuit.num_qubits())),
-        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
-        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits())),
+    let mut generator_set: Box<dyn GeneratorSet> = match (args.t.as_str(), args.threads) {
+        ("map", _) => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
+        ("cbitvec", _) => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
+        ("rbitvec", 1) => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
+        ("rbitvec", _) => Box::new(ParallelRowWiseBitVec::new(circuit.num_qubits(), args.threads)),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;
