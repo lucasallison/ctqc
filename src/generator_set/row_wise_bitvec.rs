@@ -5,7 +5,6 @@ use rand::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::thread::{self, JoinHandle};
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -428,6 +427,24 @@ impl RowWiseBitVec {
             }
         }
     }
+
+    // --------------------------------------- // 
+    //
+    // The following functions are implemented as helper functions
+    // for the `Pauli pools` implementation. They are not used
+    // internally.
+    // 
+    
+    /// Calls the scatter function. The scatter function was intended for a different
+    /// use case, but its functionality is exactly what we need here. For clarity this
+    /// function exists.
+    pub fn manually_set_generators(&mut self, mut p_strs: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+        self.scatter(p_strs);
+    }
+
+
+
+    // --------------------------------------- // 
 }
 
 impl GeneratorSet for RowWiseBitVec {

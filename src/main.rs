@@ -13,6 +13,7 @@ use simulator::Simulator;
 use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
 use generator_set::parallel_row_wise_bitvec::ParallelRowWiseBitVec;
+use generator_set::pauli_pools::PauliPools;
 use generator_set::row_wise_bitvec::RowWiseBitVec;
 use generator_set::GeneratorSet;
 
@@ -81,6 +82,7 @@ fn main() {
             circuit.num_qubits(),
             args.threads,
         )),
+        ("ppool", _) => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;
