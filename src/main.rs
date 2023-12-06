@@ -12,8 +12,8 @@ use simulator::Simulator;
 
 use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
-use generator_set::row_wise_bitvec::RowWiseBitVec;
 use generator_set::parallel_row_wise_bitvec::ParallelRowWiseBitVec;
+use generator_set::row_wise_bitvec::RowWiseBitVec;
 use generator_set::GeneratorSet;
 
 // TODO
@@ -50,7 +50,6 @@ struct Args {
     #[arg(short, default_value_t = 1000)]
     c: usize,
 
-    
     /// Provide number of threads to use
     #[arg(long, default_value_t = 1)]
     threads: usize,
@@ -78,7 +77,10 @@ fn main() {
         ("map", _) => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
         ("cbitvec", _) => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
         ("rbitvec", 1) => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
-        ("rbitvec", _) => Box::new(ParallelRowWiseBitVec::new(circuit.num_qubits(), args.threads)),
+        ("rbitvec", _) => Box::new(ParallelRowWiseBitVec::new(
+            circuit.num_qubits(),
+            args.threads,
+        )),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;

@@ -22,9 +22,7 @@ pub struct ColumnWiseBitVec {
 }
 
 impl ColumnWiseBitVec {
-
     pub fn new(num_qubits: usize, n_threads: usize) -> ColumnWiseBitVec {
-
         if n_threads != 1 {
             panic!("ColumnWiseBitVec does not support multithreading");
         }
@@ -37,7 +35,6 @@ impl ColumnWiseBitVec {
         }
     }
 
-    
     /// Returns the jth gate of the ith Pauli string
     fn get_pauli_gate(&self, pstr_ind: usize, gate_ind: usize) -> PauliGate {
         let column = &self.columns[gate_ind];
@@ -242,7 +239,6 @@ impl ColumnWiseBitVec {
 }
 
 impl GeneratorSet for ColumnWiseBitVec {
-
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default(self.num_qubits);

@@ -55,7 +55,7 @@ pub struct Gate {
     pub gate_type: GateType,
     pub qubit_1: usize,
     pub qubit_2: Option<usize>, // Optional: Only used for CNOT
-    pub angle: Option<f64>, // Optional: Only used for Rz
+    pub angle: Option<f64>,     // Optional: Only used for Rz
 }
 
 impl Gate {
@@ -83,7 +83,7 @@ impl Gate {
                 } else {
                     GateType::Rz
                 }
-            },
+            }
             gate_type => {
                 return Err(CircuitError::GateNotImplemented {
                     gate_type: gate_type.to_string(),
@@ -113,8 +113,20 @@ impl Gate {
 impl fmt::Display for Gate {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.gate_type {
-            GateType::CNOT => write!(f, "{} {} {}", self.gate_type, self.qubit_1, self.qubit_2.unwrap()),
-            GateType::Rz => write!(f, "{}({}) {}", self.gate_type, self.angle.unwrap(), self.qubit_1, ),
+            GateType::CNOT => write!(
+                f,
+                "{} {} {}",
+                self.gate_type,
+                self.qubit_1,
+                self.qubit_2.unwrap()
+            ),
+            GateType::Rz => write!(
+                f,
+                "{}({}) {}",
+                self.gate_type,
+                self.angle.unwrap(),
+                self.qubit_1,
+            ),
             _ => write!(f, "{} {}", self.gate_type, self.qubit_1),
         }
     }
@@ -188,7 +200,11 @@ impl Circuit {
 
 impl fmt::Display for Circuit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Circuit '{}' with {} qubits:\n", self.name, self.num_qubits)?;
+        write!(
+            f,
+            "Circuit '{}' with {} qubits:\n",
+            self.name, self.num_qubits
+        )?;
 
         for gate in &self.gates {
             write!(f, " {}\n", gate)?;

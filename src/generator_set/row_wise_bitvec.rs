@@ -27,10 +27,8 @@ pub struct RowWiseBitVec {
 }
 
 impl RowWiseBitVec {
-
     // Creates and returns an empty RowWiseBitVec
     pub fn new(num_qubits: usize) -> RowWiseBitVec {
-
         RowWiseBitVec {
             pauli_strings: BitVec::new(),
             generator_info: Vec::new(),
@@ -40,7 +38,6 @@ impl RowWiseBitVec {
         }
     }
 
-    
     /// Sets the RowWiseBitVec to contain `size` amount of Pauli strings
     /// consisting of identity gates only. No generator coefficient information is stored,
     /// only memory is allocated for it.
@@ -141,7 +138,6 @@ impl RowWiseBitVec {
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
-
     /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
     /// or vise versa.
     fn flip_x_y(&mut self, pstr_ind: usize, gate_ind: usize) {
@@ -184,7 +180,7 @@ impl RowWiseBitVec {
                     // and
                     // TYT^{\dag} -> 1/sqrt(2) (Y - X)
                     self.generator_info.last_mut().unwrap().multiply(-1.0);
-                },
+                }
                 // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
                 // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
                 // with 1/sqrt{2} before.
@@ -195,13 +191,12 @@ impl RowWiseBitVec {
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
-
     /// Updates all Pauli strings according to the following rules:
     /// Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
-    /// Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y 
+    /// Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
     /// Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
-    /// Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y 
-    /// Z and I remain unchanged. 
+    /// Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
+    /// Z and I remain unchanged.
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
@@ -222,26 +217,40 @@ impl RowWiseBitVec {
 
             self.generator_info
                 .push(self.generator_info[pstr_index].clone());
-            
+
             // Multiply coeffients with +/- and cos/sin
             match (target_p_gate, conjugate_dagger) {
-                (PauliGate::X, false)  => {
+                (PauliGate::X, false) => {
                     self.generator_info[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
-                },
+                    self.generator_info
+                        .last_mut()
+                        .unwrap()
+                        .multiply(gate.angle.unwrap().sin());
+                }
                 (PauliGate::Y, false) => {
                     self.generator_info[pstr_index].multiply(-1.0 * gate.angle.unwrap().sin());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().cos());
+                    self.generator_info
+                        .last_mut()
+                        .unwrap()
+                        .multiply(gate.angle.unwrap().cos());
                 }
                 (PauliGate::X, true) => {
                     self.generator_info[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.generator_info.last_mut().unwrap().multiply(-1.0 * gate.angle.unwrap().sin());
+                    self.generator_info
+                        .last_mut()
+                        .unwrap()
+                        .multiply(-1.0 * gate.angle.unwrap().sin());
                 }
                 (PauliGate::Y, true) => {
                     self.generator_info[pstr_index].multiply(gate.angle.unwrap().sin());
-                    self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().cos());
+                    self.generator_info
+                        .last_mut()
+                        .unwrap()
+                        .multiply(gate.angle.unwrap().cos());
                 }
-                _ => {unreachable!()}
+                _ => {
+                    unreachable!()
+                }
             }
         }
 
@@ -326,11 +335,12 @@ impl RowWiseBitVec {
     /// and a single Z gate at the ith position, i.e.,
     /// I^⊗{i-1}ZI^⊗{n-i}.
     fn is_single_z_pstr(&self, pstr: &BitVec, i: usize) -> bool {
-
         for gate_ind in 0..self.num_qubits {
-            let pgate = PauliGate::pauli_gate_from_tuple(pstr[2*gate_ind], pstr[2*gate_ind + 1]);
+            let pgate =
+                PauliGate::pauli_gate_from_tuple(pstr[2 * gate_ind], pstr[2 * gate_ind + 1]);
 
-            if (gate_ind == i && pgate != PauliGate::Z) || (gate_ind != i && pgate != PauliGate::I) {
+            if (gate_ind == i && pgate != PauliGate::Z) || (gate_ind != i && pgate != PauliGate::I)
+            {
                 return false;
             }
         }
@@ -421,7 +431,6 @@ impl RowWiseBitVec {
 }
 
 impl GeneratorSet for RowWiseBitVec {
-
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default(self.num_qubits);
