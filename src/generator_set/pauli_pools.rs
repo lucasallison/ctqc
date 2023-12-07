@@ -41,16 +41,55 @@ impl PauliPools {
 
     }
 
+    fn merge_and_distribute(&mut self) {
+
+        let mut p_strs = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+        
+        // Collect all Pauli strings from all RowWiseBitVecs
+        for rwbv in &mut self.pauli_pools {
+
+            let mut rwbv_p_strs = rwbv.gather();
+
+            for (p_str, coeff_list) in rwbv_p_strs.drain() {
+                match p_strs.entry(p_str) {
+                    Entry::Occupied(mut e) => {
+                        e.get_mut().merge(&coeff_list);
+                    }
+                    Entry::Vacant(e) => {
+                        e.insert(coeff_list);
+                    }
+                }
+            }
+        }
+
+
+        // Redistribution of Pauli strings
+        let p_strs: Vec<_> = p_strs.into_iter().collect();
+        let p_strs_per_pool = (p_strs.len() as f64 / self.n_threads as f64).ceil() as usize;
+        
+        
+        let p_strs_chunks: Vec<HashMap<_, _, FxBuildHasher>> = p_strs.chunks(p_strs_per_pool)
+        .map(|c| c.iter().cloned().collect())
+        .collect();
+
+        for (i, chunk) in p_strs_chunks.iter().enumerate() {
+            self.pauli_pools[i].scatter(chunk.clone());
+        }
+        
+    }
+
     fn set_pauli_gate_in_bitvec(
-        mut p_str: &mut BitVec,
+        p_str: &mut BitVec,
         p_gate: PauliGate,
         j: usize,
     ) {
         let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
-        p_str.set(j, b1);
-        p_str.set(j + 1, b2);
+        p_str.set(2*j, b1);
+        p_str.set(2*j + 1, b2);
     }
-
 }
 
 impl GeneratorSet for PauliPools {
@@ -62,8 +101,7 @@ impl GeneratorSet for PauliPools {
             PauliGate::X
         };
 
-        let p_strs_per_pool = self.n_qubits.div_ceil(self.n_threads);
-        println!("p_strs_per_pool: {}", p_strs_per_pool);
+        let p_strs_per_pool = (self.n_qubits as f64 / self.n_threads as f64).ceil() as usize;
 
         for pool_index in 0..self.n_threads {
 
@@ -78,15 +116,12 @@ impl GeneratorSet for PauliPools {
 
                 let generator_index = pool_index * p_strs_per_pool + p_str_in_pool_index;
 
-                if generator_index >= self.n_qubits || p_str_in_pool_index > p_strs_per_pool {
+                if generator_index >= self.n_qubits || p_str_in_pool_index >= p_strs_per_pool {
                     break;
                 }
             
                 let mut p_str = BitVec::repeat(false, self.n_qubits * 2);
-
                 Self::set_pauli_gate_in_bitvec(&mut p_str, p_gate, generator_index);
-
-                println!("p_str: {}, gi {}", p_str, generator_index);   
 
                 match p_strs.entry(p_str) {
                     Entry::Occupied(_) => {
@@ -101,7 +136,7 @@ impl GeneratorSet for PauliPools {
             }
 
             self.pauli_pools.push(RowWiseBitVec::new(self.n_qubits));
-            self.pauli_pools.last_mut().unwrap().manually_set_generators(p_strs);
+            self.pauli_pools.last_mut().unwrap().scatter(p_strs);
         }
 
     }
@@ -121,7 +156,17 @@ impl GeneratorSet for PauliPools {
 
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
-        unimplemented!()
+
+        thread::scope(|scope| {
+            for rwbv in &mut self.pauli_pools 
+            {
+                scope.spawn(move || {
+                    rwbv.conjugate(gate, conjugate_dagger).unwrap();
+                });
+            }
+        });
+
+        Ok(())
     }
 
     fn measure(&mut self, i: usize) -> (bool, f64) {
@@ -131,7 +176,16 @@ impl GeneratorSet for PauliPools {
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
     fn clean(&mut self) {
-        unimplemented!()
+        thread::scope(|scope| {
+            for rwbv in &mut self.pauli_pools 
+            {
+                scope.spawn(move || {
+                    rwbv.clean();
+                });
+            }
+        });
+
+        self.merge_and_distribute();
     }
 
     fn size(&self) -> usize {

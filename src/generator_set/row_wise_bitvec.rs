@@ -257,7 +257,7 @@ impl RowWiseBitVec {
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
-    fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
+    pub fn gather(&self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size,
             FxBuildHasher::default(),
@@ -283,7 +283,7 @@ impl RowWiseBitVec {
     }
 
     /// Scatter the Pauli strings in the provided map to the bitvec
-    fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+    pub fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
@@ -434,16 +434,9 @@ impl RowWiseBitVec {
     // for the `Pauli pools` implementation. They are not used
     // internally.
     // 
+
+    // TODO
     
-    /// Calls the scatter function. The scatter function was intended for a different
-    /// use case, but its functionality is exactly what we need here. For clarity this
-    /// function exists.
-    pub fn manually_set_generators(&mut self, mut p_strs: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
-        self.scatter(p_strs);
-    }
-
-
-
     // --------------------------------------- // 
 }
 
