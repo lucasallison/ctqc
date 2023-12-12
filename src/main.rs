@@ -82,7 +82,7 @@ fn main() {
             circuit.num_qubits(),
             args.threads,
         )),
-        ("ppool", _) => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
+        ("ppools", _) => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;

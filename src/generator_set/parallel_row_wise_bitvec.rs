@@ -184,25 +184,25 @@ impl ParallelRowWiseBitVec {
                 .zip(self.generator_info.chunks_mut(p_strs_per_process))
             {
 
-                // let h_s_conjugations_map = self.h_s_conjugations_map.clone();
+                let h_s_conjugations_map = self.h_s_conjugations_map.clone();
 
                 scope.spawn(move || {
 
                     for (pstr_offset, p_str) in
                         chunk.chunks_mut(2*n_qubits).enumerate()
                     {
-                        // Self::apply_slice_h_s_conjugations(
-                        //     p_str,
-                        //     &mut gen_info[pstr_offset],
-                        //     &h_s_conjugations_map,
-                        //     gate.qubit_1,
-                        // );
-                        // Self::apply_slice_h_s_conjugations(
-                        //     p_str,
-                        //     &mut gen_info[pstr_offset],
-                        //     &h_s_conjugations_map,
-                        //     qubit_2,
-                        // );
+                        Self::apply_slice_h_s_conjugations(
+                            p_str,
+                            &mut gen_info[pstr_offset],
+                            &h_s_conjugations_map,
+                            gate.qubit_1,
+                        );
+                        Self::apply_slice_h_s_conjugations(
+                            p_str,
+                            &mut gen_info[pstr_offset],
+                            &h_s_conjugations_map,
+                            qubit_2,
+                        );
 
                         let q1_target_p_gate = Self::get_pauli_gate_from_slice(p_str, gate.qubit_1);
                         let q2_target_p_gate = Self::get_pauli_gate_from_slice(p_str, qubit_2);

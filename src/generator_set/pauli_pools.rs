@@ -69,14 +69,9 @@ impl PauliPools {
         // Redistribution of Pauli strings
         let p_strs: Vec<_> = p_strs.into_iter().collect();
         let p_strs_per_pool = (p_strs.len() as f64 / self.n_threads as f64).ceil() as usize;
-        
-        
-        let p_strs_chunks: Vec<HashMap<_, _, FxBuildHasher>> = p_strs.chunks(p_strs_per_pool)
-        .map(|c| c.iter().cloned().collect())
-        .collect();
 
-        for (i, chunk) in p_strs_chunks.iter().enumerate() {
-            self.pauli_pools[i].scatter(chunk.clone());
+        for (i, chunk) in p_strs.chunks(p_strs_per_pool).enumerate() {
+            self.pauli_pools[i].replace(chunk);
         }
         
     }

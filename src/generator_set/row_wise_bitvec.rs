@@ -435,7 +435,21 @@ impl RowWiseBitVec {
     // internally.
     // 
 
-    // TODO
+
+    // Replace the current Pauli strings with the Pauli string in the provided 
+    // pstrs and coefficents.
+    pub fn replace(&mut self, p_strs: &[(BitVec, CoefficientList)]) {
+
+        self.pauli_strings.clear();
+        self.generator_info.clear();
+
+        for (pstr, coefficients) in p_strs.iter() {
+            self.pauli_strings.extend_from_bitslice(pstr);
+            self.generator_info.push(coefficients.clone());
+        }
+
+        self.size = self.generator_info.len();
+    }
     
     // --------------------------------------- // 
 }
