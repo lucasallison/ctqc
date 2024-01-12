@@ -7,7 +7,7 @@ use rayon::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -219,17 +219,6 @@ impl ParallelRowWiseBitVec {
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-    }
-
-    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        let t_as_rz_gate = Gate {
-            gate_type: GateType::Rz,
-            qubit_1: gate.qubit_1,
-            qubit_2: None,
-            angle: Some(std::f64::consts::FRAC_PI_4),
-        };
-
-        self.conjugate_rz(&t_as_rz_gate, conjugate_dagger)
     }
 
     /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
@@ -610,20 +599,17 @@ impl GeneratorSet for ParallelRowWiseBitVec {
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map.update(gate, conjugate_dagger);
             }
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::T => self.conjugate_t_gate(gate, conjugate_dagger),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
             _ => {
-                panic!("Can only conjugate a H, S, CNOT, T, Rz gate")
+                panic!("Can only conjugate a H, S, CNOT, or Rz gate")
             }
         }
-
-        Ok(())
     }
 
     fn measure(&mut self, i: usize) -> (bool, f64) {

@@ -126,7 +126,7 @@ impl GeneratorSet for GeneratorMap {
             .is_ith_generator(i, check_zero_state)
     }
 
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         let mut gcs_after_conjugation: HashMap<PauliString, Component, FxBuildHasher> =
             HashMap::<PauliString, Component, FxBuildHasher>::with_capacity_and_hasher(
                 self.generator_components.len(),
@@ -135,31 +135,42 @@ impl GeneratorSet for GeneratorMap {
 
         for component in self.generator_components.values_mut() {
             match gate.gate_type {
-                GateType::T => {
-                    let new_component =
-                        component.conjugate_t_gate(gate.qubit_1, conjugate_dagger)?;
-
-                    if let Some(new_component) = new_component {
-                        Self::insert_or_merge(&mut gcs_after_conjugation, new_component)?;
+                GateType::H | GateType::S | GateType::CNOT => {
+                    if let Err(err) = component.conjugate_clifford(gate, conjugate_dagger) {
+                        // Handle the error here
+                        panic!("Error while conjugating a Clifford gate: {}", err);
                     }
                 }
-                GateType::H | GateType::S | GateType::CNOT => {
-                    component.conjugate_clifford(gate, conjugate_dagger)?;
-                }
                 GateType::Rz => {
-                    // TODO
                     unimplemented!()
+                    // TODO The code below was used for the old implementation of the T gate
+                    // but can easily be changed for the Rz gate
+
+                    // let new_component =
+                    //     component.conjugate_t_gate(gate.qubit_1, conjugate_dagger);
+
+                    // match new_component {
+                    //     Ok(None) => { 
+                    //         // No change 
+                    //     },
+                    //     Ok(Some(new_component)) => {
+                    //         Self::insert_or_merge(&mut gcs_after_conjugation, new_component)
+                    //             .unwrap();
+                    //     }
+                    //     Err(e) => {
+                    //         panic!("Error while conjugating T gate: {}", e);
+                    //     }
+                    // }
                 }
                 _ => {
-                    panic!("Can only conjugate a H, S, CNOT, T or Rz gate")
+                    panic!("Can only conjugate a H, S, CNOT, or Rz gate")
                 }
             }
 
-            Self::insert_or_merge(&mut gcs_after_conjugation, component.clone())?;
+            Self::insert_or_merge(&mut gcs_after_conjugation, component.clone()).unwrap();
         }
 
         self.generator_components = gcs_after_conjugation;
-        Ok(())
     }
 
     fn measure(&mut self, _i: usize) -> (bool, f64) {

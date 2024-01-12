@@ -520,20 +520,17 @@ impl GeneratorSet for RowWiseBitVec {
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map.update(gate, conjugate_dagger);
             }
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::T => self.conjugate_t_gate(gate, conjugate_dagger),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
             _ => {
-                panic!("Can only conjugate a H, S, CNOT, T, Rz gate")
+                panic!("Can only conjugate a H, S, CNOT, or Rz gate")
             }
         }
-
-        Ok(())
     }
 
     fn measure(&mut self, i: usize) -> (bool, f64) {

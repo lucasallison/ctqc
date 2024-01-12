@@ -1,24 +1,16 @@
-use bitvec::access::BitSafeUsize;
 use bitvec::prelude::*;
 use core::panic;
 use fxhash::FxBuildHasher;
-use ordered_float::OrderedFloat;
-use rand::prelude::*;
+use rayon::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::sync::{Arc, RwLock};
-use std::thread::{self, JoinHandle};
 
-use super::coefficient_list::{self, CoefficientList};
-use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::h_s_conjugations_map::HSConjugationsMap;
+use super::coefficient_list::CoefficientList;
 use super::pauli_string::PauliGate;
 use super::row_wise_bitvec::RowWiseBitVec;
 use super::GeneratorSet;
-use super::ONE_OVER_SQRT_TWO;
-use crate::circuit::{Gate, GateType};
-use crate::FP_ERROR_MARGIN;
+use crate::circuit::Gate;
 
 pub struct PauliPools {
     // Each thread will manage 1 Pauli pool. Each pool is
@@ -124,8 +116,7 @@ impl GeneratorSet for PauliPools {
         }
     }
 
-    /// Initialize the RowWiseBitVec with the ith generator of the all zero state or all plus state.
-    fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
+    fn init_single_generator(&mut self, _i: usize, _zero_state_generator: bool) {
         unimplemented!()
     }
 
@@ -133,36 +124,28 @@ impl GeneratorSet for PauliPools {
         unimplemented!()
     }
 
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+    fn is_single_x_or_z_generator(&mut self, _check_zero_state: bool, _i: usize) -> bool {
         unimplemented!()
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
-        thread::scope(|scope| {
-            for rwbv in &mut self.pauli_pools {
-                scope.spawn(move || {
-                    rwbv.conjugate(gate, conjugate_dagger).unwrap();
-                });
-            }
-        });
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
 
-        Ok(())
+        self.pauli_pools.par_iter_mut().for_each(|rwbv| {
+            rwbv.conjugate(gate, conjugate_dagger);
+        });
     }
 
-    fn measure(&mut self, i: usize) -> (bool, f64) {
+    fn measure(&mut self, _i: usize) -> (bool, f64) {
         unimplemented!()
     }
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
     fn clean(&mut self) {
-        thread::scope(|scope| {
-            for rwbv in &mut self.pauli_pools {
-                scope.spawn(move || {
-                    rwbv.clean();
-                });
-            }
+
+        self.pauli_pools.par_iter_mut().for_each(|rwbv| {
+            rwbv.clean();
         });
 
         self.merge_and_distribute();

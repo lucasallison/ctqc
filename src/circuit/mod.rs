@@ -29,7 +29,6 @@ pub enum GateType {
     H,
     CNOT,
     S,
-    T,
     M,
     Rz,
 }
@@ -40,7 +39,6 @@ impl fmt::Display for GateType {
             GateType::H => write!(f, "H"),
             GateType::CNOT => write!(f, "CNOT"),
             GateType::S => write!(f, "S"),
-            GateType::T => write!(f, "T"),
             GateType::M => write!(f, "M"),
             GateType::Rz => write!(f, "Rz"),
         }
@@ -75,7 +73,6 @@ impl Gate {
                 }
             }
             "S" => GateType::S,
-            "T" => GateType::T,
             "M" => GateType::M,
             "Rz" => {
                 if angle.is_none() {

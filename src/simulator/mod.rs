@@ -239,7 +239,7 @@ impl<'a> Simulator<'a> {
                     );
                 }
                 _ => {
-                    self.generator_set.conjugate(gate, inverse)?;
+                    self.generator_set.conjugate(gate, inverse);
                 }
             }
 
