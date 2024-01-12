@@ -12,6 +12,7 @@ use crate::circuit::{Gate, GateType};
 /// the triples will be [(PauliGate::Z, 1.0), (PauliGate::Y, -1.0), (PauliGate::X, 1.0)].
 /// We know that if a Pauli string has an X gate at qubit 5 it should be treated as a Z gate,
 /// and a Pauli string that has a Y gate at qubit 5 should be treated as a -Y gate.
+#[derive(Clone)]
 pub struct HSConjugationsMap {
     map: Vec<[(PauliGate, f64); 3]>,
 }

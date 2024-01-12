@@ -1,30 +1,29 @@
 use bitvec::access::BitSafeUsize;
 use bitvec::prelude::*;
+use core::panic;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
-use core::panic;
 use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
-use std::thread::{self, JoinHandle};
 use std::sync::{Arc, RwLock};
+use std::thread::{self, JoinHandle};
 
-use super::coefficient_list::{CoefficientList, self};
+use super::coefficient_list::{self, CoefficientList};
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
-use super::GeneratorSet;
 use super::row_wise_bitvec::RowWiseBitVec;
+use super::GeneratorSet;
 use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
 
 pub struct PauliPools {
-
     // Each thread will manage 1 Pauli pool. Each pool is
     // managed by using a RowWiseBitvec.
-    pauli_pools: Vec<RowWiseBitVec>, 
+    pauli_pools: Vec<RowWiseBitVec>,
     n_threads: usize,
     n_qubits: usize,
 }
@@ -32,25 +31,22 @@ pub struct PauliPools {
 impl PauliPools {
     // Creates and returns an empty RowWiseBitVec
     pub fn new(n_qubits: usize, n_threads: usize) -> PauliPools {
-
         PauliPools {
             pauli_pools: Vec::with_capacity(n_threads),
             n_threads: n_threads,
             n_qubits: n_qubits,
         }
-
     }
 
     fn merge_and_distribute(&mut self) {
+        let mut p_strs =
+            HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+                self.size(),
+                FxBuildHasher::default(),
+            );
 
-        let mut p_strs = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
-            self.size(),
-            FxBuildHasher::default(),
-        );
-        
         // Collect all Pauli strings from all RowWiseBitVecs
         for rwbv in &mut self.pauli_pools {
-
             let mut rwbv_p_strs = rwbv.gather();
 
             for (p_str, coeff_list) in rwbv_p_strs.drain() {
@@ -65,7 +61,6 @@ impl PauliPools {
             }
         }
 
-
         // Redistribution of Pauli strings
         let p_strs: Vec<_> = p_strs.into_iter().collect();
         let p_strs_per_pool = (p_strs.len() as f64 / self.n_threads as f64).ceil() as usize;
@@ -73,17 +68,12 @@ impl PauliPools {
         for (i, chunk) in p_strs.chunks(p_strs_per_pool).enumerate() {
             self.pauli_pools[i].replace(chunk);
         }
-        
     }
 
-    fn set_pauli_gate_in_bitvec(
-        p_str: &mut BitVec,
-        p_gate: PauliGate,
-        j: usize,
-    ) {
+    fn set_pauli_gate_in_bitvec(p_str: &mut BitVec, p_gate: PauliGate, j: usize) {
         let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
-        p_str.set(2*j, b1);
-        p_str.set(2*j + 1, b2);
+        p_str.set(2 * j, b1);
+        p_str.set(2 * j + 1, b2);
     }
 }
 
@@ -99,22 +89,21 @@ impl GeneratorSet for PauliPools {
         let p_strs_per_pool = (self.n_qubits as f64 / self.n_threads as f64).ceil() as usize;
 
         for pool_index in 0..self.n_threads {
-
-            let mut p_strs = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
-                self.n_qubits,
-                FxBuildHasher::default(),
+            let mut p_strs =
+                HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+                    self.n_qubits,
+                    FxBuildHasher::default(),
                 );
-            
+
             let mut p_str_in_pool_index = 0;
 
             loop {
-
                 let generator_index = pool_index * p_strs_per_pool + p_str_in_pool_index;
 
                 if generator_index >= self.n_qubits || p_str_in_pool_index >= p_strs_per_pool {
                     break;
                 }
-            
+
                 let mut p_str = BitVec::repeat(false, self.n_qubits * 2);
                 Self::set_pauli_gate_in_bitvec(&mut p_str, p_gate, generator_index);
 
@@ -126,14 +115,13 @@ impl GeneratorSet for PauliPools {
                         e.insert(CoefficientList::new(generator_index));
                     }
                 }
-                
+
                 p_str_in_pool_index += 1;
             }
 
             self.pauli_pools.push(RowWiseBitVec::new(self.n_qubits));
             self.pauli_pools.last_mut().unwrap().scatter(p_strs);
         }
-
     }
 
     /// Initialize the RowWiseBitVec with the ith generator of the all zero state or all plus state.
@@ -151,10 +139,8 @@ impl GeneratorSet for PauliPools {
 
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), Box<dyn Error>> {
-
         thread::scope(|scope| {
-            for rwbv in &mut self.pauli_pools 
-            {
+            for rwbv in &mut self.pauli_pools {
                 scope.spawn(move || {
                     rwbv.conjugate(gate, conjugate_dagger).unwrap();
                 });
@@ -172,8 +158,7 @@ impl GeneratorSet for PauliPools {
     /// with zero coefficients.
     fn clean(&mut self) {
         thread::scope(|scope| {
-            for rwbv in &mut self.pauli_pools 
-            {
+            for rwbv in &mut self.pauli_pools {
                 scope.spawn(move || {
                     rwbv.clean();
                 });
