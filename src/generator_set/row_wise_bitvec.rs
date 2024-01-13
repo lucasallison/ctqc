@@ -261,7 +261,7 @@ impl RowWiseBitVec {
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
 
         if self.n_threads > 1 {
-            self.par_conjugate_cnot(gate);
+            self.par_conjugate_rz(gate, conjugate_dagger);
             return;
         }
 
