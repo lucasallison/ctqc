@@ -157,8 +157,6 @@ impl ColumnWiseBitVec {
                     // Since an X is encode as 10 and Y as 11, we can simply flip the second bit.
                     b2 = !b2;
 
-                    // The result is always multiplied by 1 over sqrt 2
-
                     self.generator_info
                         .push(self.generator_info[*pstr_ind].clone());
 

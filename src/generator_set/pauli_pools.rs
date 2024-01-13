@@ -110,7 +110,7 @@ impl GeneratorSet for PauliPools {
                 p_str_in_pool_index += 1;
             }
 
-            self.pauli_pools.push(RowWiseBitVec::new(self.n_qubits));
+            self.pauli_pools.push(RowWiseBitVec::new(self.n_qubits, 1));
             self.pauli_pools.last_mut().unwrap().scatter(p_strs);
         }
     }

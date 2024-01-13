@@ -12,7 +12,6 @@ use simulator::Simulator;
 
 use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
-use generator_set::parallel_row_wise_bitvec::ParallelRowWiseBitVec;
 use generator_set::pauli_pools::PauliPools;
 use generator_set::row_wise_bitvec::RowWiseBitVec;
 use generator_set::GeneratorSet;
@@ -74,15 +73,11 @@ fn main() {
         }
     };
 
-    let mut generator_set: Box<dyn GeneratorSet> = match (args.t.as_str(), args.threads) {
-        ("map", _) => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
-        ("cbitvec", _) => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
-        ("rbitvec", 1) => Box::new(RowWiseBitVec::new(circuit.num_qubits())),
-        ("rbitvec", _) => Box::new(ParallelRowWiseBitVec::new(
-            circuit.num_qubits(),
-            args.threads,
-        )),
-        ("ppools", _) => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
+    let mut generator_set: Box<dyn GeneratorSet> = match args.t.as_str() {
+        "map" => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
+        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
+        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits(), args.threads)),
+        "ppools" => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;

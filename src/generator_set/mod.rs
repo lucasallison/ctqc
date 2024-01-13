@@ -9,7 +9,6 @@ mod pauli_string;
 // Implementations of the GeneratorSet trait
 pub mod column_wise_bitvec;
 pub mod generator_map;
-pub mod parallel_row_wise_bitvec;
 pub mod pauli_pools;
 pub mod row_wise_bitvec;
 
