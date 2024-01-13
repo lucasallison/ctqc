@@ -1,6 +1,4 @@
 use crate::circuit::Gate;
-use lazy_static::lazy_static;
-use std::error::Error;
 use std::fmt::Display;
 
 mod coefficient_list;
@@ -14,11 +12,6 @@ pub mod generator_map;
 pub mod parallel_row_wise_bitvec;
 pub mod pauli_pools;
 pub mod row_wise_bitvec;
-
-// Used for conjugation
-lazy_static! {
-    static ref ONE_OVER_SQRT_TWO: f64 = 1.0 / f64::sqrt(2.0);
-}
 
 pub trait GeneratorSet: Display {
     fn init_generators(&mut self, zero_state_generators: bool);

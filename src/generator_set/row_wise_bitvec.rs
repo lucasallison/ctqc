@@ -3,7 +3,6 @@ use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
-use std::error::Error;
 use std::fmt;
 
 use super::coefficient_list::CoefficientList;
@@ -11,7 +10,6 @@ use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
-use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
 
@@ -135,59 +133,6 @@ impl RowWiseBitVec {
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-    }
-
-    /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
-    /// or vise versa.
-    fn flip_x_y(&mut self, pstr_ind: usize, gate_ind: usize) {
-        match self.get_pauli_gate(pstr_ind, gate_ind) {
-            PauliGate::X => self.set_pauli_gate(PauliGate::Y, pstr_ind, gate_ind),
-            PauliGate::Y => self.set_pauli_gate(PauliGate::X, pstr_ind, gate_ind),
-            _ => {
-                panic!("Can only call `flip_x_y` on an X or Y gate")
-            }
-        }
-    }
-
-    /// Conjugate each Pauli string in the bitvec with a T gate.
-    /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        for pstr_index in 0..self.size {
-            self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-
-            let target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-
-            if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
-                continue;
-            }
-
-            // Copy the Pauli string and flip the X or Y gate of the new
-            // Pauli string
-            self.extend_from_within(pstr_index);
-            self.flip_x_y(self.size, gate.qubit_1);
-            self.size += 1;
-
-            // Set the generator information appropriately and create
-            // a new generator info for the new Pauli string
-            self.generator_info[pstr_index].multiply(*ONE_OVER_SQRT_TWO);
-            self.generator_info
-                .push(self.generator_info[pstr_index].clone());
-
-            match (target_p_gate, conjugate_dagger) {
-                (PauliGate::X, true) | (PauliGate::Y, false) => {
-                    // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-                    // and
-                    // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-                    self.generator_info.last_mut().unwrap().multiply(-1.0);
-                }
-                // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
-                // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
-                // with 1/sqrt{2} before.
-                _ => {}
-            }
-        }
-
-        self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
     /// Updates all Pauli strings according to the following rules:
@@ -601,27 +546,5 @@ impl fmt::Display for RowWiseBitVec {
             s.push_str(")\n");
         }
         write!(f, "{}", s)
-    }
-}
-
-// ------------------ Tests ---------------------------------------
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn test_row_wise_bitvec_merge() {
-
-        // TODO
-
-        // let mut gs = RowWiseBitVec::new(2);
-
-        // gs.init_generators(true);
-
-        // let h0 = &Gate::new(&"H".to_string(), 0, None).unwrap();
-        // let t0 = &Gate::new(&"T".to_string(), 0, None).unwrap();
-
-        // gs.conjugate(h0, false).unwrap();
-        // gs.conjugate(t0, false).unwrap();
     }
 }

@@ -5,7 +5,6 @@ use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use rayon::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
-use std::error::Error;
 use std::fmt;
 use std::sync::Mutex;
 
@@ -219,18 +218,6 @@ impl ParallelRowWiseBitVec {
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-    }
-
-    /// Change the jth gate of the ith Pauli string from an X gate to a Y gate
-    /// or vise versa.
-    fn flip_x_y(&mut self, pstr_ind: usize, gate_ind: usize) {
-        match self.get_pauli_gate(pstr_ind, gate_ind) {
-            PauliGate::X => self.set_pauli_gate(PauliGate::Y, pstr_ind, gate_ind),
-            PauliGate::Y => self.set_pauli_gate(PauliGate::X, pstr_ind, gate_ind),
-            _ => {
-                panic!("Can only call `flip_x_y` on an X or Y gate")
-            }
-        }
     }
 
     /// Updates all Pauli strings according to the following rules:
@@ -507,28 +494,6 @@ impl ParallelRowWiseBitVec {
         }
     }
 
-    // --------------------------------------- //
-    //
-    // The following functions are implemented as helper functions
-    // for the `Pauli pools` implementation. They are not used
-    // internally.
-    //
-
-    // Replace the current Pauli strings with the Pauli string in the provided
-    // pstrs and coefficents.
-    pub fn replace(&mut self, p_strs: &[(BitVec, CoefficientList)]) {
-        self.pauli_strings.clear();
-        self.generator_info.clear();
-
-        for (pstr, coefficients) in p_strs.iter() {
-            self.pauli_strings.extend_from_bitslice(pstr);
-            self.generator_info.push(coefficients.clone());
-        }
-
-        self.size = self.generator_info.len();
-    }
-
-    // --------------------------------------- //
 }
 
 impl GeneratorSet for ParallelRowWiseBitVec {

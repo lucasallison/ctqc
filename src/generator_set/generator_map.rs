@@ -11,7 +11,6 @@ use super::conjugation_look_up_tables::{
 };
 use super::pauli_string::{PauliGate, PauliString};
 use super::GeneratorSet;
-use super::ONE_OVER_SQRT_TWO;
 use crate::{
     circuit::{Gate, GateType},
     FP_ERROR_MARGIN,
@@ -142,25 +141,21 @@ impl GeneratorSet for GeneratorMap {
                     }
                 }
                 GateType::Rz => {
-                    unimplemented!()
-                    // TODO The code below was used for the old implementation of the T gate
-                    // but can easily be changed for the Rz gate
+                    let new_component =
+                        component.conjugate_rz(gate, conjugate_dagger);
 
-                    // let new_component =
-                    //     component.conjugate_t_gate(gate.qubit_1, conjugate_dagger);
-
-                    // match new_component {
-                    //     Ok(None) => { 
-                    //         // No change 
-                    //     },
-                    //     Ok(Some(new_component)) => {
-                    //         Self::insert_or_merge(&mut gcs_after_conjugation, new_component)
-                    //             .unwrap();
-                    //     }
-                    //     Err(e) => {
-                    //         panic!("Error while conjugating T gate: {}", e);
-                    //     }
-                    // }
+                    match new_component {
+                        Ok(None) => { 
+                            // No change 
+                        },
+                        Ok(Some(new_component)) => {
+                            Self::insert_or_merge(&mut gcs_after_conjugation, new_component)
+                                .unwrap();
+                        }
+                        Err(e) => {
+                            panic!("Error while conjugating T gate: {}", e);
+                        }
+                    }
                 }
                 _ => {
                     panic!("Can only conjugate a H, S, CNOT, or Rz gate")
@@ -408,19 +403,19 @@ impl Component {
         Ok(true)
     }
 
-    // When X, Y are conjugated by T we obtain two compontents. The first component represents
+    // When X, Y are conjugated by an Rz gate we obtain two compontents. The first component represents
     // the Pauli string with updated coeffients. We do not need to create a new component for this
     // but just update self. The second component does represent a different Pauli string, for which
     // we create a new component. Since the component does not change when we conjugate an
     // I, Z we return None in that case and leave self unchanged.
-    pub fn conjugate_t_gate(
+    pub fn conjugate_rz(
         &mut self,
-        target_qubit: usize,
+        gate: &Gate,
         conjugate_dagger: bool,
     ) -> Result<Option<Component>, Box<dyn Error>> {
-        let target_gate = self.pstr.get_pauli_gate(target_qubit as usize)?;
+        let target_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
 
-        if target_gate == PauliGate::Z {
+        if target_gate == PauliGate::Z || target_gate == PauliGate::I {
             return Ok(None);
         }
 
@@ -428,39 +423,39 @@ impl Component {
 
         match target_gate {
             PauliGate::X => {
+
+                // Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
+                // Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
+                new_component = self.clone();
+                self.multiply_generator_coefficients(gate.angle.unwrap().cos());
+                new_component.multiply_generator_coefficients(gate.angle.unwrap().sin());
+
                 if conjugate_dagger {
-                    // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-                    self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
-                    new_component = self.clone();
                     new_component.multiply_generator_coefficients(-1.0);
-                } else {
-                    // TXT^{\dag} -> 1/sqrt{2} (X + Y)
-                    self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
-                    new_component = self.clone();
                 }
 
                 new_component
                     .pstr
-                    .set_pauli_gate(target_qubit as usize, PauliGate::Y)?;
+                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::Y)?;
 
                 return Ok(Some(new_component));
             }
 
             PauliGate::Y => {
-                if conjugate_dagger {
-                    // T^{\dag}YT -> 1/sqrt(2) (Y + X)
-                    self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
-                    new_component = self.clone();
-                } else {
-                    // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-                    self.multiply_generator_coefficients(*ONE_OVER_SQRT_TWO);
-                    new_component = self.clone();
+
+                // Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
+                // Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
+                new_component = self.clone();
+                self.multiply_generator_coefficients(gate.angle.unwrap().sin());
+                new_component.multiply_generator_coefficients(gate.angle.unwrap().cos());
+
+                if !conjugate_dagger {
                     new_component.multiply_generator_coefficients(-1.0);
                 }
 
                 new_component
                     .pstr
-                    .set_pauli_gate(target_qubit as usize, PauliGate::X)?;
+                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::X)?;
 
                 return Ok(Some(new_component));
             }

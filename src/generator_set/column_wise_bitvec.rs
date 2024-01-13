@@ -2,7 +2,6 @@ use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use std::collections::{hash_map::Entry, HashMap};
-use std::error::Error;
 use std::fmt;
 
 use super::coefficient_list::CoefficientList;
@@ -10,7 +9,6 @@ use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
-use super::ONE_OVER_SQRT_TWO;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
 
@@ -115,8 +113,8 @@ impl ColumnWiseBitVec {
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
-    /// Return all the indices of Pauli strings that have an X or Y gate in the provided column
-    /// IMPORTANT: Applies the H and S conjugations to the provided column
+    /// Returns all the indices of Pauli strings that have an X or Y gate in the provided column
+    /// and applies the H and S conjugations to the provided column
     fn x_y_in_column(&mut self, col_ind: usize) -> Vec<usize> {
         let mut x_y_pos = Vec::with_capacity(self.size());
 
@@ -140,7 +138,7 @@ impl ColumnWiseBitVec {
 
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_t_gate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
         // First check where X and Y gates are in the column and apply the H and S conjugations
         let x_y_pos = self.x_y_in_column(gate.qubit_1);
 
@@ -154,34 +152,42 @@ impl ColumnWiseBitVec {
                 // the gate that is conjugated with the T gate
                 if gate_ind == gate.qubit_1 {
                     // Whevenver we conjugate with a T gate, the new Pauli string will
-                    // have the same gates except for the gat that the T gate conjugates.
+                    // have the same gates except for the gate that the T gate conjugates.
                     // There an X gate will become a Y gate and vice versa.
                     // Since an X is encode as 10 and Y as 11, we can simply flip the second bit.
                     b2 = !b2;
 
                     // The result is always multiplied by 1 over sqrt 2
-                    self.generator_info[*pstr_ind].multiply(*ONE_OVER_SQRT_TWO);
 
                     self.generator_info
                         .push(self.generator_info[*pstr_ind].clone());
 
-                    let new_generator_info = self.generator_info.last_mut().unwrap();
+                    match pgate {
+                        PauliGate::X => {
+                            // Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
+                            // Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
+                            self.generator_info[*pstr_ind].multiply(gate.angle.unwrap().cos());
+                            self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
 
-                    match (pgate, conjugate_dagger) {
-                        (PauliGate::X, true) => {
-                            // T^{\dag}XT -> 1/sqrt{2} (X - Y)
-                            new_generator_info.multiply(-1.0);
+                            if conjugate_dagger {
+                                self.generator_info.last_mut().unwrap().multiply(-1.0);
+                            }
                         }
 
-                        (PauliGate::Y, false) => {
-                            // TYT^{\dag} -> 1/sqrt(2) (Y - X)
-                            new_generator_info.multiply(-1.0);
+                        PauliGate::Y => {
+                            // Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
+                            // Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
+                            self.generator_info[*pstr_ind].multiply(gate.angle.unwrap().cos());
+                            self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
+
+                            if !conjugate_dagger {
+                                self.generator_info.last_mut().unwrap().multiply(-1.0);
+                            }
                         }
 
-                        // In all other cases we do nothing, particularly for TXT^{\dag} -> 1/sqrt{2} (X + Y) and
-                        // T^{\dag}YT -> 1/sqrt(2) (Y + X) we alreay had the correct coefficients because we multiplied
-                        // with 1/sqrt{2} before.
-                        _ => {}
+                        _ => {
+                            unreachable!();
+                        }
                     }
                 }
 
@@ -309,10 +315,7 @@ impl GeneratorSet for ColumnWiseBitVec {
                 self.h_s_conjugations_map.update(gate, conjugate_dagger);
             }
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::Rz => {
-                // TODO
-                unimplemented!()
-            }
+            GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
             _ => {
                 panic!("Can only conjugate a H, S, CNOT, or Rz gate")
             }

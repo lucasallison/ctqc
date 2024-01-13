@@ -3,7 +3,6 @@ use core::panic;
 use fxhash::FxBuildHasher;
 use rayon::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
-use std::error::Error;
 use std::fmt;
 
 use super::coefficient_list::CoefficientList;
