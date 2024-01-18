@@ -628,6 +628,7 @@ impl GeneratorSet for RowWiseBitVec {
             PauliGate::X
         };
 
+        // TODO: is this neccessary?
         self.pauli_strings.resize(2 * self.size * self.size, false);
 
         for generator_index in 0..self.n_qubits {
@@ -698,6 +699,7 @@ impl GeneratorSet for RowWiseBitVec {
         }
     }
 
+    // TODO this is incorrect...
     fn measure(&mut self, i: usize) -> (bool, f64) {
         self.apply_all_h_s_conjugations();
 

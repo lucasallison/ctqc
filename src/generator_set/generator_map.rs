@@ -23,9 +23,9 @@ pub struct GeneratorMap {
 
 impl GeneratorMap {
     pub fn new(num_qubits: usize, n_threads: usize) -> GeneratorMap {
-        if n_threads != 1 {
-            panic!("GeneratorMap does not support multithreading");
-        }
+        if n_threads > 1 {
+            eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
+        } 
 
         GeneratorMap {
             generator_components:

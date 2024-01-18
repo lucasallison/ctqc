@@ -21,9 +21,9 @@ pub struct ColumnWiseBitVec {
 
 impl ColumnWiseBitVec {
     pub fn new(num_qubits: usize, n_threads: usize) -> ColumnWiseBitVec {
-        if n_threads != 1 {
-            panic!("ColumnWiseBitVec does not support multithreading");
-        }
+        if n_threads > 1 {
+            eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
+        } 
 
         ColumnWiseBitVec {
             columns: vec![bitvec![0; 2*num_qubits]; num_qubits],
