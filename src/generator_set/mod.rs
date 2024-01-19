@@ -10,8 +10,8 @@ mod pauli_string;
 pub mod column_wise_bitvec;
 pub mod generator_map;
 pub mod pauli_pools;
-pub mod row_wise_bitvec;
 pub mod pauli_trees;
+pub mod row_wise_bitvec;
 
 pub trait GeneratorSet: Display {
     fn init_generators(&mut self, zero_state_generators: bool);
@@ -23,7 +23,7 @@ pub trait GeneratorSet: Display {
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
 
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool); 
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool);
 
     /// Return the measurment result and the probability of measuring zero
     fn measure(&mut self, i: usize) -> (bool, f64);

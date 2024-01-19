@@ -3,9 +3,9 @@ use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
+use rayon::prelude::*;
 use std::collections::{hash_map::Entry, HashMap};
 use std::fmt;
-use rayon::prelude::*;
 use std::sync::Mutex;
 
 use super::coefficient_list::CoefficientList;
@@ -160,7 +160,7 @@ impl RowWiseBitVec {
         // As a single Pauli string is 2 * self.num_qubits bits,
         // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
         let mut pstrs_per_chunk = self.size / self.n_threads;
-        if self.size < self.n_threads{
+        if self.size < self.n_threads {
             pstrs_per_chunk = 1;
         }
         let bits_per_process = (2 * self.n_qubits) * pstrs_per_chunk;
@@ -174,11 +174,9 @@ impl RowWiseBitVec {
 
     // ------------------------------------------------------------------------ //
 
-
     /// Conjugate each Pauli string in the bitvec with a CNOT gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_cnot(&mut self, gate: &Gate) {
-
         if self.n_threads > 1 {
             self.par_conjugate_cnot(gate);
             return;
@@ -217,7 +215,7 @@ impl RowWiseBitVec {
         let it = self.get_parallel_iterator();
 
         it.for_each(|(pstrs_chunk, gen_info_chunk)| {
-            let hs_map = hs_map.clone(); 
+            let hs_map = hs_map.clone();
             for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(2 * num_qubits).enumerate() {
                 Self::apply_slice_h_s_conjugations(
                     pstr,
@@ -249,7 +247,6 @@ impl RowWiseBitVec {
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-
     }
 
     /// Updates all Pauli strings according to the following rules:
@@ -259,7 +256,6 @@ impl RowWiseBitVec {
     /// Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
     /// Z and I remain unchanged.
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
         if self.n_threads > 1 {
             self.par_conjugate_rz(gate, conjugate_dagger);
             return;
@@ -324,9 +320,8 @@ impl RowWiseBitVec {
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
-    // TODO refactor with sequential implementation, also holds for cnot 
+    // TODO refactor with sequential implementation, also holds for cnot
     fn par_conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
         let num_qubits = self.n_qubits;
         let hs_map = self.h_s_conjugations_map.clone();
 
@@ -336,16 +331,16 @@ impl RowWiseBitVec {
             pstrs: BitVec,
             gen_info: Vec<CoefficientList>,
         }
-        
+
         let all_new_pstrs = Mutex::new(NewPstrs {
             pstrs: BitVec::new(),
             gen_info: Vec::new(),
         });
 
         it.for_each(|(pstrs_chunk, gen_info_chunk)| {
-
-            let hs_map = hs_map.clone(); 
-            let mut new_pstrs: BitVec<BitSafeUsize, Lsb0> = BitVec::with_capacity(pstrs_chunk.len());
+            let hs_map = hs_map.clone();
+            let mut new_pstrs: BitVec<BitSafeUsize, Lsb0> =
+                BitVec::with_capacity(pstrs_chunk.len());
             let mut new_gen_info = Vec::with_capacity(gen_info_chunk.len());
 
             for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(2 * num_qubits).enumerate() {
@@ -415,11 +410,10 @@ impl RowWiseBitVec {
 
         self.pauli_strings.extend_from_bitslice(&new_data.pstrs);
         self.generator_info.extend_from_slice(&new_data.gen_info);
-        self.size = self.generator_info.len();  
+        self.size = self.generator_info.len();
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
-
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
     pub fn gather(&self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {

@@ -25,7 +25,7 @@ impl GeneratorMap {
     pub fn new(num_qubits: usize, n_threads: usize) -> GeneratorMap {
         if n_threads > 1 {
             eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
-        } 
+        }
 
         GeneratorMap {
             generator_components:
@@ -141,13 +141,12 @@ impl GeneratorSet for GeneratorMap {
                     }
                 }
                 GateType::Rz => {
-                    let new_component =
-                        component.conjugate_rz(gate, conjugate_dagger);
+                    let new_component = component.conjugate_rz(gate, conjugate_dagger);
 
                     match new_component {
-                        Ok(None) => { 
-                            // No change 
-                        },
+                        Ok(None) => {
+                            // No change
+                        }
                         Ok(Some(new_component)) => {
                             Self::insert_or_merge(&mut gcs_after_conjugation, new_component)
                                 .unwrap();
@@ -423,7 +422,6 @@ impl Component {
 
         match target_gate {
             PauliGate::X => {
-
                 // Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
                 // Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
                 new_component = self.clone();
@@ -442,7 +440,6 @@ impl Component {
             }
 
             PauliGate::Y => {
-
                 // Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
                 // Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
                 new_component = self.clone();

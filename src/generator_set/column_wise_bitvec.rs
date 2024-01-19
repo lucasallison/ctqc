@@ -23,7 +23,7 @@ impl ColumnWiseBitVec {
     pub fn new(num_qubits: usize, n_threads: usize) -> ColumnWiseBitVec {
         if n_threads > 1 {
             eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
-        } 
+        }
 
         ColumnWiseBitVec {
             columns: vec![bitvec![0; 2*num_qubits]; num_qubits],
@@ -165,7 +165,10 @@ impl ColumnWiseBitVec {
                             // Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
                             // Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
                             self.generator_info[*pstr_ind].multiply(gate.angle.unwrap().cos());
-                            self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
+                            self.generator_info
+                                .last_mut()
+                                .unwrap()
+                                .multiply(gate.angle.unwrap().sin());
 
                             if conjugate_dagger {
                                 self.generator_info.last_mut().unwrap().multiply(-1.0);
@@ -176,7 +179,10 @@ impl ColumnWiseBitVec {
                             // Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
                             // Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
                             self.generator_info[*pstr_ind].multiply(gate.angle.unwrap().cos());
-                            self.generator_info.last_mut().unwrap().multiply(gate.angle.unwrap().sin());
+                            self.generator_info
+                                .last_mut()
+                                .unwrap()
+                                .multiply(gate.angle.unwrap().sin());
 
                             if !conjugate_dagger {
                                 self.generator_info.last_mut().unwrap().multiply(-1.0);

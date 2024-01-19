@@ -129,7 +129,6 @@ impl GeneratorSet for PauliPools {
 
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
         self.pauli_pools.par_iter_mut().for_each(|rwbv| {
             rwbv.conjugate(gate, conjugate_dagger);
         });
@@ -142,7 +141,6 @@ impl GeneratorSet for PauliPools {
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
     fn clean(&mut self) {
-
         self.pauli_pools.par_iter_mut().for_each(|rwbv| {
             rwbv.clean();
         });
