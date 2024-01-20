@@ -316,7 +316,6 @@ impl RowWiseBitVec {
                 }
             }
         }
-
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 

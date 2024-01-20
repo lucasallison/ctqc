@@ -28,6 +28,16 @@ impl PauliGate {
             (false, true) => PauliGate::Z,
         }
     }
+
+    pub fn char_to_pauli_gate(c: &char) -> Result<PauliGate, PauliStringError> {
+        match *c {
+            'I' => Ok(PauliGate::I),
+            'X' => Ok(PauliGate::X),
+            'Y' => Ok(PauliGate::Y),
+            'Z' => Ok(PauliGate::Z),
+            _ => Err(PauliStringError::CharNotAPauliGate {}),
+        }
+    }
 }
 
 impl fmt::Display for PauliGate {
@@ -143,6 +153,9 @@ impl<'a> Iterator for PauliStringIterator<'a> {
 pub enum PauliStringError {
     #[snafu(display("Index out of bounds."))]
     IndexOutOfBounds {},
+
+    #[snafu(display("Character is not a pauli gate."))]
+    CharNotAPauliGate {},
 }
 
 // ------------------ Tests ---------------------------------------

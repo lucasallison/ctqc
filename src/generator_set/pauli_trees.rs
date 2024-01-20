@@ -1,13 +1,7 @@
-use bitvec::access::BitSafeUsize;
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use ordered_float::OrderedFloat;
-use rand::prelude::*;
-use rayon::{prelude::*, range_inclusive};
 use std::collections::{hash_map::Entry, HashMap};
-use std::fmt;
-use std::sync::Mutex;
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -15,7 +9,7 @@ use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
 use crate::circuit::{Gate, GateType};
-use crate::FP_ERROR_MARGIN;
+// use crate::FP_ERROR_MARGIN;
 
 /// Each generator is stored as a tree. Each tree is identifiable
 /// by a unqiue root node. The internal nodes of various tree can be shared.
@@ -32,9 +26,12 @@ pub struct PauliTrees {
     // or the index of the child node in the case of a leaf/non-leaf respectively.
     // These are referred to as the "body" bits of the node.
     node_table: BitVec,
+    n_nodes_stored: usize,
+    gargabe_collection_threshold: usize,
 
     pgates_per_node: usize,
     n_qubits: usize,
+    
 }
 
 impl PauliTrees {
@@ -49,12 +46,16 @@ impl PauliTrees {
 
             root_table: BitVec::new(),
             node_table: BitVec::new(),
+            n_nodes_stored: 0,
+            gargabe_collection_threshold: 0,
 
             // TODO make this adaptive?
             pgates_per_node: 8,
             n_qubits,
         };
 
+        // If 80 procent of the node table is full we start garbage collection
+        p.gargabe_collection_threshold = (0.8 * (p.max_storable_nodes() as f64)) as usize;
         p.node_table = bitvec![0; p.num_bits_for_nodes()];
         p
     }
@@ -96,6 +97,10 @@ impl PauliTrees {
             panic!("Failed inserting node due to a mismatch in the number of bits.");
         }
 
+        if self.n_nodes_stored >= self.max_storable_nodes() {
+            self.garbage_collection();
+        }
+
         let mut index = self.node_index(body);
 
         // Linear probing: find the first availiable empty spot or the node itself
@@ -111,6 +116,7 @@ impl PauliTrees {
         self.mark_table_entry_as_taken(index);
         self.set_leaf_indicator_bit(index, leaf);
         self.copy_node_body_to_table(index, body);
+        self.n_nodes_stored += 1;
 
         index
     }
@@ -152,6 +158,9 @@ impl PauliTrees {
     }
 
     fn n_pad_bits(&self) -> usize {
+        if self.n_qubits % self.pgates_per_node == 0 {
+            return 0;
+        }
         2 * (self.pgates_per_node - (self.n_qubits % self.pgates_per_node))
     }
 
@@ -194,7 +203,15 @@ impl PauliTrees {
 
         let body = self.indices_to_body(l_index, r_index);
 
-        self.insert_node_body(&body, false)
+        let new_node_index = self.insert_node_body(&body, false);
+
+
+        if new_node_index == l_index || new_node_index == r_index {
+            println!("1. {:?}", body);
+            println!("2. {:?}", &pstr[bits_per_half..]);
+            panic!("-> A loop was introduced {} {} {}", new_node_index, l_index, r_index);  
+        }
+        new_node_index
     }
 
     // Converts two indices into a body of a non-leaf node
@@ -231,6 +248,7 @@ impl PauliTrees {
         (n >> i) & 1 == 1
     }
 
+    /// Convert a blitvec of length <= usize::MAX to a usize
     fn bitslice_to_usize(slice: &BitSlice) -> usize {
         let n_bits_usize = std::mem::size_of::<usize>() * 8;
         if slice.len() > n_bits_usize {
@@ -290,13 +308,13 @@ impl PauliTrees {
         let mut pstr = BitVec::with_capacity(2 * self.n_qubits);
 
         let root_index = self.root_node_index(i);
-        self.inorder_pstr_retrieval(root_index, &mut pstr);
+        self.recursive_pstr_as_bitvec(root_index, &mut pstr);
 
         // Omit potential padding
         pstr[..2 * self.n_qubits].to_bitvec()
     }
 
-    fn inorder_pstr_retrieval(&self, node_index: usize, pstr: &mut BitVec) {
+    fn recursive_pstr_as_bitvec(&self, node_index: usize, pstr: &mut BitVec) {
         let body = self.get_node_body(node_index);
 
         if self.is_leaf(node_index) {
@@ -307,8 +325,60 @@ impl PauliTrees {
         let l_index = self.index_from_node_body(body, true);
         let r_index = self.index_from_node_body(body, false);
 
-        self.inorder_pstr_retrieval(l_index, pstr);
-        self.inorder_pstr_retrieval(r_index, pstr);
+        self.recursive_pstr_as_bitvec(l_index, pstr);
+        self.recursive_pstr_as_bitvec(r_index, pstr);
+    }
+
+    // TODO refactor this with set pgate
+    fn get_pgate(&self, pstr_index: usize, gate_index: usize) -> PauliGate {
+        if pstr_index > self.size() || gate_index >= self.n_qubits {
+            panic!("Pauli string or gate index out of bounds.");
+        }
+
+        let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
+        let n_leaf_nodes = pgates_per_pstr / self.pgates_per_node;
+
+        let root_index = self.root_node_index(pstr_index);
+        self.recursive_get_pgate(root_index, gate_index, n_leaf_nodes)
+    }
+
+    fn recursive_get_pgate(
+        &self,
+        node_index: usize,
+        relative_gate_index: usize,
+        n_leaf_nodes: usize,
+    ) -> PauliGate {
+        let body = self.get_node_body(node_index);
+
+        if self.is_leaf(node_index) {
+            let b1 = body[2 * relative_gate_index];
+            let b2 = body[2 * relative_gate_index + 1];
+            return PauliGate::pauli_gate_from_tuple(b1, b2);
+        }
+
+        let left_index = self.index_from_node_body(body, true);
+        let right_index = self.index_from_node_body(body, false);
+
+        let n_leaf_nodes_left = n_leaf_nodes / 2;
+        let n_leaf_nodes_right = n_leaf_nodes - (n_leaf_nodes / 2);
+
+        // Recurse on the left/left node and update their index
+        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_node) {
+            return self.recursive_get_pgate(left_index, relative_gate_index, n_leaf_nodes_left);
+        } else {
+            // Prevent subtraction with overflow
+            if relative_gate_index < self.pgates_per_node {
+                panic!("Failed getting Pauli gate: We should have found a leaf by now.");
+            }
+
+            let new_relative_gate_index =
+                relative_gate_index - (n_leaf_nodes_left * self.pgates_per_node);
+            return self.recursive_get_pgate(
+                right_index,
+                new_relative_gate_index,
+                n_leaf_nodes_right,
+            );
+        }
     }
 
     fn set_pgate(&mut self, pstr_index: usize, gate_index: usize, pgate: PauliGate) {
@@ -321,7 +391,6 @@ impl PauliTrees {
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_node;
 
         let root_index = self.root_node_index(pstr_index);
-        println!("Calling Recursive");
         let new_root_index = self.recursive_set_pgate(root_index, gate_index, n_leaf_nodes, &pgate);
         self.update_root_node_index(pstr_index, new_root_index)
     }
@@ -339,7 +408,6 @@ impl PauliTrees {
 
             let (b1, b2) = PauliGate::pauli_gate_as_tuple(*pgate);
 
-            println!("RGI: {}", relative_gate_index);
             new_body.set(2 * relative_gate_index, b1);
             new_body.set(2 * relative_gate_index + 1, b2);
 
@@ -355,15 +423,13 @@ impl PauliTrees {
         let n_leaf_nodes_right = n_leaf_nodes - (n_leaf_nodes / 2);
 
         // Recurse on the left/left node and update their index
-        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_node) - 1 {
-            println!("LEFT");
+        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_node) {
             left_index =
                 self.recursive_set_pgate(left_index, relative_gate_index, n_leaf_nodes_left, pgate);
         } else {
             if relative_gate_index < self.pgates_per_node {
-                panic!("We should have found a leaf by now.");
+                panic!("Failed setting Pauli gate: We should have found a leaf by now.");
             }
-            println!("RIGHT");
 
             let new_relative_gate_index =
                 relative_gate_index - (n_leaf_nodes_left * self.pgates_per_node);
@@ -376,23 +442,166 @@ impl PauliTrees {
         }
 
         let new_node_body = self.indices_to_body(left_index, right_index);
-        return self.insert_node_body(&new_node_body, false);
+        let new_node_index = self.insert_node_body(&new_node_body, false);
+
+        // TODO
+        if new_node_index == left_index || new_node_index == right_index {
+            panic!("A loop was introduced");
+        }
+
+        new_node_index
+    }
+
+    fn get_actual_p_gate_and_coef_mul(
+        &self,
+        pstr_index: usize,
+        gate_index: usize,
+    ) -> (PauliGate, f64) {
+        let curr_pgate = self.get_pgate(pstr_index, gate_index);
+
+        let actual_pgate = self
+            .h_s_conjugations_map
+            .get_actual_p_gate(gate_index, curr_pgate);
+
+        let coef_mult = self
+            .h_s_conjugations_map
+            .get_coefficient_multiplier(gate_index, curr_pgate);
+        (actual_pgate, coef_mult)
     }
 
     fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
 
         for pstr_index in 0..self.size() {
-            // self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-            // self.apply_h_s_conjugations(pstr_index, qubit_2);
+            let (q1_actual_pgate, q1_coef_mul) =
+                self.get_actual_p_gate_and_coef_mul(pstr_index, gate.qubit_1);
+            let (q2_actual_pgate, q2_coef_mul) =
+                self.get_actual_p_gate_and_coef_mul(pstr_index, qubit_2);
+
+            let look_up_output = CNOT_CONJ_UPD_RULES
+                .get(&(q1_actual_pgate, q2_actual_pgate))
+                .unwrap();
+
+            self.coeff_lists[pstr_index]
+                .multiply(look_up_output.coefficient * q1_coef_mul * q2_coef_mul);
+
+            self.set_pgate(pstr_index, gate.qubit_1, look_up_output.q1_p_gate);
+            self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate);
         }
 
-        unimplemented!()
+        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(qubit_2);
     }
 
-    fn conjugate_rz(&mut self, _gate: &Gate, _conjugate_dagger: bool) {
-        unimplemented!()
+    fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
+
+
+        for pstr_index in 0..self.size() {
+            let (actual_pgate, coef_mul) =
+                self.get_actual_p_gate_and_coef_mul(pstr_index, gate.qubit_1);
+
+            // Apply the H/S conjugations
+            self.coeff_lists[pstr_index].multiply(coef_mul);
+            self.set_pgate(pstr_index, gate.qubit_1, actual_pgate);
+
+            if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
+                continue;
+            }
+
+            self.root_table.extend_from_within(
+                pstr_index * self.pgates_per_node..(pstr_index + 1) * self.pgates_per_node,
+            );
+
+            self.coeff_lists
+                .push(self.coeff_lists[pstr_index].clone());
+
+            if actual_pgate == PauliGate::X {
+                self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::Y);
+            } else if actual_pgate == PauliGate::Y {
+                self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::X);
+            }
+
+            match (actual_pgate, conjugate_dagger) {
+                (PauliGate::X, false) => {
+                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
+                    self.coeff_lists
+                        .last_mut()
+                        .unwrap()
+                        .multiply(gate.angle.unwrap().sin());
+                }
+                (PauliGate::Y, false) => {
+                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
+                    self.coeff_lists
+                        .last_mut()
+                        .unwrap()
+                        .multiply(-1.0 * gate.angle.unwrap().sin());
+                }
+                (PauliGate::X, true) => {
+                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
+                    self.coeff_lists
+                        .last_mut()
+                        .unwrap()
+                        .multiply(-1.0 * gate.angle.unwrap().sin());
+                }
+                (PauliGate::Y, true) => {
+                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
+                    self.coeff_lists
+                        .last_mut()
+                        .unwrap()
+                        .multiply(gate.angle.unwrap().sin());
+                }
+                _ => {
+                    unreachable!()
+                }
+            }
+        }
+        self.h_s_conjugations_map.reset(gate.qubit_1);
     }
+
+
+    fn garbage_collection(&mut self) {
+        let mut new_node_table = bitvec![0; self.num_bits_for_nodes()];
+
+        let prev_n_nodes = self.n_nodes_stored;
+
+        self.n_nodes_stored = 0;
+
+        for pstr_index in 0..self.size() {
+            let root_index = self.root_node_index(pstr_index);
+            self.recursive_garbage_collection(root_index, &mut new_node_table);
+        }
+
+        self.node_table = new_node_table;
+
+        if prev_n_nodes == self.n_nodes_stored {
+            panic!("Garbage collection failed to free up space: node table is full.");
+        }
+        println!("Garbage collection: {} -> {}", prev_n_nodes, self.n_nodes_stored);
+    }
+
+    fn recursive_garbage_collection(&mut self, node_index: usize, new_node_table: &mut BitSlice) {
+        let body = self.get_node_body(node_index);
+
+        if !self.is_leaf(node_index) {
+            let left_index = self.index_from_node_body(body, true);
+            let right_index = self.index_from_node_body(body, false);
+            println!("Recurse! {} -> {} {} ", node_index, left_index, right_index);
+
+            self.recursive_garbage_collection(left_index, new_node_table);
+            self.recursive_garbage_collection(right_index, new_node_table);
+        } {
+            println!("Insert! {} ", node_index);
+        }
+
+
+        // Copy bits to the new node table
+        for i in node_index*self.bits_per_node()..(node_index+1)*self.bits_per_node() {
+            new_node_table.set(i, self.node_table[i]);
+        }
+        self.n_nodes_stored += 1;
+    }
+
+
 }
 
 impl GeneratorSet for PauliTrees {
@@ -429,6 +638,12 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+
+        if self.n_nodes_stored > self.gargabe_collection_threshold {
+            println!("Garbage collection triggered");
+            self.garbage_collection();
+        }
+
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map.update(gate, conjugate_dagger);
@@ -446,7 +661,40 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn clean(&mut self) {
-        unimplemented!()
+
+        // Map from root index to Pauli string index
+        let mut m = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+
+        // Gather all unique Pauli strings
+        for pstr_index in 0..self.size() {
+            let root_index = self.root_node_index(pstr_index);
+            match m.entry(root_index) {
+                Entry::Occupied(mut e) => {
+                    e.get_mut().merge(&self.coeff_lists[pstr_index].clone());
+                }
+                Entry::Vacant(e) => {
+                    e.insert(self.coeff_lists[pstr_index].clone());
+                }
+            }
+        }
+
+        // Scatter all unique Pauli strings
+        self.root_table.clear();
+        self.coeff_lists.clear();
+
+        for (root_index, c_list) in m.iter_mut() {
+            if c_list.is_empty() {
+                continue;
+            }
+
+            let root_node = self.index_to_bitvec(*root_index);
+            self.root_table.extend_from_bitslice(&root_node);
+            self.coeff_lists.push(c_list.clone());
+        }
+
     }
 
     fn size(&self) -> usize {
@@ -459,8 +707,29 @@ impl std::fmt::Display for PauliTrees {
         let mut s = String::new();
 
         for pstr_index in 0..self.size() {
+            let mut coef_multiplier = 1.0;
             let pstr = self.pstr_as_str(pstr_index);
-            s.push_str(&format!("{}\n", pstr));
+
+            for (i, pgate) in pstr.chars().enumerate() {
+                let current_pgate = PauliGate::char_to_pauli_gate(&pgate).unwrap();
+
+                let actual_pgate = self
+                    .h_s_conjugations_map
+                    .get_actual_p_gate(i, current_pgate);
+
+                coef_multiplier *= self
+                    .h_s_conjugations_map
+                    .get_coefficient_multiplier(i, current_pgate);
+
+                s.push_str(&format!("{}", actual_pgate));
+            }
+
+            s.push_str(" (");
+
+            for c in self.coeff_lists[pstr_index].coefficients.iter() {
+                s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
+            }
+            s.push_str(")\n");
         }
 
         write!(f, "{}", s)
@@ -561,6 +830,5 @@ mod tests {
         assert_eq!(pstr_as_bitvec[17], false);
         assert_eq!(pstr_as_bitvec[34], true);
         assert_eq!(pstr_as_bitvec[35], true);
-
     }
 }
