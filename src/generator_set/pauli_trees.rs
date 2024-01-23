@@ -1,7 +1,7 @@
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use std::collections::{hash_map::Entry, HashMap};
+use std::{collections::{hash_map::Entry, HashMap}, num::ParseIntError};
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -31,6 +31,7 @@ pub struct PauliTrees {
 
     pgates_per_node: usize,
     n_qubits: usize,
+    depth: usize,
     
 }
 
@@ -50,19 +51,21 @@ impl PauliTrees {
             gargabe_collection_threshold: 0,
 
             // TODO make this adaptive?
-            pgates_per_node: 8,
+            pgates_per_node: 9,
             n_qubits,
+            depth: 0,
         };
 
         // If 80 procent of the node table is full we start garbage collection
         p.gargabe_collection_threshold = (0.8 * (p.max_storable_nodes() as f64)) as usize;
-        p.node_table = bitvec![0; p.num_bits_for_nodes()];
+        p.node_table = bitvec![0; p.num_bits_for_node_table()];
+        p.depth = p.tree_depth();
         p
     }
 
     /// Calculate the number of bits needed to allocate if we want to store
     /// `p_gates_per_node` gates per node.  
-    fn num_bits_for_nodes(&self) -> usize {
+    fn num_bits_for_node_table(&self) -> usize {
         self.max_storable_nodes() * self.bits_per_node()
     }
 
@@ -83,10 +86,22 @@ impl PauliTrees {
         self.pgates_per_node * 2
     }
 
+    fn tree_depth(&self) -> usize {
+        ((self.n_qubits as f64) / (self.pgates_per_node as f64)).ceil().log2().ceil() as usize
+    }
+
+    /// Returns the number of nodes needed at most to store a Pauli string
+    fn max_nodes_stored_per_pstr(&self) -> usize {
+        (2 << (self.depth + 1)) - 1 
+    }
+
     /// Returns the index of the node in the table, determined by its body.
     // TODO: rename?
-    fn node_index(&self, node_body: &BitSlice) -> usize {
-        (fxhash::hash64(&node_body) as usize) % self.max_storable_nodes()
+    fn node_index(&self, node_body: &BitSlice, leaf: bool) -> usize {
+        // TODO also hash the leaf bit
+        let mut h = BitVec::from_bitslice(node_body);
+        h.push(leaf);
+        (fxhash::hash64(&h) as usize) % self.max_storable_nodes()
     }
 
     /// Given the body of a node, insert it as a full node in the table and return
@@ -97,11 +112,8 @@ impl PauliTrees {
             panic!("Failed inserting node due to a mismatch in the number of bits.");
         }
 
-        if self.n_nodes_stored >= self.max_storable_nodes() {
-            self.garbage_collection();
-        }
-
-        let mut index = self.node_index(body);
+        let mut index = self.node_index(body, leaf);
+        let start_index = index;
 
         // Linear probing: find the first availiable empty spot or the node itself
         while self.table_entry_taken(index) {
@@ -110,6 +122,10 @@ impl PauliTrees {
                 return index;
             }
             index = (index + 1) % self.max_storable_nodes();
+
+            if index == start_index {
+                panic!("Failed inserting node: table is full.");
+            }
         }
 
         // Insert the node
@@ -146,7 +162,7 @@ impl PauliTrees {
         self.node_table.set(node_index * bpn + 1, leaf);
     }
 
-    /// Returns if the node at `node_index` is taken.
+    /// Returns true if the node at `node_index` is taken.
     fn table_entry_taken(&self, node_index: usize) -> bool {
         self.node_table[node_index * self.bits_per_node()]
     }
@@ -184,6 +200,8 @@ impl PauliTrees {
         // TODO sanity check, remove later
         assert_eq!((pstr.len() / 2) % self.pgates_per_node, 0);
 
+        self.check_memory_availability(self.max_nodes_stored_per_pstr());
+
         // We save `self.pgates_per_node` gates per node.
         // Since each gate is represented by 2 bits, we need to divide the length of the bitvec by 2 and
         // then divide by `self.pgates_per_node` to get the number of leaf nodes we need to insert.
@@ -205,12 +223,6 @@ impl PauliTrees {
 
         let new_node_index = self.insert_node_body(&body, false);
 
-
-        if new_node_index == l_index || new_node_index == r_index {
-            println!("1. {:?}", body);
-            println!("2. {:?}", &pstr[bits_per_half..]);
-            panic!("-> A loop was introduced {} {} {}", new_node_index, l_index, r_index);  
-        }
         new_node_index
     }
 
@@ -386,6 +398,8 @@ impl PauliTrees {
             panic!("Pauli string or gate index out of bounds.");
         }
 
+        self.check_memory_availability(self.depth + 1);
+
         // We might save more Pauli gates per Pauli string due to the padding
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_node;
@@ -558,11 +572,23 @@ impl PauliTrees {
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
+    /// The function checks whether there is a sufficient amount of memory to store 
+    /// the number of nodes given through the parameter. If not, it triggers garbage collection.
+    /// Each function inserting nodes into the node table should call this function. 
+    fn check_memory_availability(&mut self, n_nodes_to_store: usize) {
+        if self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes() {
+            self.garbage_collection();
+
+            if self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes() {
+                // TODO resize the node map?
+                panic!("Not enough memory to store {} nodes.", n_nodes_to_store);
+            }
+        }
+    }
+
 
     fn garbage_collection(&mut self) {
-        let mut new_node_table = bitvec![0; self.num_bits_for_nodes()];
-
-        let prev_n_nodes = self.n_nodes_stored;
+        let mut new_node_table = bitvec![0; self.num_bits_for_node_table()];
 
         self.n_nodes_stored = 0;
 
@@ -572,11 +598,6 @@ impl PauliTrees {
         }
 
         self.node_table = new_node_table;
-
-        if prev_n_nodes == self.n_nodes_stored {
-            panic!("Garbage collection failed to free up space: node table is full.");
-        }
-        println!("Garbage collection: {} -> {}", prev_n_nodes, self.n_nodes_stored);
     }
 
     fn recursive_garbage_collection(&mut self, node_index: usize, new_node_table: &mut BitSlice) {
@@ -585,14 +606,15 @@ impl PauliTrees {
         if !self.is_leaf(node_index) {
             let left_index = self.index_from_node_body(body, true);
             let right_index = self.index_from_node_body(body, false);
-            println!("Recurse! {} -> {} {} ", node_index, left_index, right_index);
 
             self.recursive_garbage_collection(left_index, new_node_table);
             self.recursive_garbage_collection(right_index, new_node_table);
-        } {
-            println!("Insert! {} ", node_index);
         }
 
+        // This node is already stored in the new node table
+        if new_node_table[node_index * self.bits_per_node()] {
+            return;
+        }
 
         // Copy bits to the new node table
         for i in node_index*self.bits_per_node()..(node_index+1)*self.bits_per_node() {
@@ -640,7 +662,6 @@ impl GeneratorSet for PauliTrees {
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
 
         if self.n_nodes_stored > self.gargabe_collection_threshold {
-            println!("Garbage collection triggered");
             self.garbage_collection();
         }
 
@@ -748,7 +769,8 @@ mod tests {
         let index_1 = pauli_trees.insert_node_body(&node, true);
 
         // First node we insert, index should equal its index without probing
-        assert_eq!(index_1, pauli_trees.node_index(&node));
+        // TODO pass true?
+        assert_eq!(index_1, pauli_trees.node_index(&node, true));
         // Node shold be in the table
         assert_eq!(
             pauli_trees.node_table[index_1 * pauli_trees.bits_per_node()
@@ -762,7 +784,7 @@ mod tests {
         let index_2 = pauli_trees.insert_node_body(&node, false);
 
         // Should be inserted one spot later
-        assert_eq!(index_2, pauli_trees.node_index(&node) + 1);
+        assert_eq!(index_2, pauli_trees.node_index(&node, true) + 1);
 
         for (i, b) in pauli_trees.node_table.iter().enumerate() {
             // All these bits should be one, except the leaf indicator bit of the second node
