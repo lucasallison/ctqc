@@ -1,7 +1,7 @@
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use std::{collections::{hash_map::Entry, HashMap}, num::ParseIntError};
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -32,7 +32,6 @@ pub struct PauliTrees {
     pgates_per_node: usize,
     n_qubits: usize,
     depth: usize,
-    
 }
 
 impl PauliTrees {
@@ -51,7 +50,7 @@ impl PauliTrees {
             gargabe_collection_threshold: 0,
 
             // TODO make this adaptive?
-            pgates_per_node: 9,
+            pgates_per_node: 16,
             n_qubits,
             depth: 0,
         };
@@ -87,12 +86,15 @@ impl PauliTrees {
     }
 
     fn tree_depth(&self) -> usize {
-        ((self.n_qubits as f64) / (self.pgates_per_node as f64)).ceil().log2().ceil() as usize
+        ((self.n_qubits as f64) / (self.pgates_per_node as f64))
+            .ceil()
+            .log2()
+            .ceil() as usize
     }
 
     /// Returns the number of nodes needed at most to store a Pauli string
     fn max_nodes_stored_per_pstr(&self) -> usize {
-        (2 << (self.depth + 1)) - 1 
+        (2 << (self.depth + 1)) - 1
     }
 
     /// Returns the index of the node in the table, determined by its body.
@@ -508,8 +510,6 @@ impl PauliTrees {
     }
 
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
-
         for pstr_index in 0..self.size() {
             let (actual_pgate, coef_mul) =
                 self.get_actual_p_gate_and_coef_mul(pstr_index, gate.qubit_1);
@@ -526,8 +526,7 @@ impl PauliTrees {
                 pstr_index * self.pgates_per_node..(pstr_index + 1) * self.pgates_per_node,
             );
 
-            self.coeff_lists
-                .push(self.coeff_lists[pstr_index].clone());
+            self.coeff_lists.push(self.coeff_lists[pstr_index].clone());
 
             if actual_pgate == PauliGate::X {
                 self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::Y);
@@ -572,9 +571,9 @@ impl PauliTrees {
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
-    /// The function checks whether there is a sufficient amount of memory to store 
+    /// The function checks whether there is a sufficient amount of memory to store
     /// the number of nodes given through the parameter. If not, it triggers garbage collection.
-    /// Each function inserting nodes into the node table should call this function. 
+    /// Each function inserting nodes into the node table should call this function.
     fn check_memory_availability(&mut self, n_nodes_to_store: usize) {
         if self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes() {
             self.garbage_collection();
@@ -585,7 +584,6 @@ impl PauliTrees {
             }
         }
     }
-
 
     fn garbage_collection(&mut self) {
         let mut new_node_table = bitvec![0; self.num_bits_for_node_table()];
@@ -617,13 +615,11 @@ impl PauliTrees {
         }
 
         // Copy bits to the new node table
-        for i in node_index*self.bits_per_node()..(node_index+1)*self.bits_per_node() {
+        for i in node_index * self.bits_per_node()..(node_index + 1) * self.bits_per_node() {
             new_node_table.set(i, self.node_table[i]);
         }
         self.n_nodes_stored += 1;
     }
-
-
 }
 
 impl GeneratorSet for PauliTrees {
@@ -660,7 +656,6 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
         if self.n_nodes_stored > self.gargabe_collection_threshold {
             self.garbage_collection();
         }
@@ -682,7 +677,6 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn clean(&mut self) {
-
         // Map from root index to Pauli string index
         let mut m = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size(),
@@ -715,7 +709,6 @@ impl GeneratorSet for PauliTrees {
             self.root_table.extend_from_bitslice(&root_node);
             self.coeff_lists.push(c_list.clone());
         }
-
     }
 
     fn size(&self) -> usize {

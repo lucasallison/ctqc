@@ -5,7 +5,7 @@ use std::io::{stdout, Write};
 use std::time::Instant;
 
 use crate::circuit::Circuit;
-use crate::circuit::GateType;
+use crate::circuit::{Gate, GateType};
 use crate::generator_set::GeneratorSet;
 
 lazy_static! {
@@ -203,7 +203,7 @@ impl<'a> Simulator<'a> {
         inverse: bool,
         sim_msg: &String,
     ) -> Result<(), Box<dyn Error>> {
-        let num_gates = circuit.len();
+        let n_total_gates = circuit.len();
 
         if self.verbose {
             println!("Initial components:");
@@ -216,7 +216,7 @@ impl<'a> Simulator<'a> {
             circuit.iter()
         };
 
-        let now = Instant::now();
+        let sim_start_time = Instant::now();
 
         for (i, gate) in circ_iter.enumerate() {
             if i != 0 && i % self.clean_cycles == 0 {
@@ -243,41 +243,39 @@ impl<'a> Simulator<'a> {
                 }
             }
 
-            if self.verbose {
-                println!("{}", self.generator_set);
-            } else {
-                print!(
-                    "\r{}{}% ({}/{}) -- {} Pauli strings",
-                    sim_msg,
-                    (i as f64 / num_gates as f64 * 100.0) as usize,
-                    i,
-                    num_gates,
-                    self.generator_set.size(),
-                );
-            }
-            self.stdout.flush().unwrap();
+            self.print_sim_progress(sim_msg, i + 1, n_total_gates, &sim_start_time, None);
         }
 
         self.generator_set.clean();
 
-        let elapsed = now.elapsed();
+        self.print_sim_progress(sim_msg, n_total_gates, n_total_gates, &sim_start_time, None);
 
+        Ok(())
+    }
+
+    fn print_sim_progress(
+        &mut self,
+        sim_msg: &String,
+        n_simulated_gates: usize,
+        n_total_gates: usize,
+        sim_start_time: &Instant,
+        applied_gate: Option<&Gate>,
+    ) {
         if self.verbose {
-            println!("Final components:");
+            // println!("Final components:");
             println!("{}", self.generator_set);
         } else {
             print!(
-                "\r{}100% ({}/{}) ({:.2?}) -- {} Pauli strings              ",
+                "\r{}{}% ({}/{}) ({:.2?}) -- {} Pauli strings               ",
                 sim_msg,
-                num_gates,
-                num_gates,
-                elapsed,
+                (n_simulated_gates as f64 / n_total_gates as f64 * 100.0) as usize,
+                n_simulated_gates,
+                n_total_gates,
+                sim_start_time.elapsed(),
                 self.generator_set.size()
             );
         }
         self.stdout.flush().unwrap();
-
-        Ok(())
     }
 }
 
