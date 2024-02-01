@@ -259,7 +259,7 @@ impl<'a> Simulator<'a> {
         n_simulated_gates: usize,
         n_total_gates: usize,
         sim_start_time: &Instant,
-        applied_gate: Option<&Gate>,
+        _applied_gate: Option<&Gate>,
     ) {
         if self.verbose {
             // println!("Final components:");

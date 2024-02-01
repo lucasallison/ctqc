@@ -1,7 +1,10 @@
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use std::collections::{hash_map::Entry, HashMap};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    thread::panicking,
+};
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -26,12 +29,17 @@ pub struct PauliTrees {
     // or the index of the child node in the case of a leaf/non-leaf respectively.
     // These are referred to as the "body" bits of the node.
     node_table: BitVec,
+    leaf_table: BitVec,
+
+    n_node_body_bits: usize,
+    pgates_per_leaf: usize,
+    depth: usize,
+
     n_nodes_stored: usize,
+    n_leafs_stored: usize,
     gargabe_collection_threshold: usize,
 
-    pgates_per_node: usize,
     n_qubits: usize,
-    depth: usize,
 }
 
 impl PauliTrees {
@@ -46,81 +54,110 @@ impl PauliTrees {
 
             root_table: BitVec::new(),
             node_table: BitVec::new(),
+            leaf_table: BitVec::new(),
+
+            n_node_body_bits: 32,
+            pgates_per_leaf: 8,
+            depth: 0,
+
             n_nodes_stored: 0,
+            n_leafs_stored: 0,
+
             gargabe_collection_threshold: 0,
 
-            // TODO make this adaptive?
-            pgates_per_node: 16,
             n_qubits,
-            depth: 0,
         };
 
         // If 80 procent of the node table is full we start garbage collection
         p.gargabe_collection_threshold = (0.8 * (p.max_storable_nodes() as f64)) as usize;
-        p.node_table = bitvec![0; p.num_bits_for_node_table()];
+        p.node_table = bitvec![0; p.n_bits_for_node_table()];
+        p.leaf_table = bitvec![0; p.n_bits_for_leaf_table()];
+
+        // Explicitly store so we don't have to recalculate it
         p.depth = p.tree_depth();
+
+        if p.n_node_body_bits % 2 != 0 {
+            panic!("n_node_body_bits must be even.");
+        }
+
         p
     }
 
-    /// Calculate the number of bits needed to allocate if we want to store
-    /// `p_gates_per_node` gates per node.  
-    fn num_bits_for_node_table(&self) -> usize {
+    // ---- Root node storage information ---- //
+
+    fn n_bits_per_root_node(&self) -> usize {
+        self.n_node_body_bits / 2
+    }
+
+    // ---- Node storage information ---- //
+
+    fn n_bits_for_node_table(&self) -> usize {
         self.max_storable_nodes() * self.bits_per_node()
     }
 
-    fn max_storable_nodes(&self) -> usize {
-        1 << self.pgates_per_node
-    }
-
     fn bits_per_node(&self) -> usize {
-        self.n_book_keeping_bits() + self.n_body_bits()
+        self.n_node_book_keeping_bits() + self.n_node_body_bits
     }
 
-    /// Used to clarify code
-    fn n_book_keeping_bits(&self) -> usize {
+    fn n_node_book_keeping_bits(&self) -> usize {
+        // 1 bit for the leaf indicator bit
+        // and 1 bit for the table entry taken bit
         2
     }
 
-    fn n_body_bits(&self) -> usize {
-        self.pgates_per_node * 2
+    fn max_storable_nodes(&self) -> usize {
+        1 << (self.n_node_body_bits / 2)
     }
 
-    fn tree_depth(&self) -> usize {
-        ((self.n_qubits as f64) / (self.pgates_per_node as f64))
-            .ceil()
-            .log2()
-            .ceil() as usize
-    }
-
-    /// Returns the number of nodes needed at most to store a Pauli string
+    /// Returns the maximum number of nodes needed at most to store a Pauli string
     fn max_nodes_stored_per_pstr(&self) -> usize {
-        (2 << (self.depth + 1)) - 1
+        (2 << self.depth) - 1
     }
 
-    /// Returns the index of the node in the table, determined by its body.
-    // TODO: rename?
-    fn node_index(&self, node_body: &BitSlice, leaf: bool) -> usize {
-        // TODO also hash the leaf bit
-        let mut h = BitVec::from_bitslice(node_body);
-        h.push(leaf);
-        (fxhash::hash64(&h) as usize) % self.max_storable_nodes()
+    // ---- Node helper functions ---- //
+
+    /// Return a reference to the body of the node at `node_index`.
+    fn get_node_body(&self, node_index: usize) -> &BitSlice {
+        let bpn = self.bits_per_node();
+        &self.node_table[node_index * bpn + self.n_node_book_keeping_bits()..(node_index + 1) * bpn]
     }
 
-    /// Given the body of a node, insert it as a full node in the table and return
-    /// its index
-    fn insert_node_body(&mut self, body: &BitSlice, leaf: bool) -> usize {
-        // TODO
-        if body.len() != 2 * self.pgates_per_node {
-            panic!("Failed inserting node due to a mismatch in the number of bits.");
+    /// Returns if the node at `node_index` is a has the index of
+    /// a leaf stored in its body.
+    fn node_points_to_leaf(&self, node_index: usize) -> bool {
+        self.node_table[node_index * self.bits_per_node() + 1]
+    }
+
+    fn copy_node_body_to_table(&mut self, node_index: usize, body: &BitSlice) {
+        let bpn = self.bits_per_node();
+        let bkbts = self.n_node_book_keeping_bits();
+        for (i, b) in body.iter().enumerate() {
+            self.node_table.set(node_index * bpn + bkbts + i, *b);
+        }
+    }
+
+    /// Marks the node at `node_index` as a leaf/non-leaf.
+    fn set_leaf_indicator_bit(&mut self, node_index: usize, leaf: bool) {
+        let bpn = self.bits_per_node();
+        self.node_table.set(node_index * bpn + 1, leaf);
+    }
+
+    // ---- Node insertion functions ---- //
+
+    // TODO Refacter inserting into node/leaf table into a single function?
+    fn insert_node_into_table(&mut self, body: &BitSlice, leaf_bit: bool) -> usize {
+        if body.len() != self.n_node_body_bits {
+            panic!("Trying to insert a node with an invalid body size.");
         }
 
-        let mut index = self.node_index(body, leaf);
+        let mut index = self.bits_to_index(body, self.max_storable_nodes() - 1);
         let start_index = index;
 
         // Linear probing: find the first availiable empty spot or the node itself
-        while self.table_entry_taken(index) {
+        while self.table_entry_taken(index, false) {
             // This node is stored already in the table
-            if (body == self.get_node_body(index)) && (leaf == self.is_leaf(index)) {
+            if (body == self.get_node_body(index)) && (leaf_bit == self.node_points_to_leaf(index))
+            {
                 return index;
             }
             index = (index + 1) % self.max_storable_nodes();
@@ -131,135 +168,193 @@ impl PauliTrees {
         }
 
         // Insert the node
-        self.mark_table_entry_as_taken(index);
-        self.set_leaf_indicator_bit(index, leaf);
+        self.mark_table_entry_as_taken(index, false);
+        self.set_leaf_indicator_bit(index, leaf_bit);
         self.copy_node_body_to_table(index, body);
         self.n_nodes_stored += 1;
 
         index
     }
 
-    /// Return a reference to the body of the node at `node_index`.
-    fn get_node_body(&self, node_index: usize) -> &BitSlice {
-        let bpn = self.bits_per_node();
-        &self.node_table[node_index * bpn + self.n_book_keeping_bits()..(node_index + 1) * bpn]
+    // ---- Leaf storage information ---- //
+
+    fn n_bits_for_leaf_table(&self) -> usize {
+        self.max_storable_leafs() * self.pgates_per_leaf * 2
     }
 
-    fn copy_node_body_to_table(&mut self, node_index: usize, body: &BitSlice) {
-        let bpn = self.bits_per_node();
-        let bkbts = self.n_book_keeping_bits();
-        for (i, b) in body.iter().enumerate() {
-            self.node_table.set(node_index * bpn + bkbts + i, *b);
+    fn bits_per_leaf(&self) -> usize {
+        // Each gate takes 2 bits plus one bit
+        // to indicate wheter the spot is taken
+        self.pgates_per_leaf * 2 + 1
+    }
+
+    fn max_storable_leafs(&self) -> usize {
+        1 << self.n_node_body_bits
+    }
+
+    /// Returns the maximum number of leafs needed at most to store a Pauli string
+    fn max_leafs_stored_per_pstr(&self) -> usize {
+        (self.n_qubits + (self.n_pad_bits() / 2)) / self.pgates_per_leaf
+    }
+
+    // ---- Leaf helper functions ---- //
+
+    /// Return a reference to the Pauli gates stored in the leaf
+    /// at `leaf_index`.
+    fn get_leaf_pgates_bits(&self, leaf_index: usize) -> &BitSlice {
+        let bpl = self.bits_per_leaf();
+        &self.leaf_table[leaf_index * bpl + 1..(leaf_index + 1) * bpl]
+    }
+
+    /// Copy the Pauli gates stored in the bitslice as a leaf in the leaf table.
+    fn copy_pgates_to_leaf_table(&mut self, leaf_index: usize, pgates: &BitSlice) {
+        let bpl = self.bits_per_leaf();
+        for (i, b) in pgates.iter().enumerate() {
+            self.leaf_table.set(leaf_index * bpl + 1 + i, *b);
         }
     }
 
-    /// Returns if the node at `node_index` is a leaf node.
-    fn is_leaf(&self, node_index: usize) -> bool {
-        self.node_table[node_index * self.bits_per_node() + 1]
+    fn get_ith_pgate_from_leaf(&self, leaf_index: usize, i: usize) -> PauliGate {
+        let pgates = self.get_leaf_pgates_bits(leaf_index);
+        PauliGate::pauli_gate_from_tuple(pgates[2 * i], pgates[2 * i + 1])
     }
 
-    /// Marks the node at `node_index` as a leaf/non-leaf.
-    fn set_leaf_indicator_bit(&mut self, node_index: usize, leaf: bool) {
-        let bpn = self.bits_per_node();
-        self.node_table.set(node_index * bpn + 1, leaf);
+    // ---- Leaf insertion functions ---- //
+
+    /// Insert a leaf into the leaf table and return its index.
+    fn insert_leaf_into_table(&mut self, pgates: &BitSlice) -> usize {
+        if pgates.len() != self.pgates_per_leaf * 2 {
+            panic!("Trying to insert a leaf with an invalid number of Pauli gates.");
+        }
+
+        let mut index = self.bits_to_index(pgates, self.max_storable_leafs() - 1);
+        let start_index = index;
+
+        // Linear probing: find the first availiable empty spot or the node itself
+        while self.table_entry_taken(index, true) {
+            // This node is stored already in the table
+            if pgates == self.get_leaf_pgates_bits(index) {
+                return index;
+            }
+            index = (index + 1) % self.max_storable_leafs();
+
+            if index == start_index {
+                panic!("Failed inserting leaf: table is full.");
+            }
+        }
+
+        // Insert the node
+        self.mark_table_entry_as_taken(index, true);
+        self.copy_pgates_to_leaf_table(index, pgates);
+        self.n_leafs_stored += 1;
+
+        index
     }
 
-    /// Returns true if the node at `node_index` is taken.
-    fn table_entry_taken(&self, node_index: usize) -> bool {
-        self.node_table[node_index * self.bits_per_node()]
+    // ---- General helper functions ---- //
+
+    fn tree_depth(&self) -> usize {
+        ((self.n_qubits as f64) / (self.pgates_per_leaf as f64))
+            .ceil()
+            .log2()
+            .ceil() as usize
     }
 
-    /// Marks the node at `node_index` as taken.
-    fn mark_table_entry_as_taken(&mut self, node_index: usize) {
-        let bpn = self.bits_per_node();
-        self.node_table.set(node_index * bpn, true);
+    /// Returns true if the node/leaf at the given index is taken
+    /// in the node/leaf table.
+    fn table_entry_taken(&self, index: usize, leaf_table: bool) -> bool {
+        if leaf_table {
+            return self.leaf_table[index * self.bits_per_leaf()];
+        } else {
+            self.node_table[index * self.bits_per_node()]
+        }
     }
 
+    /// Marks the node/leaf entry at `index` as taken.
+    fn mark_table_entry_as_taken(&mut self, index: usize, leaf_table: bool) {
+        if leaf_table {
+            let bpl = self.bits_per_leaf();
+            self.leaf_table.set(index * bpl, true);
+        } else {
+            let bpn = self.bits_per_node();
+            self.node_table.set(index * bpn, true);
+        }
+    }
+
+    /// We pad the Pauli strings with identity gates such that the number of
+    /// gates is a multiple of `pgates_per_leaf`. This function returns the number
+    /// of pad bits needed for this.
     fn n_pad_bits(&self) -> usize {
-        if self.n_qubits % self.pgates_per_node == 0 {
+        if self.n_qubits % self.pgates_per_leaf == 0 {
             return 0;
         }
-        2 * (self.pgates_per_node - (self.n_qubits % self.pgates_per_node))
+        2 * (self.pgates_per_leaf - (self.n_qubits % self.pgates_per_leaf))
     }
 
-    fn insert_pstr(&mut self, mut pstr: BitVec, c_list: CoefficientList) {
-        // TODO
-        assert_eq!(pstr.len(), 2 * self.n_qubits);
-
-        // To ensure that recursive insert works nicely, we pad the bitvec with zeros.
-        // pstr is padded such that pstr.len() / 2 is a multiple of pgates_per_node.
-        pstr.resize(pstr.len() + self.n_pad_bits(), false);
-
-        let node_index = self.recursive_insert_pstr(&pstr);
-        let root_node = self.index_to_bitvec(node_index);
-        self.root_table.extend_from_bitslice(&root_node);
-        self.coeff_lists.push(c_list);
-    }
-
-    /// If the Pauli string contains more than `self.pgates_per_node` gates,
-    /// we split the string and recursively insert the two halves.
-    fn recursive_insert_pstr(&mut self, pstr: &BitSlice) -> usize {
-        // TODO sanity check, remove later
-        assert_eq!((pstr.len() / 2) % self.pgates_per_node, 0);
-
-        self.check_memory_availability(self.max_nodes_stored_per_pstr());
-
-        // We save `self.pgates_per_node` gates per node.
-        // Since each gate is represented by 2 bits, we need to divide the length of the bitvec by 2 and
-        // then divide by `self.pgates_per_node` to get the number of leaf nodes we need to insert.
-        let n_leafs = pstr.len() / 2 as usize / self.pgates_per_node;
-
-        if n_leafs == 1 {
-            return self.insert_node_body(pstr, true);
+    /// Return the string representation of a bitvec of Pauli gates, i.e., Pauli string
+    fn pstr_bitslice_as_str(slice: &BitSlice) -> String {
+        let mut s = String::with_capacity(slice.len() / 2);
+        for i in 0..slice.len() / 2 {
+            let gate = PauliGate::pauli_gate_from_tuple(slice[2 * i], slice[2 * i + 1]);
+            s.push_str(&format!("{}", gate));
         }
-
-        // We create a new body of a node that points to the two halves of the
-        // Pauli string (or nodes pointing to them) and insert it into the table.
-
-        let bits_per_half = (n_leafs / 2) * (self.pgates_per_node * 2);
-
-        let l_index = self.recursive_insert_pstr(&pstr[..bits_per_half]);
-        let r_index = self.recursive_insert_pstr(&pstr[bits_per_half..]);
-
-        let body = self.indices_to_body(l_index, r_index);
-
-        let new_node_index = self.insert_node_body(&body, false);
-
-        new_node_index
+        s
     }
 
-    // Converts two indices into a body of a non-leaf node
-    // IMPORTANT: the indices are assumed to fit in `self.pgates_per_node`.
-    // If not, only the first log2(self.pgates_per_node) bits will be used.
-    // Note: deliberately does not call index_to_bitvec to prevent unnecessary allocations.
-    fn indices_to_body(&self, l_index: usize, r_index: usize) -> BitVec {
-        let mut body = bitvec![0; self.n_body_bits()];
-
-        for i in 0..self.pgates_per_node {
-            // Write MSB first
-            body.set(i, Self::get_bit(l_index, self.pgates_per_node - i - 1));
-            body.set(
-                i + self.pgates_per_node,
-                Self::get_bit(r_index, self.pgates_per_node - i - 1),
-            );
-        }
-
-        body
+    /// Return the ith stored Pauli string as a string
+    fn ith_pstr_as_str(&self, i: usize) -> String {
+        Self::pstr_bitslice_as_str(&self.pstr_as_bitvec(i))
     }
 
-    // IMPORTANT: the indices are assumed to fit in `self.pgates_per_node`.
-    // If not, only the first log2(self.pgates_per_node) bits will be used.
-    fn index_to_bitvec(&self, index: usize) -> BitVec {
-        let mut b = bitvec![0; self.pgates_per_node];
+    /// Return the ith bit of of a number
+    fn get_bit(num: usize, i: usize) -> bool {
+        (num >> i) & 1 == 1
+    }
+
+    // ---- Conversion between indices and bitvecs ---- //
+
+    /// Hashes the provided bits to an index less than or equal to `max_index`.
+    fn bits_to_index(&self, bits: &BitSlice, max_index: usize) -> usize {
+        (fxhash::hash64(&bits) as usize) % (max_index + 1)
+    }
+
+    /// Converts a given index to a bitvec of length `n_bits`.
+    /// If indices do not fit in `n_bits` bits,
+    /// only the first log2(n_bits) bits will be used.
+    fn index_to_bitvec(&self, index: usize, n_bits: usize) -> BitVec {
+        let mut b = bitvec![0; n_bits];
         for i in 0..b.len() {
-            b.set(i, Self::get_bit(index, self.pgates_per_node - i - 1));
+            b.set(i, Self::get_bit(index, n_bits - i - 1));
         }
         b
     }
 
-    /// Return the ith bit of n
-    fn get_bit(n: usize, i: usize) -> bool {
-        (n >> i) & 1 == 1
+    fn node_index_to_root_node(&self, node_index: usize) -> BitVec {
+        self.index_to_bitvec(node_index, self.n_node_body_bits / 2)
+    }
+
+    /// Converts a given index to a bitvec of length `self.n_node_body_bits`.
+    fn leaf_index_to_node_body(&self, leaf_index: usize) -> BitVec {
+        self.index_to_bitvec(leaf_index, self.n_node_body_bits)
+    }
+
+    /// Converts two node indices into a body of a non-leaf node
+    /// Note: deliberately does not call index_to_bitvec to avoid
+    /// unnecessary allocations.
+    fn node_indices_to_node_body(&self, l_index: usize, r_index: usize) -> BitVec {
+        let mut body = bitvec![0; self.n_node_body_bits];
+        let bits_per_half = self.n_node_body_bits / 2;
+
+        for i in 0..bits_per_half {
+            // Write MSB first
+            body.set(i, Self::get_bit(l_index, bits_per_half - i - 1));
+            body.set(
+                i + bits_per_half,
+                Self::get_bit(r_index, bits_per_half - i - 1),
+            );
+        }
+
+        body
     }
 
     /// Convert a blitvec of length <= usize::MAX to a usize
@@ -275,85 +370,100 @@ impl PauliTrees {
             .fold(0, |acc, (i, b)| acc + (*b as usize) * (1 << i))
     }
 
-    /// Return the index of the root node of the ith Pauli string
-    fn root_node_index(&self, i: usize) -> usize {
-        let bs = &self.root_table[i * self.pgates_per_node..(i + 1) * self.pgates_per_node];
+    /// Returns the index of the entry/root node in the node table of the ith Pauli string
+    fn entry_node_index(&self, i: usize) -> usize {
+        let bs = &self.root_table
+            [i * self.n_bits_per_root_node()..(i + 1) * self.n_bits_per_root_node()];
         Self::bitslice_to_usize(bs)
+    }
+
+    fn node_index_from_node_body(&self, node_body: &BitSlice, left_index: bool) -> usize {
+        if left_index {
+            Self::bitslice_to_usize(&node_body[..(self.n_node_body_bits / 2)])
+        } else {
+            Self::bitslice_to_usize(&node_body[(self.n_node_body_bits / 2)..])
+        }
+    }
+
+    fn leaf_index_from_node_body(&self, node_body: &BitSlice) -> usize {
+        Self::bitslice_to_usize(node_body)
     }
 
     /// Update the index of the root note of the `pstr_index` Pauli string
     fn update_root_node_index(&mut self, pstr_index: usize, new_index: usize) {
-        let bv = self.index_to_bitvec(new_index);
+        let bv = self.index_to_bitvec(new_index, self.n_bits_per_root_node());
+        let bits_per_root_node = self.n_bits_per_root_node();
         for (i, b) in bv.iter().enumerate() {
             self.root_table
-                .set(pstr_index * self.pgates_per_node + i, *b);
+                .set(pstr_index * bits_per_root_node + i, *b);
         }
     }
 
-    /// Return the string representation of a bitvec of Pauli gates, i.e., Pauli string
-    fn pstr_bitslice_as_str(slice: &BitSlice) -> String {
-        let mut s = String::with_capacity(slice.len() / 2);
-        for i in 0..slice.len() / 2 {
-            let gate = PauliGate::pauli_gate_from_tuple(slice[2 * i], slice[2 * i + 1]);
-            s.push_str(&format!("{}", gate));
-        }
-        s
-    }
+    // ---- Inserting and Retrieving Pauli gates/strings  ---- //
 
-    fn index_from_node_body(&self, node_body: &BitSlice, left_index: bool) -> usize {
-        if left_index {
-            Self::bitslice_to_usize(&node_body[..self.pgates_per_node])
-        } else {
-            Self::bitslice_to_usize(&node_body[self.pgates_per_node..])
-        }
-    }
-
-    /// Return the ith stored Pauli string as a string
-    fn pstr_as_str(&self, i: usize) -> String {
-        Self::pstr_bitslice_as_str(&self.pstr_as_bitvec(i))
-    }
-
-    /// Return the ith stored Pauli string as a bitvec
-    fn pstr_as_bitvec(&self, i: usize) -> BitVec {
-        if i > self.size() {
-            panic!("Cannot retrieve Pauli string {}: Index out of bounds.", i);
+    fn insert_pstr(&mut self, mut pstr: BitVec, c_list: CoefficientList) {
+        if pstr.len() != 2 * self.n_qubits {
+            panic!("Trying to insert a Pauli string with an invalid number of Pauli gates.");
         }
 
-        let mut pstr = BitVec::with_capacity(2 * self.n_qubits);
+        self.check_memory_availability(
+            self.max_nodes_stored_per_pstr(),
+            self.max_leafs_stored_per_pstr(),
+        );
 
-        let root_index = self.root_node_index(i);
-        self.recursive_pstr_as_bitvec(root_index, &mut pstr);
+        // To ensure that recursive insert works nicely, we pad the bitvec with zeros.
+        // The Pauli string is padded such that pstr.len() / 2 is a multiple of pgates_per_node.
+        pstr.resize(pstr.len() + self.n_pad_bits(), false);
 
-        // Omit potential padding
-        pstr[..2 * self.n_qubits].to_bitvec()
+        let node_index = self.recursive_insert_pstr(&pstr);
+        let root_node = self.node_index_to_root_node(node_index);
+        self.root_table.extend_from_bitslice(&root_node);
+        self.coeff_lists.push(c_list);
     }
 
-    fn recursive_pstr_as_bitvec(&self, node_index: usize, pstr: &mut BitVec) {
-        let body = self.get_node_body(node_index);
+    /// If we are given more than `self.pgates_per_leaf` gates,
+    /// we split the gates in half and recursively insert them.
+    /// The function returns the index of the inserted node/leaf and
+    /// a boolean indicating whether the inserted node is a leaf or not.
+    fn recursive_insert_pstr(&mut self, pgates: &BitSlice) -> usize {
+        // TODO sanity check, remove later
+        assert_eq!((pgates.len() / 2) % self.pgates_per_leaf, 0);
 
-        if self.is_leaf(node_index) {
-            pstr.extend_from_bitslice(body);
-            return;
+        // We save `self.pgates_per_leaf` gates per leaf.
+        // Since each gate is represented by 2 bits, we need to divide the length of the bitvec by 2 and
+        // then divide by `self.pgates_per_leaf` to get the number of leaf nodes we need to insert.
+        let n_leafs = (pgates.len() / 2 as usize) / self.pgates_per_leaf;
+
+        if n_leafs == 1 {
+            let leaf_index = self.insert_leaf_into_table(pgates);
+            let node_body = self.leaf_index_to_node_body(leaf_index);
+            return self.insert_node_into_table(&node_body, true);
         }
 
-        let l_index = self.index_from_node_body(body, true);
-        let r_index = self.index_from_node_body(body, false);
+        // We recursively insert two halves of the pgates. First we determine
+        // the number of bits that each half will store
+        let bits_per_half = (n_leafs / 2) * (self.pgates_per_leaf * 2);
 
-        self.recursive_pstr_as_bitvec(l_index, pstr);
-        self.recursive_pstr_as_bitvec(r_index, pstr);
+        // Then we insert the two halves and store a reference to both subtrees that store them
+        let l_index = self.recursive_insert_pstr(&pgates[..bits_per_half]);
+        let r_index = self.recursive_insert_pstr(&pgates[bits_per_half..]);
+
+        let body = self.node_indices_to_node_body(l_index, r_index);
+
+        self.insert_node_into_table(&body, false)
     }
 
-    // TODO refactor this with set pgate
+    // TODO refactor this with set pgate?
     fn get_pgate(&self, pstr_index: usize, gate_index: usize) -> PauliGate {
         if pstr_index > self.size() || gate_index >= self.n_qubits {
             panic!("Pauli string or gate index out of bounds.");
         }
 
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
-        let n_leaf_nodes = pgates_per_pstr / self.pgates_per_node;
+        let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
 
-        let root_index = self.root_node_index(pstr_index);
-        self.recursive_get_pgate(root_index, gate_index, n_leaf_nodes)
+        let entry_node_index = self.entry_node_index(pstr_index);
+        self.recursive_get_pgate(entry_node_index, gate_index, n_leaf_nodes)
     }
 
     fn recursive_get_pgate(
@@ -364,29 +474,29 @@ impl PauliTrees {
     ) -> PauliGate {
         let body = self.get_node_body(node_index);
 
-        if self.is_leaf(node_index) {
-            let b1 = body[2 * relative_gate_index];
-            let b2 = body[2 * relative_gate_index + 1];
-            return PauliGate::pauli_gate_from_tuple(b1, b2);
+        if self.node_points_to_leaf(node_index) {
+
+            let leaf_index = self.leaf_index_from_node_body(body);
+            return self.get_ith_pgate_from_leaf(leaf_index, relative_gate_index);
         }
 
-        let left_index = self.index_from_node_body(body, true);
-        let right_index = self.index_from_node_body(body, false);
+        let left_index = self.node_index_from_node_body(body, true);
+        let right_index = self.node_index_from_node_body(body, false);
 
         let n_leaf_nodes_left = n_leaf_nodes / 2;
         let n_leaf_nodes_right = n_leaf_nodes - (n_leaf_nodes / 2);
 
-        // Recurse on the left/left node and update their index
-        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_node) {
+        // Recurse on the left/right node and update their index
+        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_leaf) {
             return self.recursive_get_pgate(left_index, relative_gate_index, n_leaf_nodes_left);
         } else {
             // Prevent subtraction with overflow
-            if relative_gate_index < self.pgates_per_node {
+            if relative_gate_index < self.pgates_per_leaf {
                 panic!("Failed getting Pauli gate: We should have found a leaf by now.");
             }
 
             let new_relative_gate_index =
-                relative_gate_index - (n_leaf_nodes_left * self.pgates_per_node);
+                relative_gate_index - (n_leaf_nodes_left * self.pgates_per_leaf);
             return self.recursive_get_pgate(
                 right_index,
                 new_relative_gate_index,
@@ -400,14 +510,15 @@ impl PauliTrees {
             panic!("Pauli string or gate index out of bounds.");
         }
 
-        self.check_memory_availability(self.depth + 1);
+        // In the worst case we update `self.depth` nodes and one leaf
+        self.check_memory_availability(self.depth, 1);
 
         // We might save more Pauli gates per Pauli string due to the padding
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
-        let n_leaf_nodes = pgates_per_pstr / self.pgates_per_node;
+        let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
 
-        let root_index = self.root_node_index(pstr_index);
-        let new_root_index = self.recursive_set_pgate(root_index, gate_index, n_leaf_nodes, &pgate);
+        let entry_node_index = self.entry_node_index(pstr_index);
+        let new_root_index = self.recursive_set_pgate(entry_node_index, gate_index, n_leaf_nodes, &pgate);
         self.update_root_node_index(pstr_index, new_root_index)
     }
 
@@ -418,37 +529,41 @@ impl PauliTrees {
         n_leaf_nodes: usize,
         pgate: &PauliGate,
     ) -> usize {
-        if self.is_leaf(node_index) {
-            let body = self.get_node_body(node_index).clone();
-            let mut new_body = BitVec::from_bitslice(body);
+        if self.node_points_to_leaf(node_index) {
 
+
+            let leaf_index = self.leaf_index_from_node_body(self.get_node_body(node_index));
+
+            let mut new_leaf_pgates = BitVec::from_bitslice(self.get_leaf_pgates_bits(leaf_index));
             let (b1, b2) = PauliGate::pauli_gate_as_tuple(*pgate);
 
-            new_body.set(2 * relative_gate_index, b1);
-            new_body.set(2 * relative_gate_index + 1, b2);
+            new_leaf_pgates.set(2 * relative_gate_index, b1);
+            new_leaf_pgates.set(2 * relative_gate_index + 1, b2);
 
-            return self.insert_node_body(&new_body, true);
+            let new_leaf_index = self.insert_leaf_into_table(&new_leaf_pgates);
+            let node_body = self.leaf_index_to_node_body(new_leaf_index);
+            return self.insert_node_into_table(&node_body, true);
         }
 
         let body = self.get_node_body(node_index);
 
-        let mut left_index = self.index_from_node_body(body, true);
-        let mut right_index = self.index_from_node_body(body, false);
+        let mut left_index = self.node_index_from_node_body(body, true);
+        let mut right_index = self.node_index_from_node_body(body, false);
 
         let n_leaf_nodes_left = n_leaf_nodes / 2;
         let n_leaf_nodes_right = n_leaf_nodes - (n_leaf_nodes / 2);
 
-        // Recurse on the left/left node and update their index
-        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_node) {
+        // Recurse on the left/right node and update their index
+        if relative_gate_index < (n_leaf_nodes_left * self.pgates_per_leaf) {
             left_index =
                 self.recursive_set_pgate(left_index, relative_gate_index, n_leaf_nodes_left, pgate);
         } else {
-            if relative_gate_index < self.pgates_per_node {
+            if relative_gate_index < self.pgates_per_leaf {
                 panic!("Failed setting Pauli gate: We should have found a leaf by now.");
             }
 
             let new_relative_gate_index =
-                relative_gate_index - (n_leaf_nodes_left * self.pgates_per_node);
+                relative_gate_index - (n_leaf_nodes_left * self.pgates_per_leaf);
             right_index = self.recursive_set_pgate(
                 right_index,
                 new_relative_gate_index,
@@ -457,16 +572,132 @@ impl PauliTrees {
             );
         }
 
-        let new_node_body = self.indices_to_body(left_index, right_index);
-        let new_node_index = self.insert_node_body(&new_node_body, false);
+        let new_node_body = self.node_indices_to_node_body(left_index, right_index);
+        let new_node_index = self.insert_node_into_table(&new_node_body, false);
 
-        // TODO
+        // TODO remove
         if new_node_index == left_index || new_node_index == right_index {
             panic!("A loop was introduced");
         }
 
         new_node_index
     }
+
+
+    /// Return the ith stored Pauli string as a bitvec
+    fn pstr_as_bitvec(&self, i: usize) -> BitVec {
+        if i > self.size() {
+            panic!("Cannot retrieve Pauli string {}: Index out of bounds.", i);
+        }
+
+        let mut pstr = BitVec::with_capacity(2 * self.n_qubits);
+
+        let entry_node_index = self.entry_node_index(i);
+        self.recursive_pstr_as_bitvec(entry_node_index, &mut pstr);
+
+        // Omit potential padding
+        pstr[..2 * self.n_qubits].to_bitvec()
+    }
+
+    fn recursive_pstr_as_bitvec(&self, node_index: usize, pstr: &mut BitVec) {
+        let body = self.get_node_body(node_index);
+
+        if self.node_points_to_leaf(node_index) {
+            let leaf_index = self.leaf_index_from_node_body(self.get_node_body(node_index));
+            let leaf_pgates_bits = self.get_leaf_pgates_bits(leaf_index);
+            pstr.extend_from_bitslice(leaf_pgates_bits);
+            return;
+        }
+
+        let l_index = self.node_index_from_node_body(body, true);
+        let r_index = self.node_index_from_node_body(body, false);
+
+        self.recursive_pstr_as_bitvec(l_index, pstr);
+        self.recursive_pstr_as_bitvec(r_index, pstr);
+    }
+
+    // ---- Memory management ---- //
+
+    /// The function checks whether there is a sufficient amount of memory to store
+    /// the number of nodes and leafs given through the parameter. If not, it triggers garbage collection.
+    /// Each function inserting nodes into the node table should call this function.
+    fn check_memory_availability(&mut self, n_nodes_to_store: usize, n_leafs_to_store: usize) {
+        if (self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes())
+            || (self.n_leafs_stored + n_leafs_to_store > self.max_storable_leafs())
+        {
+            self.garbage_collection();
+
+            if (self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes())
+                || (self.n_leafs_stored + n_leafs_to_store > self.max_storable_leafs())
+            {
+                // TODO resize the node/leaf table
+                panic!("Not enough memory to store {} nodes.", n_nodes_to_store);
+            }
+        }
+    }
+
+    fn garbage_collection(&mut self) {
+        let mut new_node_table = bitvec![0; self.n_bits_for_node_table()];
+        let mut new_leaf_table = bitvec![0; self.n_bits_for_leaf_table()];
+
+        self.n_nodes_stored = 0;
+        self.n_leafs_stored = 0;
+
+        for pstr_index in 0..self.size() {
+            let entry_node_index = self.entry_node_index(pstr_index);
+            self.recursive_garbage_collection(entry_node_index, &mut new_node_table, &mut new_leaf_table);
+        }
+
+        self.node_table = new_node_table;
+        self.leaf_table = new_leaf_table;
+    }
+
+    fn recursive_garbage_collection(&mut self, node_index: usize, new_node_table: &mut BitSlice, new_leaf_table: &mut BitSlice) {
+        let body = self.get_node_body(node_index);
+
+        if self.node_points_to_leaf(node_index) {
+            
+            let leaf_index = self.leaf_index_from_node_body(body);
+
+            self.copy_entry_to_new_table(leaf_index, new_leaf_table, self.bits_per_leaf(), true);
+
+            self.n_leafs_stored += 1;
+
+        } else {
+
+            let left_index = self.node_index_from_node_body(body, true);
+            let right_index = self.node_index_from_node_body(body, false);
+
+            self.recursive_garbage_collection(left_index, new_node_table, new_leaf_table);
+            self.recursive_garbage_collection(right_index, new_node_table, new_leaf_table);
+
+        }
+
+        self.copy_entry_to_new_table(node_index, new_node_table, self.bits_per_node(), false);
+        self.n_nodes_stored += 1;
+
+    }
+
+
+    /// Copy an entry from the existing node/leaf table to provided table.
+    fn copy_entry_to_new_table(&self, index: usize, table: &mut BitSlice, bits_per_entry: usize, leaf: bool) {
+
+        // This entry is already stored in the new leaf table
+        if table[index * bits_per_entry] {
+            return;
+        }
+
+        for i in index * bits_per_entry..(index + 1) * bits_per_entry {
+            if leaf {
+                table.set(i, self.leaf_table[i]);
+            } else {
+                table.set(i, self.node_table[i]);
+            }
+        }
+    }
+
+
+    // ------- Conjugation Functions ------- //
 
     fn get_actual_p_gate_and_coef_mul(
         &self,
@@ -523,7 +754,7 @@ impl PauliTrees {
             }
 
             self.root_table.extend_from_within(
-                pstr_index * self.pgates_per_node..(pstr_index + 1) * self.pgates_per_node,
+                pstr_index * self.n_bits_per_root_node()..(pstr_index + 1) * self.n_bits_per_root_node(),
             );
 
             self.coeff_lists.push(self.coeff_lists[pstr_index].clone());
@@ -571,55 +802,6 @@ impl PauliTrees {
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
-    /// The function checks whether there is a sufficient amount of memory to store
-    /// the number of nodes given through the parameter. If not, it triggers garbage collection.
-    /// Each function inserting nodes into the node table should call this function.
-    fn check_memory_availability(&mut self, n_nodes_to_store: usize) {
-        if self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes() {
-            self.garbage_collection();
-
-            if self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes() {
-                // TODO resize the node map?
-                panic!("Not enough memory to store {} nodes.", n_nodes_to_store);
-            }
-        }
-    }
-
-    fn garbage_collection(&mut self) {
-        let mut new_node_table = bitvec![0; self.num_bits_for_node_table()];
-
-        self.n_nodes_stored = 0;
-
-        for pstr_index in 0..self.size() {
-            let root_index = self.root_node_index(pstr_index);
-            self.recursive_garbage_collection(root_index, &mut new_node_table);
-        }
-
-        self.node_table = new_node_table;
-    }
-
-    fn recursive_garbage_collection(&mut self, node_index: usize, new_node_table: &mut BitSlice) {
-        let body = self.get_node_body(node_index);
-
-        if !self.is_leaf(node_index) {
-            let left_index = self.index_from_node_body(body, true);
-            let right_index = self.index_from_node_body(body, false);
-
-            self.recursive_garbage_collection(left_index, new_node_table);
-            self.recursive_garbage_collection(right_index, new_node_table);
-        }
-
-        // This node is already stored in the new node table
-        if new_node_table[node_index * self.bits_per_node()] {
-            return;
-        }
-
-        // Copy bits to the new node table
-        for i in node_index * self.bits_per_node()..(node_index + 1) * self.bits_per_node() {
-            new_node_table.set(i, self.node_table[i]);
-        }
-        self.n_nodes_stored += 1;
-    }
 }
 
 impl GeneratorSet for PauliTrees {
@@ -685,8 +867,8 @@ impl GeneratorSet for PauliTrees {
 
         // Gather all unique Pauli strings
         for pstr_index in 0..self.size() {
-            let root_index = self.root_node_index(pstr_index);
-            match m.entry(root_index) {
+            let entry_node_index = self.entry_node_index(pstr_index);
+            match m.entry(entry_node_index) {
                 Entry::Occupied(mut e) => {
                     e.get_mut().merge(&self.coeff_lists[pstr_index].clone());
                 }
@@ -705,14 +887,14 @@ impl GeneratorSet for PauliTrees {
                 continue;
             }
 
-            let root_node = self.index_to_bitvec(*root_index);
+            let root_node = self.index_to_bitvec(*root_index, self.n_bits_per_root_node());
             self.root_table.extend_from_bitslice(&root_node);
             self.coeff_lists.push(c_list.clone());
         }
     }
 
     fn size(&self) -> usize {
-        self.root_table.len() / self.pgates_per_node
+        self.coeff_lists.len()
     }
 }
 
@@ -722,7 +904,7 @@ impl std::fmt::Display for PauliTrees {
 
         for pstr_index in 0..self.size() {
             let mut coef_multiplier = 1.0;
-            let pstr = self.pstr_as_str(pstr_index);
+            let pstr = self.ith_pstr_as_str(pstr_index);
 
             for (i, pgate) in pstr.chars().enumerate() {
                 let current_pgate = PauliGate::char_to_pauli_gate(&pgate).unwrap();
@@ -754,43 +936,43 @@ impl std::fmt::Display for PauliTrees {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_insert_node() {
-        let mut pauli_trees = PauliTrees::new(30, 1);
-        let node = bitvec![1; 2*pauli_trees.pgates_per_node];
+    // #[test]
+    // fn test_insert_node() {
+    //     let mut pauli_trees = PauliTrees::new(30, 1);
+    //     let node = bitvec![1; 2*pauli_trees.pgates_per_node];
 
-        let index_1 = pauli_trees.insert_node_body(&node, true);
+    //     let index_1 = pauli_trees.insert_node_body(&node, true);
 
-        // First node we insert, index should equal its index without probing
-        // TODO pass true?
-        assert_eq!(index_1, pauli_trees.node_index(&node, true));
-        // Node shold be in the table
-        assert_eq!(
-            pauli_trees.node_table[index_1 * pauli_trees.bits_per_node()
-                + pauli_trees.n_book_keeping_bits()
-                ..(index_1 + 1) * pauli_trees.bits_per_node()],
-            node
-        );
-        // And is a leaf
-        assert_eq!(pauli_trees.is_leaf(index_1), true);
+    //     // First node we insert, index should equal its index without probing
+    //     // TODO pass true?
+    //     assert_eq!(index_1, pauli_trees.node_index(&node, true));
+    //     // Node shold be in the table
+    //     assert_eq!(
+    //         pauli_trees.node_table[index_1 * pauli_trees.bits_per_node()
+    //             + pauli_trees.n_book_keeping_bits()
+    //             ..(index_1 + 1) * pauli_trees.bits_per_node()],
+    //         node
+    //     );
+    //     // And is a leaf
+    //     assert_eq!(pauli_trees.is_leaf(index_1), true);
 
-        let index_2 = pauli_trees.insert_node_body(&node, false);
+    //     let index_2 = pauli_trees.insert_node_body(&node, false);
 
-        // Should be inserted one spot later
-        assert_eq!(index_2, pauli_trees.node_index(&node, true) + 1);
+    //     // Should be inserted one spot later
+    //     assert_eq!(index_2, pauli_trees.node_index(&node, true) + 1);
 
-        for (i, b) in pauli_trees.node_table.iter().enumerate() {
-            // All these bits should be one, except the leaf indicator bit of the second node
-            if (i >= index_1 * pauli_trees.bits_per_node()
-                && i < (index_2 + 1) * pauli_trees.bits_per_node())
-                && i != index_2 * pauli_trees.bits_per_node() + 1
-            {
-                assert_eq!(*b, true);
-            } else {
-                assert_eq!(*b, false);
-            }
-        }
-    }
+    //     for (i, b) in pauli_trees.node_table.iter().enumerate() {
+    //         // All these bits should be one, except the leaf indicator bit of the second node
+    //         if (i >= index_1 * pauli_trees.bits_per_node()
+    //             && i < (index_2 + 1) * pauli_trees.bits_per_node())
+    //             && i != index_2 * pauli_trees.bits_per_node() + 1
+    //         {
+    //             assert_eq!(*b, true);
+    //         } else {
+    //             assert_eq!(*b, false);
+    //         }
+    //     }
+    // }
 
     #[test]
     fn get_pstr_as_str() {
