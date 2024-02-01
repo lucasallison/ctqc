@@ -6,6 +6,7 @@ f = open(str(sys.argv[1]), 'r')
 
 circuit = circuit_from_qasm(f.read())
 
+print("Simulating...")
 simulator = cirq.Simulator()
 result = simulator.run(circuit)
 print(result)

@@ -1,10 +1,7 @@
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    thread::panicking,
-};
+use std::collections::{hash_map::Entry, HashMap};
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -56,8 +53,8 @@ impl PauliTrees {
             node_table: BitVec::new(),
             leaf_table: BitVec::new(),
 
-            n_node_body_bits: 32,
-            pgates_per_leaf: 8,
+            n_node_body_bits: 64,
+            pgates_per_leaf: 3,
             depth: 0,
 
             n_nodes_stored: 0,
@@ -179,7 +176,7 @@ impl PauliTrees {
     // ---- Leaf storage information ---- //
 
     fn n_bits_for_leaf_table(&self) -> usize {
-        self.max_storable_leafs() * self.pgates_per_leaf * 2
+        self.max_storable_leafs() * (self.pgates_per_leaf * 2 + 1)
     }
 
     fn bits_per_leaf(&self) -> usize {
@@ -189,7 +186,8 @@ impl PauliTrees {
     }
 
     fn max_storable_leafs(&self) -> usize {
-        1 << self.n_node_body_bits
+        // Its possible to store more leafs 
+        1 << (self.n_node_body_bits / 2)
     }
 
     /// Returns the maximum number of leafs needed at most to store a Pauli string
@@ -394,8 +392,7 @@ impl PauliTrees {
         let bv = self.index_to_bitvec(new_index, self.n_bits_per_root_node());
         let bits_per_root_node = self.n_bits_per_root_node();
         for (i, b) in bv.iter().enumerate() {
-            self.root_table
-                .set(pstr_index * bits_per_root_node + i, *b);
+            self.root_table.set(pstr_index * bits_per_root_node + i, *b);
         }
     }
 
@@ -475,7 +472,6 @@ impl PauliTrees {
         let body = self.get_node_body(node_index);
 
         if self.node_points_to_leaf(node_index) {
-
             let leaf_index = self.leaf_index_from_node_body(body);
             return self.get_ith_pgate_from_leaf(leaf_index, relative_gate_index);
         }
@@ -518,7 +514,8 @@ impl PauliTrees {
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
 
         let entry_node_index = self.entry_node_index(pstr_index);
-        let new_root_index = self.recursive_set_pgate(entry_node_index, gate_index, n_leaf_nodes, &pgate);
+        let new_root_index =
+            self.recursive_set_pgate(entry_node_index, gate_index, n_leaf_nodes, &pgate);
         self.update_root_node_index(pstr_index, new_root_index)
     }
 
@@ -530,8 +527,6 @@ impl PauliTrees {
         pgate: &PauliGate,
     ) -> usize {
         if self.node_points_to_leaf(node_index) {
-
-
             let leaf_index = self.leaf_index_from_node_body(self.get_node_body(node_index));
 
             let mut new_leaf_pgates = BitVec::from_bitslice(self.get_leaf_pgates_bits(leaf_index));
@@ -582,7 +577,6 @@ impl PauliTrees {
 
         new_node_index
     }
-
 
     /// Return the ith stored Pauli string as a bitvec
     fn pstr_as_bitvec(&self, i: usize) -> BitVec {
@@ -645,43 +639,51 @@ impl PauliTrees {
 
         for pstr_index in 0..self.size() {
             let entry_node_index = self.entry_node_index(pstr_index);
-            self.recursive_garbage_collection(entry_node_index, &mut new_node_table, &mut new_leaf_table);
+            self.recursive_garbage_collection(
+                entry_node_index,
+                &mut new_node_table,
+                &mut new_leaf_table,
+            );
         }
 
         self.node_table = new_node_table;
         self.leaf_table = new_leaf_table;
     }
 
-    fn recursive_garbage_collection(&mut self, node_index: usize, new_node_table: &mut BitSlice, new_leaf_table: &mut BitSlice) {
+    fn recursive_garbage_collection(
+        &mut self,
+        node_index: usize,
+        new_node_table: &mut BitSlice,
+        new_leaf_table: &mut BitSlice,
+    ) {
         let body = self.get_node_body(node_index);
 
         if self.node_points_to_leaf(node_index) {
-            
             let leaf_index = self.leaf_index_from_node_body(body);
 
             self.copy_entry_to_new_table(leaf_index, new_leaf_table, self.bits_per_leaf(), true);
 
             self.n_leafs_stored += 1;
-
         } else {
-
             let left_index = self.node_index_from_node_body(body, true);
             let right_index = self.node_index_from_node_body(body, false);
 
             self.recursive_garbage_collection(left_index, new_node_table, new_leaf_table);
             self.recursive_garbage_collection(right_index, new_node_table, new_leaf_table);
-
         }
 
         self.copy_entry_to_new_table(node_index, new_node_table, self.bits_per_node(), false);
         self.n_nodes_stored += 1;
-
     }
 
-
     /// Copy an entry from the existing node/leaf table to provided table.
-    fn copy_entry_to_new_table(&self, index: usize, table: &mut BitSlice, bits_per_entry: usize, leaf: bool) {
-
+    fn copy_entry_to_new_table(
+        &self,
+        index: usize,
+        table: &mut BitSlice,
+        bits_per_entry: usize,
+        leaf: bool,
+    ) {
         // This entry is already stored in the new leaf table
         if table[index * bits_per_entry] {
             return;
@@ -695,7 +697,6 @@ impl PauliTrees {
             }
         }
     }
-
 
     // ------- Conjugation Functions ------- //
 
@@ -754,7 +755,8 @@ impl PauliTrees {
             }
 
             self.root_table.extend_from_within(
-                pstr_index * self.n_bits_per_root_node()..(pstr_index + 1) * self.n_bits_per_root_node(),
+                pstr_index * self.n_bits_per_root_node()
+                    ..(pstr_index + 1) * self.n_bits_per_root_node(),
             );
 
             self.coeff_lists.push(self.coeff_lists[pstr_index].clone());
@@ -801,7 +803,6 @@ impl PauliTrees {
         }
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
-
 }
 
 impl GeneratorSet for PauliTrees {
