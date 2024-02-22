@@ -80,7 +80,7 @@ fn main() {
         "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
         "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits(), args.threads)),
         "ppools" => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
-        "ptrees" => Box::new(PauliTrees::new(circuit.num_qubits(), args.threads)),
+        "ptrees" => Box::new(PauliTrees::new(circuit.num_qubits(), args.threads, None, None)),
         _ => {
             eprintln!("Invalid generator set type: {}", args.t);
             return;
