@@ -54,8 +54,8 @@ impl PauliTrees {
             leaf_table: BitVec::new(),
 
             // TODO make the default values depend on the number of qubits
-            n_node_body_bits: n_node_body_bits.unwrap_or(8),
-            pgates_per_leaf: pgates_per_leaf.unwrap_or(3),
+            n_node_body_bits: n_node_body_bits.unwrap_or(64),
+            pgates_per_leaf: pgates_per_leaf.unwrap_or(4),
             depth: 0,
 
             n_nodes_stored: 0,
@@ -161,6 +161,7 @@ impl PauliTrees {
             index = (index + 1) % self.max_storable_nodes();
 
             if index == start_index {
+                println!("{} {}", self.max_storable_nodes(), self.n_nodes_stored);
                 panic!("Failed inserting node: table is full. A resize should have been performed.");
             }
         }
@@ -238,7 +239,8 @@ impl PauliTrees {
             index = (index + 1) % self.max_storable_leafs();
 
             if index == start_index {
-                panic!("Failed inserting node: table is full. A resize should have been performed.");
+                println!("{}{}", self.max_storable_leafs(), self.n_leafs_stored);
+                panic!("Failed inserting leaf: table is full. A resize should have been performed.");
             }
         }
 
@@ -424,8 +426,6 @@ impl PauliTrees {
     /// The function returns the index of the inserted node/leaf and
     /// a boolean indicating whether the inserted node is a leaf or not.
     fn recursive_insert_pstr(&mut self, pgates: &BitSlice) -> usize {
-        // TODO sanity check, remove later
-        assert_eq!((pgates.len() / 2) % self.pgates_per_leaf, 0);
 
         // We save `self.pgates_per_leaf` gates per leaf.
         // Since each gate is represented by 2 bits, we need to divide the length of the bitvec by 2 and
@@ -612,8 +612,8 @@ impl PauliTrees {
     /// the number of nodes and leafs given through the parameter. If not, it triggers garbage collection.
     /// Each function inserting nodes into the node table should call this function.
     fn check_memory_availability(&mut self, n_nodes_to_store: usize, n_leafs_to_store: usize) {
-        if (self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes())
-            || (self.n_leafs_stored + n_leafs_to_store > self.max_storable_leafs())
+        if (self.n_nodes_stored + n_nodes_to_store >= self.max_storable_nodes())
+            || (self.n_leafs_stored + n_leafs_to_store >= self.max_storable_leafs())
         {
             self.garbage_collection();
 
