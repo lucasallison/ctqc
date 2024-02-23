@@ -26,9 +26,6 @@ static FP_ERROR_MARGIN: f64 = 0.0000000001;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Optional flag to run the simulation in verbose mode.
-    #[arg(short, long, default_value_t = false, verbatim_doc_comment)]
-    verbose: bool,
 
     /// File containing the circuit to simulate
     #[arg(short='f', long, verbatim_doc_comment)]
@@ -36,7 +33,7 @@ struct Args {
 
     /// Optional flag which will run an equivalence check between the circuit
     /// specified by the '-f' flag and the circuit from the file specified by this flag
-    #[arg(short, long, default_value_t = String::from(""), verbatim_doc_comment)]
+    #[arg(short, long, default_value_t = String::from("None"), verbatim_doc_comment)]
     equiv_circuit_file: String,
 
     /// Provide the data structure of the GeneratorSet to use for the simulation. Options are:
@@ -59,6 +56,10 @@ struct Args {
     /// Provide number of threads to use
     #[arg(short, long, default_value_t = 1, verbatim_doc_comment)]
     threads: usize,
+
+    /// Optional flag to run the simulation in verbose mode.
+    #[arg(short, long, default_value_t = false, verbatim_doc_comment)]
+    verbose: bool,
 
     /// Ensures that we simulate all generators simultaneously when 
     /// running an equivalence check, as opposed to the default behavior 
@@ -102,7 +103,7 @@ fn main() {
     let mut simulator = Simulator::new(generator_set.as_mut(), args.clean, args.verbose);
 
     // No second file provided, run the simulation
-    if args.equiv_circuit_file.is_empty() {
+    if args.equiv_circuit_file == "None" {
         if let Err(e) = simulator.simulate(&circuit) {
             eprintln!("{}", MError::SimulationFailed { err: e });
         }
