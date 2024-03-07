@@ -1,6 +1,6 @@
 use ahash::HashSetExt;
 use bitvec::access::BitSafeUsize;
-use bitvec::prelude::*;
+use bitvec::{index, prelude::*};
 use fxhash::{FxBuildHasher, FxHashSet};
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
@@ -60,6 +60,11 @@ impl RowWiseBitVec {
         PauliGate::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
     }
 
+    // TODO util?
+    fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
+        PauliGate::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
+    }
+
     /// Sets the jth gate of the ith Pauli string
     fn set_pauli_gate(&mut self, p_gate: PauliGate, i: usize, j: usize) {
         let index = self.pstr_gate_index(i, j);
@@ -69,6 +74,14 @@ impl RowWiseBitVec {
         self.pauli_strings.set(index, b1);
         self.pauli_strings.set(index + 1, b2);
     }
+
+    // TODO util?
+    fn set_pauli_gate_in_bitslice(p_str: &mut BitSlice, p_gate: PauliGate, j: usize) {
+        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        p_str.set(2 * j, b1);
+        p_str.set(2 * j + 1, b2);
+    }
+
 
     /// Get the internal index of the jth gate of the ith Pauli string
     fn pstr_gate_index(&self, i: usize, j: usize) -> usize {
@@ -123,17 +136,19 @@ impl RowWiseBitVec {
 
     /// Returns the jth gate of the provided slice representing a Pauli string
     // TODO move to utils?
-    fn get_pauli_gate_from_slice(p_str: &BitSlice<BitSafeUsize>, j: usize) -> PauliGate {
+    fn get_pauli_gate_from_bitsafeusize_bitslice(p_str: &BitSlice<BitSafeUsize>, j: usize) -> PauliGate {
         PauliGate::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
     }
 
+
     /// Set the jth gate of the provided slice representing a Pauli string with the provided PauliGate
     // TODO move to utils?
-    fn set_pauli_gate_in_slice(p_str: &mut BitSlice<BitSafeUsize>, p_gate: PauliGate, j: usize) {
+    fn set_pauli_gate_in_bitsafeusize_bitslice(p_str: &mut BitSlice<BitSafeUsize>, p_gate: PauliGate, j: usize) {
         let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
         p_str.set(2 * j, b1);
         p_str.set(2 * j + 1, b2);
     }
+
 
     /// Apply the H and S conjugations to a provided slice representing a Pauli string and its coefficients.
     fn apply_slice_h_s_conjugations(
@@ -142,10 +157,10 @@ impl RowWiseBitVec {
         h_s_conjugations_map: &HSConjugationsMap,
         qubit: usize,
     ) {
-        let current_p_gate = Self::get_pauli_gate_from_slice(p_str, qubit);
+        let current_p_gate = Self::get_pauli_gate_from_bitsafeusize_bitslice(p_str, qubit);
         let actual_p_gate = h_s_conjugations_map.get_actual_p_gate(qubit, current_p_gate);
 
-        Self::set_pauli_gate_in_slice(p_str, actual_p_gate, qubit);
+        Self::set_pauli_gate_in_bitsafeusize_bitslice(p_str, actual_p_gate, qubit);
 
         coefficients
             .multiply(h_s_conjugations_map.get_coefficient_multiplier(qubit, current_p_gate));
@@ -234,8 +249,8 @@ impl RowWiseBitVec {
                     qubit_2,
                 );
 
-                let q1_target_p_gate = Self::get_pauli_gate_from_slice(pstr, gate.qubit_1);
-                let q2_target_p_gate = Self::get_pauli_gate_from_slice(pstr, qubit_2);
+                let q1_target_p_gate = Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, gate.qubit_1);
+                let q2_target_p_gate = Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, qubit_2);
 
                 let look_up_output = CNOT_CONJ_UPD_RULES
                     .get(&(q1_target_p_gate, q2_target_p_gate))
@@ -244,8 +259,8 @@ impl RowWiseBitVec {
                 // self.generator_info[chunk_ind * pstrs_per_chunk + pstr_offset].multiply(look_up_output.coefficient);
                 gen_info_chunk[pstr_offset].multiply(look_up_output.coefficient);
 
-                Self::set_pauli_gate_in_slice(pstr, look_up_output.q1_p_gate, gate.qubit_1);
-                Self::set_pauli_gate_in_slice(pstr, look_up_output.q2_p_gate, qubit_2);
+                Self::set_pauli_gate_in_bitsafeusize_bitslice(pstr, look_up_output.q1_p_gate, gate.qubit_1);
+                Self::set_pauli_gate_in_bitsafeusize_bitslice(pstr, look_up_output.q2_p_gate, qubit_2);
             }
         });
 
@@ -354,15 +369,15 @@ impl RowWiseBitVec {
                     gate.qubit_1,
                 );
 
-                let target_p_gate = Self::get_pauli_gate_from_slice(pstr, gate.qubit_1);
+                let target_p_gate = Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, gate.qubit_1);
 
                 if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
                     continue;
                 }
 
                 let mut new_pstr = BitVec::from_bitslice(pstr);
-                Self::set_pauli_gate_in_slice(pstr, PauliGate::X, gate.qubit_1);
-                Self::set_pauli_gate_in_slice(&mut new_pstr, PauliGate::Y, gate.qubit_1);
+                Self::set_pauli_gate_in_bitsafeusize_bitslice(pstr, PauliGate::X, gate.qubit_1);
+                Self::set_pauli_gate_in_bitsafeusize_bitslice(&mut new_pstr, PauliGate::Y, gate.qubit_1);
 
                 new_gen_info.push(gen_info_chunk[pstr_offset].clone());
 
@@ -495,7 +510,7 @@ impl RowWiseBitVec {
     /// Returns wheter the Pauli string contains only identity gates
     /// and a single Z gate at the ith position, i.e.,
     /// I^⊗{i-1}ZI^⊗{n-i}.
-    fn is_single_z_pstr(&self, pstr: &BitVec, i: usize) -> bool {
+    fn is_single_z_pstr(&self, pstr: &BitSlice, i: usize) -> bool {
         for gate_ind in 0..self.n_qubits {
             let pgate =
                 PauliGate::pauli_gate_from_tuple(pstr[2 * gate_ind], pstr[2 * gate_ind + 1]);
@@ -612,17 +627,17 @@ impl RowWiseBitVec {
 
     // Multiplies pstr_1 and pstr_2. 
     // The result is stored in pstr_1 and any coefficient is returned 
-    fn multiply_pstrs(&self, pstr_1: &mut BitSlice<BitSafeUsize>, pstr_2: &BitSlice<BitSafeUsize>) -> ComplexCoef {
+    fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ComplexCoef {
 
         let mut coef = ComplexCoef::new(1.0, false);
 
         for i in 0..self.n_qubits {
-            let pgate_1 = Self::get_pauli_gate_from_slice(pstr_1, i);
-            let pgate_2 = Self::get_pauli_gate_from_slice(pstr_2, i);
+            let pgate_1 = Self::get_pauli_gate_from_bitslice(pstr_1, i);
+            let pgate_2 = Self::get_pauli_gate_from_bitslice(pstr_2, i);
 
             let (c, pgate) = PauliGate::multiply(pgate_1, pgate_2); 
             coef.multiply(&c);
-            Self::set_pauli_gate_in_slice(pstr_1, pgate, i);
+            Self::set_pauli_gate_in_bitslice(pstr_1, pgate, i);
         }
 
         coef
@@ -652,21 +667,56 @@ impl RowWiseBitVec {
 
         loop {
 
-            let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
 
-            m_coef.mutliply_with_f64(coef);
-            let pstr = self.pstr_as_bitslice(pstr_ind);
+            if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
+                let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
+                let pstr = self.pstr_as_bitslice(pstr_ind);
 
+                m_coef.mutliply_with_f64(coef);
+                let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
+                m_coef.multiply(&multiply_coef_res);
+            }
 
-            let multily_coef_res = self.multiply_pstrs(m_pstr.as_bitslice(), pstr);
+            gen_ind += 1;
 
+            if gen_ind == self.n_qubits {
 
+                if self.is_single_z_pstr(m_pstr.as_bitslice(), i) {
+                    // TODO !!! What doe we do with the imaginary part?
+                    sum += m_coef.real;
+                }
 
+                // Backtrack
+                gen_ind -= 1;
+                loop {
 
+                    if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
+                        // todo refactor with the code above
+                        let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
+                        let pstr = self.pstr_as_bitslice(pstr_ind);
+
+                        m_coef.divide_by_f64(coef);
+                        let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
+                        m_coef.divide(&multiply_coef_res);
+
+                    }
+                    
+                    indexes[gen_ind] += 1;
+
+                    if indexes[gen_ind] <= gen_to_pstr[gen_ind].len() {
+                        break;
+                    } else {
+                        indexes[gen_ind] = 0;
+
+                        if gen_ind == 0 {
+                            return sum;
+                        }
+
+                        gen_ind -= 1;
+                    }
+                }
+            }
         }
-
-        
-        sum
     }
 
 

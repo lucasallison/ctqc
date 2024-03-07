@@ -47,7 +47,7 @@ impl PauliGate {
         // ---------------------
         // X |   I |  iZ |  iY 
         // Y | -iZ |   I |  iX
-        // X |  iY | -iX |   I 
+        // Z |  iY | -iX |   I 
 
         match (g1, g2) {
             (PauliGate::I, _) => (ComplexCoef::new(1.0,false), PauliGate::I),
