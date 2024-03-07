@@ -12,6 +12,7 @@ pub mod generator_map;
 pub mod pauli_pools;
 pub mod pauli_trees;
 pub mod row_wise_bitvec;
+mod utils;
 
 pub trait GeneratorSet: Display {
     fn init_generators(&mut self, zero_state_generators: bool);

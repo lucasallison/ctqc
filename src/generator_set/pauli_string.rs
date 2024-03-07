@@ -2,6 +2,8 @@ use bitvec::prelude::*;
 use snafu::prelude::*;
 use std::fmt;
 
+use super::utils::ComplexCoef;
+
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum PauliGate {
     I,
@@ -36,6 +38,29 @@ impl PauliGate {
             'Y' => Ok(PauliGate::Y),
             'Z' => Ok(PauliGate::Z),
             _ => Err(PauliStringError::CharNotAPauliGate {}),
+        }
+    }
+
+    pub fn multiply(g1: PauliGate, g2: PauliGate) -> (ComplexCoef, PauliGate) {
+
+        //   |  X     Y     Z
+        // ---------------------
+        // X |   I |  iZ |  iY 
+        // Y | -iZ |   I |  iX
+        // X |  iY | -iX |   I 
+
+        match (g1, g2) {
+            (PauliGate::I, _) => (ComplexCoef::new(1.0,false), PauliGate::I),
+            (_, PauliGate::I) => (ComplexCoef::new(1.0,false), PauliGate::I),
+            (PauliGate::X, PauliGate::X) => (ComplexCoef::new(1.0,false), PauliGate::I),
+            (PauliGate::X, PauliGate::Y) => (ComplexCoef::new(1.0,true), PauliGate::Z),
+            (PauliGate::X, PauliGate::Z) => (ComplexCoef::new(1.0,true), PauliGate::Y),
+            (PauliGate::Y, PauliGate::X) => (ComplexCoef::new(-1.0,true), PauliGate::Z),
+            (PauliGate::Y, PauliGate::Y) => (ComplexCoef::new(1.0,false), PauliGate::I),
+            (PauliGate::Y, PauliGate::Z) => (ComplexCoef::new(1.0,true), PauliGate::X),
+            (PauliGate::Z, PauliGate::X) => (ComplexCoef::new(1.0,true), PauliGate::Y),
+            (PauliGate::Z, PauliGate::Y) => (ComplexCoef::new(-1.0,true), PauliGate::X),
+            (PauliGate::Z, PauliGate::Z) => (ComplexCoef::new(1.0,false), PauliGate::I),
         }
     }
 }
