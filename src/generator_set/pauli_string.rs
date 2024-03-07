@@ -50,8 +50,8 @@ impl PauliGate {
         // Z |  iY | -iX |   I 
 
         match (g1, g2) {
-            (PauliGate::I, _) => (ComplexCoef::new(1.0,false), PauliGate::I),
-            (_, PauliGate::I) => (ComplexCoef::new(1.0,false), PauliGate::I),
+            (PauliGate::I, _) => (ComplexCoef::new(1.0,false), g2),
+            (_, PauliGate::I) => (ComplexCoef::new(1.0,false), g1),
             (PauliGate::X, PauliGate::X) => (ComplexCoef::new(1.0,false), PauliGate::I),
             (PauliGate::X, PauliGate::Y) => (ComplexCoef::new(1.0,true), PauliGate::Z),
             (PauliGate::X, PauliGate::Z) => (ComplexCoef::new(1.0,true), PauliGate::Y),

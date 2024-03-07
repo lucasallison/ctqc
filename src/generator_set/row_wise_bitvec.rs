@@ -1,4 +1,3 @@
-use ahash::HashSetExt;
 use bitvec::access::BitSafeUsize;
 use bitvec::{index, prelude::*};
 use fxhash::{FxBuildHasher, FxHashSet};
@@ -14,7 +13,7 @@ use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
 use super::pauli_string::PauliGate;
 use super::GeneratorSet;
-use super::utils::ComplexCoef;
+use super::utils::{ComplexCoef, PauliUtils};
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
 
@@ -60,11 +59,6 @@ impl RowWiseBitVec {
         PauliGate::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
     }
 
-    // TODO util?
-    fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
-        PauliGate::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
-    }
-
     /// Sets the jth gate of the ith Pauli string
     fn set_pauli_gate(&mut self, p_gate: PauliGate, i: usize, j: usize) {
         let index = self.pstr_gate_index(i, j);
@@ -74,15 +68,7 @@ impl RowWiseBitVec {
         self.pauli_strings.set(index, b1);
         self.pauli_strings.set(index + 1, b2);
     }
-
-    // TODO util?
-    fn set_pauli_gate_in_bitslice(p_str: &mut BitSlice, p_gate: PauliGate, j: usize) {
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
-        p_str.set(2 * j, b1);
-        p_str.set(2 * j + 1, b2);
-    }
-
-
+    
     /// Get the internal index of the jth gate of the ith Pauli string
     fn pstr_gate_index(&self, i: usize, j: usize) -> usize {
         2 * i * self.n_qubits + 2 * j
@@ -632,16 +618,15 @@ impl RowWiseBitVec {
         let mut coef = ComplexCoef::new(1.0, false);
 
         for i in 0..self.n_qubits {
-            let pgate_1 = Self::get_pauli_gate_from_bitslice(pstr_1, i);
-            let pgate_2 = Self::get_pauli_gate_from_bitslice(pstr_2, i);
+            let pgate_1 = PauliUtils::get_pauli_gate_from_bitslice(pstr_1, i);
+            let pgate_2 = PauliUtils::get_pauli_gate_from_bitslice(pstr_2, i);
 
             let (c, pgate) = PauliGate::multiply(pgate_1, pgate_2); 
             coef.multiply(&c);
-            Self::set_pauli_gate_in_bitslice(pstr_1, pgate, i);
+            PauliUtils::set_pauli_gate_in_bitslice(pstr_1, pgate, i);
         }
-
+       
         coef
-
     }
 
     fn pstr_as_bitslice(&self, pstr_ind: usize) -> &BitSlice {
@@ -652,8 +637,8 @@ impl RowWiseBitVec {
         &self.pauli_strings[start..=end]
     }
 
-    fn sum_z_stabilizer_coefficients(&self, i: usize) -> f64 {
-        let mut sum = 0.0;
+    fn sum_z_stabilizer_coefficients(&self, z_index: usize) -> f64 {
+        let mut sum = 0.5;
 
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
@@ -661,9 +646,8 @@ impl RowWiseBitVec {
         // TODO rename variables
         let mut indexes: Vec<usize> = vec![0; self.size];
         let mut gen_ind: usize = 0;
-        let mut m_pstr = bitvec![0; self.size];
+        let mut m_pstr = bitvec![0; 2*self.n_qubits]; // only identity gates
         let mut m_coef = ComplexCoef::new(1.0, false);
-
 
         loop {
 
@@ -671,9 +655,13 @@ impl RowWiseBitVec {
             if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
                 let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                 let pstr = self.pstr_as_bitslice(pstr_ind);
+                // println!("bs: {:?}", pstr);
 
                 m_coef.mutliply_with_f64(coef);
+
+                // println!("MUL: m_pstr: {:?}, g: {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), PauliUtils::pstr_bitslice_as_str(pstr));
                 let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
+                // println!("RES: m_pstr: {:?}, g: {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), PauliUtils::pstr_bitslice_as_str(pstr));
                 m_coef.multiply(&multiply_coef_res);
             }
 
@@ -681,9 +669,12 @@ impl RowWiseBitVec {
 
             if gen_ind == self.n_qubits {
 
-                if self.is_single_z_pstr(m_pstr.as_bitslice(), i) {
+                // println!("m_pstr: {:?}, c {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), m_coef.real);
+
+                if self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
                     // TODO !!! What doe we do with the imaginary part?
-                    sum += m_coef.real;
+                    sum += 0.5 * m_coef.real;
+
                 }
 
                 // Backtrack
@@ -827,10 +818,16 @@ impl GeneratorSet for RowWiseBitVec {
     }
 
     fn measure(&mut self, i: usize) -> (bool, f64) {
-        self.sum_z_stabilizer_coefficients(i);
-        (false, 0.0)
-        // self.apply_all_h_s_conjugations();
-        // self.clean();
+        // TODO integrate this? 
+        self.apply_all_h_s_conjugations();
+        self.clean();
+
+
+        let p0 = self.sum_z_stabilizer_coefficients(i);
+
+
+        (true, p0)
+        
 
 
         // // Probability of measuring 0
