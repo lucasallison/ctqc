@@ -638,7 +638,7 @@ impl RowWiseBitVec {
     }
 
     fn sum_z_stabilizer_coefficients(&self, z_index: usize) -> f64 {
-        let mut sum = 0.5;
+        let mut sum = 0.0;
 
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
@@ -652,6 +652,11 @@ impl RowWiseBitVec {
         loop {
 
 
+            // For each generator multiply the 'm_pstr' with the ith (stored in indexes[gen_ind]) 
+            // term of the generator and update the coefficient accordingly. If we have already
+            // multiplied all the terms of the currrent generator we continue to the next, i.e., 
+            // when indexes[gen_ind] == gen_to_pstr[gen_ind].len(), to obtain a multiplication
+            // of terms without any terms of current generator.
             if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
                 let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                 let pstr = self.pstr_as_bitslice(pstr_ind);
@@ -667,35 +672,45 @@ impl RowWiseBitVec {
 
             gen_ind += 1;
 
+            // We have multiplied `m_pstr` with a term (or no term) of each generator, start backtracking
             if gen_ind == self.n_qubits {
 
                 // println!("m_pstr: {:?}, c {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), m_coef.real);
 
+                // If the result is a Pauli string with a single Z gate at the z_index
+                // update the sum 
                 if self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
                     // TODO !!! What doe we do with the imaginary part?
-                    sum += 0.5 * m_coef.real;
-
+                    sum +=  m_coef.real;
                 }
 
                 // Backtrack
                 gen_ind -= 1;
                 loop {
 
+                    
+                    // Undo the multiplication of the indexes[gen_ind] term of the generator with gen_ind
                     if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
-                        // todo refactor with the code above
+
+                        // TODO refactor with the code above?
                         let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                         let pstr = self.pstr_as_bitslice(pstr_ind);
 
                         m_coef.divide_by_f64(coef);
                         let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
                         m_coef.divide(&multiply_coef_res);
-
                     }
                     
+                    // Update the indexes[gen_ind] so that we multiply the next term 
+                    // of the generator with gen_ind
                     indexes[gen_ind] += 1;
 
+                    // We have a term (or explicitely no term when indexesp[gen_ind] == gen_to_pstr[gen_ind].len()) 
+                    // of the generator with gen_ind to multiply with m_pstr, stop backtracking
                     if indexes[gen_ind] <= gen_to_pstr[gen_ind].len() {
                         break;
+
+                    // We have backtracked the generator with gen_ind, go the the previous one
                     } else {
                         indexes[gen_ind] = 0;
 
@@ -823,7 +838,7 @@ impl GeneratorSet for RowWiseBitVec {
         self.clean();
 
 
-        let p0 = self.sum_z_stabilizer_coefficients(i);
+        let p0 = 0.5 + 0.5 * self.sum_z_stabilizer_coefficients(i);
 
 
         (true, p0)

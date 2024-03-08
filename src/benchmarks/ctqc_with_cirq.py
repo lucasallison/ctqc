@@ -6,27 +6,43 @@ if len(sys.argv) != 2:
     print("Usage: python ctqc_with_cirq.py <circuit_file>")
     exit(1)
 
-gates = []
+def get_qubit(qubits, index):
+    for qubit in qubits:
+        if isinstance(qubit, cirq.LineQubit) and qubit.x == index:
+            return qubit
+    qubit = cirq.LineQubit(index)
+    qubits.append(qubit)
+    return qubit
+
+
+qubits = []
+circuit = cirq.Circuit()
 with open(str(sys.argv[1]), 'r') as circuit_file:
     for gate in circuit_file:
         gate = gate.strip()
-        if re.match("^(H|S|M) (\d+)$", gate):
-            pass
+        if re.match("^H (\d+)$", gate):
+            qubit = get_qubit(qubits, int(gate[2:]))
+            circuit.append(cirq.H(qubit))
+        elif re.match("^S (\d+)$", gate):
+            qubit = get_qubit(qubits, int(gate[2:]))
+            circuit.append(cirq.S(qubit))
+        elif re.match("^M (\d+)$", gate):
+            qubit = get_qubit(qubits, int(gate[2:]))
+            circuit.append(cirq.M(qubit))
         elif re.match("^CNOT (\d+) (\d+)$", gate):
-            pass
+            qubit_1 = get_qubit(qubits, int(gate.split(" ")[1]))
+            qubit_2 = get_qubit(qubits, int(gate.split(" ")[2]))
+            circuit.append(cirq.CNOT(qubit_1, qubit_2))
         elif re.match("T (\d+)$", gate):
-            pass
+            qubit = get_qubit(qubits, int(gate[2:]))
+            circuit.append(cirq.T(qubit))
         elif re.match("^Rz\(.*\) (\d+)$", gate):
             print(f"TODO {gate}", sys.stderr)
             exit(-1)
-            pass
         else:
-            print(f"Invalid gate: {gate}", sys.stderr)
+            print(f"Invalid gate: {gate}", file=sys.stderr)
             exit(-1)
 
-exit(0) 
-
-circuit = circuit_from_qasm(f.read())
 
 print("Simulating...")
 simulator = cirq.Simulator()
