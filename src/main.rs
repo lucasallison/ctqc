@@ -21,14 +21,12 @@ use generator_set::GeneratorSet;
 // Floating point error margin
 static FP_ERROR_MARGIN: f64 = 0.0000000001;
 
-// TODO help message formatting
-/// Quantum circuit simulator based on the sabilizer formalism
+/// Quantum circuit simulator based on the sabilizer formalism.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-
     /// File containing the circuit to simulate
-    #[arg(short='f', long, verbatim_doc_comment)]
+    #[arg(short = 'f', long, verbatim_doc_comment)]
     circuit_file: String,
 
     /// Optional flag which will run an equivalence check between the circuit
@@ -36,20 +34,21 @@ struct Args {
     #[arg(short, long, default_value_t = String::from("None"), verbatim_doc_comment)]
     equiv_circuit_file: String,
 
-    /// Provide the data structure of the GeneratorSet to use for the simulation. Options are:
+    /// Provide the specific GeneratorSet implementation to use for the simulation. Options are:
     /// - map:     A map of Pauli strings to their coefficients.
     /// - rbitvec: (row-wise bitvector) All Pauli strings are saved sequentially in a single bitvector.
-    /// - cbitvec: (column-wise bitvector) The Pauli gates of each Pauli string at a certain 
+    /// - cbitvec: (column-wise bitvector) The Pauli gates of each Pauli string at a certain
     ///            index are saved sequentially in a seperate bitvector.
-    /// - ppools:  All Pauli strings are divided between a number of row-wise bitvectors and 
-    ///            simulated in parallel. 
+    /// - ppools:  All Pauli strings are divided between a number of row-wise bitvectors and
+    ///            simulated in parallel.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
+    /// See TODO for a more detailed explaination.
     #[arg(short, long, default_value_t = String::from("rbitvec"), verbatim_doc_comment)]
     data_structure: String,
 
-    /// Provide after how many gates the simulator should "clean" the 
-    /// data structure, e.g., remove duplicates, remove zero coefficient 
-    /// Pauli strings, etc...
+    /// Provide after how many gates the simulator should "clean" the
+    /// data structure, e.g., remove redundently stored Pauli strings, zero
+    /// coefficient Pauli strings, etc...
     #[arg(short, long, default_value_t = 1000, verbatim_doc_comment)]
     clean: usize,
 
@@ -61,42 +60,50 @@ struct Args {
     #[arg(short, long, default_value_t = false, verbatim_doc_comment)]
     verbose: bool,
 
-    /// Ensures that we simulate all generators simultaneously when 
-    /// running an equivalence check, as opposed to the default behavior 
+    /// Ensures that we simulate all generators simultaneously when
+    /// running an equivalence check, as opposed to the default behavior
     /// of simulating them one by one.
-    #[arg(short='g', long, default_value_t = false, verbatim_doc_comment)]
+    #[arg(short = 'g', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
+}
+
+fn circuit_from_file(file: String) -> circuit::Circuit {
+    match parse_file(&file) {
+        Ok(circuit) => return circuit,
+        Err(e) => {
+            eprintln!("{}", MainError::InvalidFileFormat { file: file, err: e });
+            std::process::exit(1);
+        }
+    };
 }
 
 fn main() {
     // TODO remove
     std::env::set_var("RUST_BACKTRACE", "1");
+
     let args = Args::parse();
 
-    // Parse the circuit from file
-    let circuit = match parse_file(&args.circuit_file) {
-        Ok(circuit) => circuit,
-        Err(e) => {
-            eprintln!(
-                "{}",
-                MError::InvalidFileFormat {
-                    file: args.circuit_file,
-                    err: e
-                }
-            );
-            return;
-        }
-    };
+    let circuit = circuit_from_file(args.circuit_file);
 
     let mut generator_set: Box<dyn GeneratorSet> = match args.data_structure.as_str() {
         "map" => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
         "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
         "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits(), args.threads)),
         "ppools" => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
-        "ptrees" => Box::new(PauliTrees::new(circuit.num_qubits(), args.threads, None, None)),
+        "ptrees" => Box::new(PauliTrees::new(
+            circuit.num_qubits(),
+            args.threads,
+            None,
+            None,
+        )),
         _ => {
-            eprintln!("Invalid data structure type: {}. Use the help (-h) flag to see the available data structures", args.data_structure);
-            return;
+            eprintln!(
+                "{}",
+                MainError::InvalidGeneratorSet {
+                    data_structure: args.data_structure
+                }
+            );
+            std::process::exit(2);
         }
     };
 
@@ -105,33 +112,27 @@ fn main() {
     // No second file provided, run the simulation
     if args.equiv_circuit_file == "None" {
         if let Err(e) = simulator.simulate(&circuit) {
-            eprintln!("{}", MError::SimulationFailed { err: e });
+            eprintln!("{}", MainError::SimulationFailed { err: e });
+            std::process::exit(1);
         }
 
-    // Second file provided, run the equivalence check
+    // Second file provided, run an equivalence check
     } else {
-        let equiv_circuit = match parse_file(&args.equiv_circuit_file) {
-            Ok(circuit) => circuit,
-            Err(e) => {
-                eprintln!(
-                    "{}",
-                    MError::InvalidFileFormat {
-                        file: args.equiv_circuit_file,
-                        err: e
-                    }
-                );
-                return;
-            }
-        };
-
-        if let Err(e) = simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators) {
-            eprintln!("{}", MError::EquivalenceCheckFailed { err: e });
+        let equiv_circuit = circuit_from_file(args.equiv_circuit_file);
+        if let Err(e) =
+            simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators)
+        {
+            eprintln!("{}", MainError::EquivalenceCheckFailed { err: e });
+            std::process::exit(1);
         }
     }
 }
 
 #[derive(Debug, Snafu)]
-enum MError {
+enum MainError {
+    #[snafu(display("Invalid data structure type: {}. Use the help (-h) flag to see the available data structures", data_structure))]
+    InvalidGeneratorSet { data_structure: String },
+
     #[snafu(display("Failed to parse {}: {} ", file, err))]
     InvalidFileFormat { file: String, err: Box<dyn Error> },
 

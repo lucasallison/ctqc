@@ -1,9 +1,8 @@
+use indicatif::ProgressBar;
+use indicatif::ProgressStyle;
 use lazy_static::lazy_static;
 use snafu::prelude::*;
 use std::error::Error;
-use indicatif::ProgressBar;
-use indicatif::ProgressStyle;
-
 
 use crate::circuit::Circuit;
 use crate::circuit::GateType;
@@ -33,16 +32,15 @@ impl<'a> Simulator<'a> {
         }
     }
 
-
     /// Simulates the provided ciricuit by setting the generators to the generators of the all zero state
     /// and calling the 'sim' function.
     pub fn simulate(&mut self, circuit: &Circuit) -> Result<(), Box<dyn Error>> {
-
         self.generator_set.init_generators(true);
 
         let progress_bar = ProgressBar::new(circuit.len() as u64);
 
-        let progress_style_str = "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
+        let progress_style_str =
+            "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
         self.sim(circuit, false, &progress_bar);
@@ -60,7 +58,7 @@ impl<'a> Simulator<'a> {
         &mut self,
         circuit_1: &Circuit,
         circuit_2: &Circuit,
-        all_generators_at_once: bool
+        all_generators_at_once: bool,
     ) -> Result<(), Box<dyn Error>> {
         if circuit_1.num_qubits() != circuit_2.num_qubits() {
             return Err(SimulationError::DifferentSizedCiruicuits {
@@ -76,8 +74,7 @@ impl<'a> Simulator<'a> {
             circuit_2.name()
         );
 
-
-        let equiv = if all_generators_at_once  {
+        let equiv = if all_generators_at_once {
             self.equiv_all_generators_at_once(circuit_1, circuit_2, true)
         } else {
             self.equiv_per_generator(circuit_1, circuit_2, true)
@@ -87,7 +84,7 @@ impl<'a> Simulator<'a> {
             return Ok(());
         }
 
-        let equiv = if all_generators_at_once  {
+        let equiv = if all_generators_at_once {
             self.equiv_all_generators_at_once(circuit_1, circuit_2, false)
         } else {
             self.equiv_per_generator(circuit_1, circuit_2, false)
@@ -125,31 +122,23 @@ impl<'a> Simulator<'a> {
             *DAG_CHAR, z_x_char, *DAG_CHAR
         );
 
-        progress_style_str.push_str("[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}");
+        progress_style_str.push_str(
+            "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}",
+        );
 
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
         // First we simulate the first circuit with the all zero/plus state generators
-        self.sim(
-            circuit_1,
-            false,
-            &progress_bar,
-        );
+        self.sim(circuit_1, false, &progress_bar);
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
-        self.sim(
-            circuit_2,
-            true,
-            &progress_bar
-        );
+        self.sim(circuit_2, true, &progress_bar);
 
         progress_bar.finish();
 
-        self
-            .generator_set
+        self.generator_set
             .is_x_or_z_generators(check_zero_state_generators)
-        
     }
 
     /// Conjugates the gates of the circuit UV^† iteratively to all the generators of the all
@@ -167,7 +156,6 @@ impl<'a> Simulator<'a> {
             'X'
         };
 
-
         let progress_bar = ProgressBar::new((2 * circuit_1.len() * circuit_1.num_qubits()) as u64);
 
         let mut progress_style_str = format!(
@@ -175,28 +163,21 @@ impl<'a> Simulator<'a> {
             *DAG_CHAR, z_x_char, *DAG_CHAR
         );
 
-        progress_style_str.push_str("[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}");
+        progress_style_str.push_str(
+            "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}",
+        );
 
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
-
 
         for i in 0..circuit_1.num_qubits() {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
 
             // First simulate U
-            self.sim(
-                circuit_1,
-                false,
-                &progress_bar,
-            );
+            self.sim(circuit_1, false, &progress_bar);
 
             // Then simulate V^†
-            self.sim(
-                circuit_2,
-                true,
-                &progress_bar,
-            );
+            self.sim(circuit_2, true, &progress_bar);
 
             if !self
                 .generator_set
@@ -216,13 +197,7 @@ impl<'a> Simulator<'a> {
     ///
     /// The simulation works by sequentially conjugating all the generators stored in the 'gen_cmpts' field of 'sim_data'
     /// with the gates in the circuit.
-    fn sim(
-        &mut self,
-        circuit: &Circuit,
-        inverse: bool,
-        progress_bar: &ProgressBar,
-    ) {
-
+    fn sim(&mut self, circuit: &Circuit, inverse: bool, progress_bar: &ProgressBar) {
         if self.verbose {
             println!("Initial generator set:");
             println!("{}", self.generator_set);
@@ -275,9 +250,7 @@ impl<'a> Simulator<'a> {
             println!("\nFinal generator set:");
             println!("{}", self.generator_set);
         }
-
     }
-
 }
 
 #[derive(Debug, Snafu)]

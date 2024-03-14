@@ -5,17 +5,14 @@ use super::pauli_string::{PauliGate, PauliString};
 // TODO rename to ImaginaryCoef/ImCoef
 pub struct ComplexCoef {
     pub real: f64,
-    pub i: bool
+    pub i: bool,
 }
 
 impl ComplexCoef {
     pub fn new(real: f64, i: bool) -> ComplexCoef {
-        ComplexCoef {
-            real,
-            i
-        }
+        ComplexCoef { real, i }
     }
-    
+
     pub fn multiply(&mut self, other: &ComplexCoef) {
         self.real = self.real * other.real;
         if self.i && other.i {
@@ -35,21 +32,17 @@ impl ComplexCoef {
         }
         self.multiply(other);
         self.real /= divisor;
-
     }
 
     pub fn divide_by_f64(&mut self, other: f64) {
         self.real /= other;
     }
-
 }
-
 
 // TODO put in seperate file??
 pub struct PauliUtils {}
 
 impl PauliUtils {
-
     pub fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
         PauliGate::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
     }
@@ -72,5 +65,4 @@ impl PauliUtils {
         }
         result
     }
-    
 }

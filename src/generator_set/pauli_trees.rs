@@ -40,7 +40,12 @@ pub struct PauliTrees {
 }
 
 impl PauliTrees {
-    pub fn new(n_qubits: usize, n_threads: usize, n_node_body_bits: Option<usize>, pgates_per_leaf: Option<usize>) -> Self {
+    pub fn new(
+        n_qubits: usize,
+        n_threads: usize,
+        n_node_body_bits: Option<usize>,
+        pgates_per_leaf: Option<usize>,
+    ) -> Self {
         if n_threads > 1 {
             eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
         }
@@ -162,7 +167,9 @@ impl PauliTrees {
 
             if index == start_index {
                 println!("{} {}", self.max_storable_nodes(), self.n_nodes_stored);
-                panic!("Failed inserting node: table is full. A resize should have been performed.");
+                panic!(
+                    "Failed inserting node: table is full. A resize should have been performed."
+                );
             }
         }
 
@@ -188,7 +195,7 @@ impl PauliTrees {
     }
 
     fn max_storable_leafs(&self) -> usize {
-        // Its possible to store more leafs 
+        // Its possible to store more leafs
         1 << (self.n_node_body_bits / 2)
     }
 
@@ -240,7 +247,9 @@ impl PauliTrees {
 
             if index == start_index {
                 println!("{}{}", self.max_storable_leafs(), self.n_leafs_stored);
-                panic!("Failed inserting leaf: table is full. A resize should have been performed.");
+                panic!(
+                    "Failed inserting leaf: table is full. A resize should have been performed."
+                );
             }
         }
 
@@ -395,7 +404,8 @@ impl PauliTrees {
         let bv = self.index_to_bitvec(new_index, self.n_bits_per_root_node());
         let bits_per_root_node = self.n_bits_per_root_node();
         for (i, b) in bv.iter().enumerate() {
-            self.root_node_table.set(pstr_index * bits_per_root_node + i, *b);
+            self.root_node_table
+                .set(pstr_index * bits_per_root_node + i, *b);
         }
     }
 
@@ -426,7 +436,6 @@ impl PauliTrees {
     /// The function returns the index of the inserted node/leaf and
     /// a boolean indicating whether the inserted node is a leaf or not.
     fn recursive_insert_pstr(&mut self, pgates: &BitSlice) -> usize {
-
         // We save `self.pgates_per_leaf` gates per leaf.
         // Since each gate is represented by 2 bits, we need to divide the length of the bitvec by 2 and
         // then divide by `self.pgates_per_leaf` to get the number of leaf nodes we need to insert.
@@ -693,8 +702,7 @@ impl PauliTrees {
         }
     }
 
-    fn gather(&self) -> HashMap::<usize, CoefficientList, FxBuildHasher> {
-
+    fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
         // Map from root index to Pauli string index
         let mut m = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size(),
@@ -718,7 +726,6 @@ impl PauliTrees {
     }
 
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
-
         // Scatter all unique Pauli strings
         self.root_node_table.clear();
         self.coeff_lists.clear();
@@ -735,12 +742,16 @@ impl PauliTrees {
     }
 
     fn resize(&mut self) {
-
         // TODO resize in a smart way
         let new_n_node_body_bits = self.n_node_body_bits * 2;
-        let new_pgates_per_leaf = self.pgates_per_leaf * 2; 
+        let new_pgates_per_leaf = self.pgates_per_leaf * 2;
 
-        let mut resized_ptrees = PauliTrees::new(self.n_qubits, 1, Some(new_n_node_body_bits), Some(new_pgates_per_leaf));
+        let mut resized_ptrees = PauliTrees::new(
+            self.n_qubits,
+            1,
+            Some(new_n_node_body_bits),
+            Some(new_pgates_per_leaf),
+        );
 
         for pstr_index in 0..self.size() {
             let pstr = self.pstr_as_bitvec(pstr_index);
