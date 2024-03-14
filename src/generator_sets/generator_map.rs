@@ -9,7 +9,7 @@ use std::fmt;
 use super::conjugation_look_up_tables::{
     CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
-use super::pauli_string::{PauliGate, PauliString};
+use crate::pauli_string::{PauliGate, PauliString};
 use super::GeneratorSet;
 use crate::{
     circuit::{Gate, GateType},
@@ -254,7 +254,7 @@ impl Component {
         };
 
         let mut generator = PauliString::new(num_qubits as usize);
-        generator.set_pauli_gate(i as usize, non_i_gate).unwrap();
+        generator.set_pauli_gate(i as usize, non_i_gate);
 
         let mut comp = Component::new(generator);
         comp.generator_info.push(GeneratorInfo::new(i));
@@ -336,7 +336,7 @@ impl Component {
         gate: &Gate,
         conjugate_dagger: bool,
     ) -> Result<bool, Box<dyn Error>> {
-        let target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
+        let target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize);
 
         // Identity gate does not change from conjugation
         if target_pauli_gate == PauliGate::I {
@@ -365,7 +365,7 @@ impl Component {
 
         // We update the pauli string with the gate resulting from the conjugation
         self.pstr
-            .set_pauli_gate(gate.qubit_1 as usize, look_up_output.p_gate)?;
+            .set_pauli_gate(gate.qubit_1 as usize, look_up_output.p_gate);
 
         Ok(true)
     }
@@ -373,8 +373,8 @@ impl Component {
     fn conjugate_cnot(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
         let qubit_2 = gate.qubit_2.unwrap();
 
-        let q1_target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
-        let q2_target_pauli_gate = self.pstr.get_pauli_gate(qubit_2 as usize)?;
+        let q1_target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize);
+        let q2_target_pauli_gate = self.pstr.get_pauli_gate(qubit_2 as usize);
 
         // The pauli string does not change from conjugation
         if !CNOT_CONJ_UPD_RULES.contains_key(&(q1_target_pauli_gate, q2_target_pauli_gate)) {
@@ -395,9 +395,9 @@ impl Component {
 
         // We update the pauli string with the gate resulting from the conjugation
         self.pstr
-            .set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate)?;
+            .set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate);
         self.pstr
-            .set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate)?;
+            .set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate);
 
         Ok(true)
     }
@@ -412,7 +412,7 @@ impl Component {
         gate: &Gate,
         conjugate_dagger: bool,
     ) -> Result<Option<Component>, Box<dyn Error>> {
-        let target_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize)?;
+        let target_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize);
 
         if target_gate == PauliGate::Z || target_gate == PauliGate::I {
             return Ok(None);
@@ -434,7 +434,7 @@ impl Component {
 
                 new_component
                     .pstr
-                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::Y)?;
+                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::Y);
 
                 return Ok(Some(new_component));
             }
@@ -452,7 +452,7 @@ impl Component {
 
                 new_component
                     .pstr
-                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::X)?;
+                    .set_pauli_gate(gate.qubit_1 as usize, PauliGate::X);
 
                 return Ok(Some(new_component));
             }
@@ -597,16 +597,16 @@ mod tests {
         for (index, char) in string.chars().enumerate() {
             match char {
                 'I' => {
-                    pstr.set_pauli_gate(index, PauliGate::I).unwrap();
+                    pstr.set_pauli_gate(index, PauliGate::I);
                 }
                 'X' => {
-                    pstr.set_pauli_gate(index, PauliGate::X).unwrap();
+                    pstr.set_pauli_gate(index, PauliGate::X);
                 }
                 'Y' => {
-                    pstr.set_pauli_gate(index, PauliGate::Y).unwrap();
+                    pstr.set_pauli_gate(index, PauliGate::Y);
                 }
                 'Z' => {
-                    pstr.set_pauli_gate(index, PauliGate::Z).unwrap();
+                    pstr.set_pauli_gate(index, PauliGate::Z);
                 }
                 _ => panic!("Invalid character in Pauli string"),
             }

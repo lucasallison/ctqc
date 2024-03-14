@@ -6,8 +6,9 @@ use std::collections::{hash_map::Entry, HashMap};
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
-use super::pauli_string::PauliGate;
 use super::GeneratorSet;
+use crate::pauli_string::PauliGate;
+use crate::pauli_string::utils as PauliUtils;
 use crate::circuit::{Gate, GateType};
 // use crate::FP_ERROR_MARGIN;
 
@@ -223,7 +224,7 @@ impl PauliTrees {
 
     fn get_ith_pgate_from_leaf(&self, leaf_index: usize, i: usize) -> PauliGate {
         let pgates = self.get_leaf_pgates_bits(leaf_index);
-        PauliGate::pauli_gate_from_tuple(pgates[2 * i], pgates[2 * i + 1])
+        PauliUtils::pauli_gate_from_tuple(pgates[2 * i], pgates[2 * i + 1])
     }
 
     // ---- Leaf insertion functions ---- //
@@ -305,7 +306,7 @@ impl PauliTrees {
     fn pstr_bitslice_as_str(slice: &BitSlice) -> String {
         let mut s = String::with_capacity(slice.len() / 2);
         for i in 0..slice.len() / 2 {
-            let gate = PauliGate::pauli_gate_from_tuple(slice[2 * i], slice[2 * i + 1]);
+            let gate = PauliUtils::pauli_gate_from_tuple(slice[2 * i], slice[2 * i + 1]);
             s.push_str(&format!("{}", gate));
         }
         s
@@ -540,7 +541,7 @@ impl PauliTrees {
             let leaf_index = self.leaf_index_from_node_body(self.get_node_body(node_index));
 
             let mut new_leaf_pgates = BitVec::from_bitslice(self.get_leaf_pgates_bits(leaf_index));
-            let (b1, b2) = PauliGate::pauli_gate_as_tuple(*pgate);
+            let (b1, b2) = PauliUtils::pauli_gate_as_tuple(*pgate);
 
             new_leaf_pgates.set(2 * relative_gate_index, b1);
             new_leaf_pgates.set(2 * relative_gate_index + 1, b2);
@@ -877,7 +878,7 @@ impl GeneratorSet for PauliTrees {
             PauliGate::X
         };
 
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
         for generator_index in 0..self.n_qubits {
             // TODO use only one bitvec
             let mut pstr = bitvec![0; 2 * self.n_qubits];
@@ -942,7 +943,7 @@ impl std::fmt::Display for PauliTrees {
             let pstr = self.ith_pstr_as_str(pstr_index);
 
             for (i, pgate) in pstr.chars().enumerate() {
-                let current_pgate = PauliGate::char_to_pauli_gate(&pgate).unwrap();
+                let current_pgate = PauliUtils::char_to_pauli_gate(&pgate).unwrap();
 
                 let actual_pgate = self
                     .h_s_conjugations_map

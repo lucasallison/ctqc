@@ -1,18 +1,19 @@
 use bitvec::access::BitSafeUsize;
-use bitvec::{index, prelude::*};
-use fxhash::{FxBuildHasher, FxHashSet};
+use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use rayon::prelude::*;
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::collections::{hash_map::Entry, HashMap};
 use std::fmt;
 use std::sync::Mutex;
 
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
-use super::pauli_string::PauliGate;
-use super::utils::{ComplexCoef, PauliUtils};
+use crate::pauli_string::PauliGate;
+use crate::pauli_string::utils as PauliUtils;
+use crate::utils::imaginary_coefficient::ImaginaryCoef;
 use super::GeneratorSet;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
@@ -56,14 +57,14 @@ impl RowWiseBitVec {
     /// Returns the jth gate of the ith Pauli string
     fn get_pauli_gate(&self, i: usize, j: usize) -> PauliGate {
         let index = self.pstr_gate_index(i, j);
-        PauliGate::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
+        PauliUtils::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
     }
 
     /// Sets the jth gate of the ith Pauli string
     fn set_pauli_gate(&mut self, p_gate: PauliGate, i: usize, j: usize) {
         let index = self.pstr_gate_index(i, j);
 
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
 
         self.pauli_strings.set(index, b1);
         self.pauli_strings.set(index + 1, b2);
@@ -126,7 +127,7 @@ impl RowWiseBitVec {
         p_str: &BitSlice<BitSafeUsize>,
         j: usize,
     ) -> PauliGate {
-        PauliGate::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
+        PauliUtils::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
     }
 
     /// Set the jth gate of the provided slice representing a Pauli string with the provided PauliGate
@@ -136,7 +137,7 @@ impl RowWiseBitVec {
         p_gate: PauliGate,
         j: usize,
     ) {
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
         p_str.set(2 * j, b1);
         p_str.set(2 * j + 1, b2);
     }
@@ -519,7 +520,7 @@ impl RowWiseBitVec {
     fn is_single_z_pstr(&self, pstr: &BitSlice, i: usize) -> bool {
         for gate_ind in 0..self.n_qubits {
             let pgate =
-                PauliGate::pauli_gate_from_tuple(pstr[2 * gate_ind], pstr[2 * gate_ind + 1]);
+                PauliUtils::pauli_gate_from_tuple(pstr[2 * gate_ind], pstr[2 * gate_ind + 1]);
 
             if (gate_ind == i && pgate != PauliGate::Z) || (gate_ind != i && pgate != PauliGate::I)
             {
@@ -630,14 +631,14 @@ impl RowWiseBitVec {
 
     // Multiplies pstr_1 and pstr_2.
     // The result is stored in pstr_1 and any coefficient is returned
-    fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ComplexCoef {
-        let mut coef = ComplexCoef::new(1.0, false);
+    fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ImaginaryCoef {
+        let mut coef = ImaginaryCoef::new(1.0, false);
 
         for i in 0..self.n_qubits {
             let pgate_1 = PauliUtils::get_pauli_gate_from_bitslice(pstr_1, i);
             let pgate_2 = PauliUtils::get_pauli_gate_from_bitslice(pstr_2, i);
 
-            let (c, pgate) = PauliGate::multiply(pgate_1, pgate_2);
+            let (c, pgate) = PauliUtils::multiply_pauli_gates(pgate_1, pgate_2);
             coef.multiply(&c);
             PauliUtils::set_pauli_gate_in_bitslice(pstr_1, pgate, i);
         }
@@ -661,7 +662,7 @@ impl RowWiseBitVec {
         let mut indexes: Vec<usize> = vec![0; self.size];
         let mut gen_ind: usize = 0;
         let mut m_pstr = bitvec![0; 2*self.n_qubits]; // only identity gates
-        let mut m_coef = ComplexCoef::new(1.0, false);
+        let mut m_coef = ImaginaryCoef::new(1.0, false);
 
         loop {
             if gen_ind == 0 {
@@ -676,9 +677,6 @@ impl RowWiseBitVec {
             if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
                 let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                 let pstr = self.pstr_as_bitslice(pstr_ind);
-                // println!("bs: {:?}", pstr);
-
-                println!("multipyly: {}", PauliUtils::pstr_bitslice_as_str(pstr));
 
                 m_coef.mutliply_with_f64(coef);
 
@@ -692,20 +690,12 @@ impl RowWiseBitVec {
 
             // We have multiplied `m_pstr` with a term (or no term) of each generator, start backtracking
             if gen_ind == self.n_qubits {
-                println!(
-                    "-> m_pstr: {:?}, c {}, i {}",
-                    PauliUtils::pstr_bitslice_as_str(&m_pstr),
-                    m_coef.real,
-                    m_coef.i
-                );
-                if m_coef.i {
-                    panic!("Imaginary part in stabilizer sum");
-                }
 
+
+                // TODO explain why !m_coef.i   
                 // If the result is a Pauli string with a single Z gate at the z_index
                 // update the sum
-                if self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
-                    // TODO !!! What doe we do with the imaginary part?
+                if !m_coef.i && self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
                     sum += m_coef.real;
                 }
 
@@ -860,20 +850,7 @@ impl GeneratorSet for RowWiseBitVec {
 
         let p0 = 0.5 + 0.5 * self.sum_z_stabilizer_coefficients(i);
 
-        (true, p0)
-
-        // // Probability of measuring 0
-        // let mut p0 = 0.5;
-
-        // if ith_generator_index < self.size {
-        //     let mut c_sum = OrderedFloat(0.0);
-        //     for c in self.generator_info[ith_generator_index].coefficients.iter() {
-        //         c_sum += c.1;
-        //     }
-        //     p0 += 0.5 * f64::from(c_sum);
-        // }
-
-        // // Measure true or false with probability p0 or 1-p0 respectively
+          // // Measure true or false with probability p0 or 1-p0 respectively
         // let measurment = [(true, p0), (false, 1.0 - p0)]
         //     .choose_weighted(&mut thread_rng(), |item| item.1)
         //     .unwrap()
@@ -881,7 +858,7 @@ impl GeneratorSet for RowWiseBitVec {
 
         // self.measurement_update(i, measurment, p0);
 
-        // (measurment, p0)
+        (true, p0)
     }
 
     /// Merges all duplicate Pauli strings and removes all Pauli strings

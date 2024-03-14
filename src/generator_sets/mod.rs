@@ -4,7 +4,6 @@ use std::fmt::Display;
 mod coefficient_list;
 mod conjugation_look_up_tables;
 mod h_s_conjugations_map;
-mod pauli_string;
 
 // Implementations of the GeneratorSet trait
 pub mod column_wise_bitvec;

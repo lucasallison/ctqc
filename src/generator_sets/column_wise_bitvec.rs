@@ -7,7 +7,8 @@ use std::fmt;
 use super::coefficient_list::CoefficientList;
 use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::h_s_conjugations_map::HSConjugationsMap;
-use super::pauli_string::PauliGate;
+use crate::pauli_string::PauliGate;
+use crate::pauli_string::utils as PauliUtils;
 use super::GeneratorSet;
 use crate::circuit::{Gate, GateType};
 use crate::FP_ERROR_MARGIN;
@@ -36,13 +37,13 @@ impl ColumnWiseBitVec {
     /// Returns the jth gate of the ith Pauli string
     fn get_pauli_gate(&self, pstr_ind: usize, gate_ind: usize) -> PauliGate {
         let column = &self.columns[gate_ind];
-        PauliGate::pauli_gate_from_tuple(column[2 * pstr_ind], column[2 * pstr_ind + 1])
+        PauliUtils::pauli_gate_from_tuple(column[2 * pstr_ind], column[2 * pstr_ind + 1])
     }
 
     /// Sets the jth gate of the ith Pauli string
     fn set_pauli_gate(&mut self, p_gate: PauliGate, pstr_ind: usize, gate_ind: usize) {
         let column = &mut self.columns[gate_ind];
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
 
         column.set(2 * pstr_ind, b1);
         column.set(2 * pstr_ind + 1, b2)
@@ -146,7 +147,7 @@ impl ColumnWiseBitVec {
         for gate_ind in 0..self.columns.len() {
             for pstr_ind in x_y_pos.iter() {
                 let pgate = self.get_pauli_gate(*pstr_ind, gate_ind);
-                let (b1, mut b2) = PauliGate::pauli_gate_as_tuple(pgate);
+                let (b1, mut b2) = PauliUtils::pauli_gate_as_tuple(pgate);
 
                 // We adjust the coeffients of the old and new Pauli strings based on
                 // the gate that is conjugated with the T gate
@@ -212,7 +213,7 @@ impl ColumnWiseBitVec {
             let mut pstr: BitVec = BitVec::with_capacity(2 * self.num_qubits);
             for gate_ind in 0..self.num_qubits {
                 let current_p_gate = self.get_pauli_gate(pstr_ind, gate_ind);
-                let (b1, b2) = PauliGate::pauli_gate_as_tuple(current_p_gate);
+                let (b1, b2) = PauliUtils::pauli_gate_as_tuple(current_p_gate);
 
                 pstr.push(b1);
                 pstr.push(b2);

@@ -1,7 +1,7 @@
 use super::conjugation_look_up_tables::{
     H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
-use super::pauli_string::PauliGate;
+use crate::pauli_string::PauliGate;
 use crate::circuit::{Gate, GateType};
 
 /// A 'map' that stores the conjugations of the H and S gates.
@@ -18,7 +18,6 @@ pub struct HSConjugationsMap {
 }
 
 impl HSConjugationsMap {
-    /// Create a new HSConjugations map for a given number of qubits.
     pub fn new(num_qubits: usize) -> HSConjugationsMap {
         HSConjugationsMap {
             map: vec![
@@ -52,7 +51,6 @@ impl HSConjugationsMap {
     }
 
     /// Apply the conjugation rules for the provided H or S gate to the map.
-    // TODO: what about S^{\dag}?
     pub fn update(&mut self, gate: &Gate, conjugate_dagger: bool) {
         for e in self.map[gate.qubit_1].iter_mut() {
             let target_pauli_gate = e.0;

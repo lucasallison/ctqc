@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use super::pauli_string::PauliGate;
+use crate::pauli_string::PauliGate;
 
 pub struct HSPauliLookUpOutput {
     pub p_gate: PauliGate,

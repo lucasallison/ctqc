@@ -2,19 +2,22 @@ use clap::Parser;
 use snafu::prelude::*;
 use std::error::Error;
 
+mod pauli_string;
+mod utils;
+
 mod circuit;
 use circuit::Circuit;
 
 mod simulator;
 use simulator::Simulator;
 
-mod generator_set;
-use generator_set::column_wise_bitvec::ColumnWiseBitVec;
-use generator_set::generator_map::GeneratorMap;
-use generator_set::pauli_pools::PauliPools;
-use generator_set::pauli_trees::PauliTrees;
-use generator_set::row_wise_bitvec::RowWiseBitVec;
-use generator_set::GeneratorSet;
+mod generator_sets;
+use generator_sets::column_wise_bitvec::ColumnWiseBitVec;
+use generator_sets::generator_map::GeneratorMap;
+use generator_sets::pauli_pools::PauliPools;
+use generator_sets::pauli_trees::PauliTrees;
+use generator_sets::row_wise_bitvec::RowWiseBitVec;
+use generator_sets::GeneratorSet;
 
 // TODO
 // Floating point error margin
@@ -110,10 +113,7 @@ fn main() {
 
     // No second file provided, run the simulation
     if args.equiv_circuit_file == "None" {
-        if let Err(e) = simulator.simulate(&circuit) {
-            eprintln!("{}", MainError::SimulationFailed { err: e });
-            std::process::exit(1);
-        }
+        simulator.simulate(&circuit) 
 
     // Second file provided, run an equivalence check
     } else {

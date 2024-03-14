@@ -6,7 +6,7 @@ use std::error::Error;
 
 use crate::circuit::Circuit;
 use crate::circuit::GateType;
-use crate::generator_set::GeneratorSet;
+use crate::generator_sets::GeneratorSet;
 
 lazy_static! {
     static ref DAG_CHAR: char = std::char::from_u32(8224).unwrap();
@@ -34,7 +34,7 @@ impl<'a> Simulator<'a> {
 
     /// Simulates the provided ciricuit by setting the generators to the generators of the all zero state
     /// and calling the 'sim' function.
-    pub fn simulate(&mut self, circuit: &Circuit) -> Result<(), Box<dyn Error>> {
+    pub fn simulate(&mut self, circuit: &Circuit) {
         self.generator_set.init_generators(true);
 
         let progress_bar = ProgressBar::new(circuit.len() as u64);
@@ -46,8 +46,6 @@ impl<'a> Simulator<'a> {
         self.sim(circuit, false, &progress_bar);
 
         progress_bar.finish();
-
-        Ok(())
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
