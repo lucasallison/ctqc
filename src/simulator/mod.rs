@@ -60,10 +60,10 @@ impl<'a> Simulator<'a> {
         circuit_2: &Circuit,
         all_generators_at_once: bool,
     ) -> Result<(), Box<dyn Error>> {
-        if circuit_1.num_qubits() != circuit_2.num_qubits() {
+        if circuit_1.n_qubits() != circuit_2.n_qubits() {
             return Err(SimulationError::DifferentSizedCiruicuits {
-                n_qubits_c1: circuit_1.num_qubits(),
-                n_qubits_c2: circuit_2.num_qubits(),
+                n_qubits_c1: circuit_1.n_qubits(),
+                n_qubits_c2: circuit_2.n_qubits(),
             }
             .into());
         }
@@ -156,7 +156,7 @@ impl<'a> Simulator<'a> {
             'X'
         };
 
-        let progress_bar = ProgressBar::new((2 * circuit_1.len() * circuit_1.num_qubits()) as u64);
+        let progress_bar = ProgressBar::new((2 * circuit_1.len() * circuit_1.n_qubits()) as u64);
 
         let mut progress_style_str = format!(
             "Simulating V^{}(U{}U^{})V -- ",
@@ -169,7 +169,7 @@ impl<'a> Simulator<'a> {
 
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
-        for i in 0..circuit_1.num_qubits() {
+        for i in 0..circuit_1.n_qubits() {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
 

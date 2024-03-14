@@ -3,13 +3,12 @@ use snafu::prelude::*;
 use std::error::Error;
 
 mod circuit;
-mod generator_set;
-mod input_parser;
-mod simulator;
+use circuit::Circuit;
 
-use input_parser::parse_file;
+mod simulator;
 use simulator::Simulator;
 
+mod generator_set;
 use generator_set::column_wise_bitvec::ColumnWiseBitVec;
 use generator_set::generator_map::GeneratorMap;
 use generator_set::pauli_pools::PauliPools;
@@ -67,8 +66,8 @@ struct Args {
     equiv_all_generators: bool,
 }
 
-fn circuit_from_file(file: String) -> circuit::Circuit {
-    match parse_file(&file) {
+fn circuit_from_file(file: String) -> Circuit {
+    match Circuit::from_file(&file) {
         Ok(circuit) => return circuit,
         Err(e) => {
             eprintln!("{}", MainError::InvalidFileFormat { file: file, err: e });
@@ -86,12 +85,12 @@ fn main() {
     let circuit = circuit_from_file(args.circuit_file);
 
     let mut generator_set: Box<dyn GeneratorSet> = match args.data_structure.as_str() {
-        "map" => Box::new(GeneratorMap::new(circuit.num_qubits(), args.threads)),
-        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.num_qubits(), args.threads)),
-        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.num_qubits(), args.threads)),
-        "ppools" => Box::new(PauliPools::new(circuit.num_qubits(), args.threads)),
+        "map" => Box::new(GeneratorMap::new(circuit.n_qubits(), args.threads)),
+        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits(), args.threads)),
+        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.n_qubits(), args.threads)),
+        "ppools" => Box::new(PauliPools::new(circuit.n_qubits(), args.threads)),
         "ptrees" => Box::new(PauliTrees::new(
-            circuit.num_qubits(),
+            circuit.n_qubits(),
             args.threads,
             None,
             None,
@@ -126,6 +125,7 @@ fn main() {
             std::process::exit(1);
         }
     }
+    std::process::exit(0);
 }
 
 #[derive(Debug, Snafu)]

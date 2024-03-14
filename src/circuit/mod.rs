@@ -1,29 +1,10 @@
+use lazy_static::lazy_static;
+use meval;
+use regex::Regex;
 use snafu::prelude::*;
 use std::{cmp, fmt};
+use std::{error::Error, fs};
 
-#[derive(Debug, Snafu)]
-pub enum CircuitError {
-    #[snafu(display("{} has not been implemented.", gate_type))]
-    GateNotImplemented { gate_type: String },
-
-    #[snafu(display("A second qubit must be provided for the CNOT gate."))]
-    MissingSecondQubit {},
-
-    #[snafu(display("Two qubits specified for single qubit gate {}", gate_type))]
-    TwoQubitsSingleQubitGate { gate_type: String },
-
-    #[snafu(display("A valid angle must be specified to construct an Rz gate."))]
-    RzMissingAngle {},
-
-    #[snafu(display("An angle should only be provided for an Rz gate."))]
-    AngleProvidedForNonRzGate {},
-}
-
-/// Enum representing the different types of gates in the circuit
-/// H - Hadamard gate
-/// CNOT - Controlled NOT gate
-/// S - Phase gate
-/// T - T gate
 #[derive(PartialEq, Clone, Debug)]
 pub enum GateType {
     H,
@@ -45,9 +26,6 @@ impl fmt::Display for GateType {
     }
 }
 
-/// Struct representing a gate in the circuit
-/// All gates apply to a single qubit, except for the CNOT gate
-/// which applies to two qubits.
 #[derive(Clone)]
 pub struct Gate {
     pub gate_type: GateType,
@@ -68,18 +46,16 @@ impl Gate {
             "CNOT" => {
                 if qubit_2.is_none() {
                     return Err(CircuitError::MissingSecondQubit {});
-                } else {
-                    GateType::CNOT
                 }
+                GateType::CNOT
             }
             "S" => GateType::S,
             "M" => GateType::M,
             "Rz" => {
                 if angle.is_none() {
                     return Err(CircuitError::RzMissingAngle {});
-                } else {
-                    GateType::Rz
                 }
+                GateType::Rz
             }
             gate_type => {
                 return Err(CircuitError::GateNotImplemented {
@@ -129,25 +105,89 @@ impl fmt::Display for Gate {
     }
 }
 
-/// Struct representing the circuit, i.e., a sequence of gates.
+// Useful regexes when parsing the circuit file
+lazy_static! {
+    static ref H_S_M_RE: Regex = Regex::new(r"^(H|S|M) (\d+)$").unwrap();
+    static ref CNOT_RE: Regex = Regex::new(r"^CNOT (\d+) (\d+)$").unwrap();
+    static ref T_RE: Regex = Regex::new(r"^T (\d+)$").unwrap();
+    static ref RZ_RE: Regex = Regex::new(r"^Rz\(.*\) (\d+)$").unwrap();
+    static ref RZ_ANGLE_RE: Regex = Regex::new(r"\((.*)\)").unwrap();
+    static ref RZ_DIGIT_RE: Regex = Regex::new(r"\d+$").unwrap();
+}
+
+/// Struct representing a quantum circuit, i.e., a sequence of gates.
 pub struct Circuit {
     name: String,
-    pub gates: Vec<Gate>,
-    num_qubits: usize,
+    gates: Vec<Gate>,
+    n_qubits: usize,
 }
 
 impl Circuit {
-    pub fn new(name: String) -> Circuit {
-        Circuit {
-            name: name,
+    pub fn from_file(file: &String) -> Result<Circuit, Box<dyn Error>> {
+        let mut circuit = Circuit {
+            name: file.clone(),
             gates: Vec::new(),
-            num_qubits: 0,
+            n_qubits: 0,
+        };
+
+        let contents = match fs::read_to_string(file) {
+            Ok(contents) => contents,
+            Err(e) => {
+                return Err(Box::new(e));
+            }
+        };
+
+        let mut gate_type: String;
+        let mut qubit_1: usize;
+        let mut qubit_2: Option<usize>;
+        let mut angle: Option<f64>;
+
+        for line in contents.lines() {
+            qubit_2 = None;
+            angle = None;
+
+            if H_S_M_RE.is_match(line) {
+                let gate_qubit = line.split(" ").collect::<Vec<&str>>();
+                gate_type = gate_qubit[0].to_string();
+                qubit_1 = gate_qubit[1].parse::<usize>()?;
+            } else if CNOT_RE.is_match(line) {
+                let gate_qubits = line.split(" ").collect::<Vec<&str>>();
+                gate_type = gate_qubits[0].to_string();
+                qubit_1 = gate_qubits[1].parse::<usize>()?;
+                qubit_2 = Some(gate_qubits[2].parse::<usize>()?);
+            } else if T_RE.is_match(line) {
+                // Internally we use Rz(pi/4) to represent T
+                gate_type = "Rz".to_string();
+                qubit_1 = line.split(" ").collect::<Vec<&str>>()[1].parse::<usize>()?;
+                angle = Some(std::f64::consts::FRAC_PI_4);
+            } else if RZ_RE.is_match(line) {
+                gate_type = line[0..2].to_string();
+
+                let expr = RZ_ANGLE_RE.captures(line).unwrap().get(1).unwrap().as_str();
+                angle = Some(meval::eval_str(expr)?);
+
+                qubit_1 = RZ_DIGIT_RE
+                    .captures(line)
+                    .unwrap()
+                    .get(0)
+                    .unwrap()
+                    .as_str()
+                    .parse::<usize>()?;
+            } else {
+                return Err(Box::new(ParseError::InvalidLine {
+                    line: line.to_string(),
+                }));
+            }
+
+            circuit.add_gate(&gate_type, qubit_1, qubit_2, angle)?;
         }
+
+        Ok(circuit)
     }
 
     /// If a valid gate is provided, it is appended to the circuit.
     /// If a gate targets a qubit that is not yet in the circuit, the number of qubits is increased to this qubit.
-    pub fn add_gate(
+    fn add_gate(
         &mut self,
         gate_type: &String,
         qubit_1: usize,
@@ -156,10 +196,10 @@ impl Circuit {
     ) -> Result<(), CircuitError> {
         let new_gate = Gate::new(gate_type, qubit_1, qubit_2, angle)?;
 
-        self.num_qubits = cmp::max(self.num_qubits, qubit_1 + 1);
+        self.n_qubits = cmp::max(self.n_qubits, qubit_1 + 1);
 
         if let Some(qubit_2) = qubit_2 {
-            self.num_qubits = cmp::max(self.num_qubits, qubit_2 + 1);
+            self.n_qubits = cmp::max(self.n_qubits, qubit_2 + 1);
         }
 
         self.gates.push(new_gate);
@@ -170,12 +210,12 @@ impl Circuit {
         self.gates.len()
     }
 
-    pub fn num_qubits(&self) -> usize {
-        self.num_qubits
+    pub fn n_qubits(&self) -> usize {
+        self.n_qubits
     }
 
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn name(&self) -> String {
+        self.name.clone()
     }
 
     pub fn iter(&self) -> CircuitIterator {
@@ -195,22 +235,6 @@ impl Circuit {
     }
 }
 
-impl fmt::Display for Circuit {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Circuit '{}' with {} qubits:\n",
-            self.name, self.num_qubits
-        )?;
-
-        for gate in &self.gates {
-            write!(f, " {}\n", gate)?;
-        }
-
-        Ok(())
-    }
-}
-
 pub struct CircuitIterator<'a> {
     circuit: &'a Circuit,
     gate_index: usize,
@@ -227,18 +251,42 @@ impl<'a> Iterator for CircuitIterator<'a> {
 
         let gate = &self.circuit.gates[self.gate_index];
 
-        if !self.reverse {}
-
-        if self.reverse {
-            if self.gate_index == 0 {
-                // Will cause the iterator to stop
-                self.gate_index = self.circuit.gates.len();
-            } else {
-                self.gate_index -= 1;
-            }
+        if self.reverse && self.gate_index == 0 {
+            // Will cause the iterator to stop and prevent
+            // gate_index from overflowing
+            self.gate_index = self.circuit.gates.len();
+        } else if self.reverse {
+            self.gate_index -= 1;
         } else {
             self.gate_index += 1;
         }
         Some(gate)
     }
+}
+
+#[derive(Debug, Snafu)]
+pub enum ParseError {
+    #[snafu(display(
+        "Invalid line in file: {}. Expected: '<gate> <qubit_1> Option(<qubit_2>)'",
+        line
+    ))]
+    InvalidLine { line: String },
+}
+
+#[derive(Debug, Snafu)]
+pub enum CircuitError {
+    #[snafu(display("{} has not been implemented.", gate_type))]
+    GateNotImplemented { gate_type: String },
+
+    #[snafu(display("A second qubit must be provided for the CNOT gate."))]
+    MissingSecondQubit {},
+
+    #[snafu(display("Two qubits specified for single qubit gate {}", gate_type))]
+    TwoQubitsSingleQubitGate { gate_type: String },
+
+    #[snafu(display("A valid angle must be specified to construct an Rz gate."))]
+    RzMissingAngle {},
+
+    #[snafu(display("An angle should only be provided for an Rz gate."))]
+    AngleProvidedForNonRzGate {},
 }
