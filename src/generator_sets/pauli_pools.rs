@@ -1,15 +1,18 @@
+use std::collections::{hash_map::Entry, HashMap};
+use std::fmt;
+
 use bitvec::prelude::*;
 use core::panic;
 use fxhash::FxBuildHasher;
 use rayon::prelude::*;
-use std::collections::{hash_map::Entry, HashMap};
-use std::fmt;
 
-use super::coefficient_list::CoefficientList;
-use super::pauli_string::PauliGate;
 use super::row_wise_bitvec::RowWiseBitVec;
+use super::shared::coefficient_list::CoefficientList;
 use super::GeneratorSet;
+
 use crate::circuit::Gate;
+use crate::pauli_string::utils as PauliUtils;
+use crate::pauli_string::PauliGate;
 
 pub struct PauliPools {
     // Each thread will manage 1 Pauli pool. Each pool is
@@ -62,7 +65,7 @@ impl PauliPools {
     }
 
     fn set_pauli_gate_in_bitvec(p_str: &mut BitVec, p_gate: PauliGate, j: usize) {
-        let (b1, b2) = PauliGate::pauli_gate_as_tuple(p_gate);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
         p_str.set(2 * j, b1);
         p_str.set(2 * j + 1, b2);
     }

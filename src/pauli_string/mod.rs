@@ -29,7 +29,7 @@ pub struct PauliString {
 }
 
 impl PauliString {
-
+    /// Returns a Pauli string of size `size` with all gates set to `I`
     pub fn new(size: usize) -> PauliString {
         PauliString {
             // Each gate is represented by 2 bits
@@ -37,25 +37,14 @@ impl PauliString {
         }
     }
 
-    pub fn set_pauli_gate(
-        &mut self,
-        index: usize,
-        gate: PauliGate,
-    ) {
+    pub fn set_pauli_gate(&mut self, index: usize, gate: PauliGate) {
         let (b1, b2) = PauliUtils::pauli_gate_as_tuple(gate);
-        self.pstr.set(2*index, b1);
-        self.pstr.set(2*index+1, b2);
+        self.pstr.set(2 * index, b1);
+        self.pstr.set(2 * index + 1, b2);
     }
 
     pub fn get_pauli_gate(&self, index: usize) -> PauliGate {
-        PauliUtils::pauli_gate_from_tuple(
-            self.pstr[index],
-            self.pstr[index+1],
-        )
-    }
-
-    fn get_internal_index(&self, index: usize) -> usize {
-        2 * index
+        PauliUtils::pauli_gate_from_tuple(self.pstr[index], self.pstr[index + 1])
     }
 
     pub fn len(&self) -> usize {
@@ -63,7 +52,10 @@ impl PauliString {
     }
 
     pub fn iter(&self) -> PauliStringIterator {
-        PauliStringIterator { pstr: self, index: 0 }
+        PauliStringIterator {
+            pstr: self,
+            index: 0,
+        }
     }
 }
 

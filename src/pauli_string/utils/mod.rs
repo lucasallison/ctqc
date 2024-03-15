@@ -1,33 +1,35 @@
-use bitvec::prelude::*;
-use snafu::prelude::*;
 use super::PauliGate;
 use crate::utils::imaginary_coefficient::ImaginaryCoef;
+use bitvec::prelude::*;
+use snafu::prelude::*;
 
-// --------------- Bitvec utils  --------------- // 
+// --------------- Bitvec utils  --------------- //
 pub fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
-        pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
+    pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
 }
 
 pub fn set_pauli_gate_in_bitslice(p_str: &mut BitSlice, p_gate: PauliGate, j: usize) {
-        let (b1, b2) = pauli_gate_as_tuple(p_gate);
-        p_str.set(2 * j, b1);
-        p_str.set(2 * j + 1, b2);
+    let (b1, b2) = pauli_gate_as_tuple(p_gate);
+    p_str.set(2 * j, b1);
+    p_str.set(2 * j + 1, b2);
 }
 
+// TODO remove?
 pub fn pstr_bitslice_as_str(bitslice: &BitSlice) -> String {
-        assert!(bitslice.len() % 2 == 0, "Bitslice length must be even");
+    // TODO error?
+    assert!(bitslice.len() % 2 == 0, "Bitslice length must be even");
 
-        let n_gates = bitslice.len() / 2;
+    let n_gates = bitslice.len() / 2;
 
     let mut result = String::new();
-        for gate_ind in 0..n_gates {
-                let p_gate = get_pauli_gate_from_bitslice(bitslice, gate_ind);
-                result.push_str(format!("{}", p_gate).as_str());
+    for gate_ind in 0..n_gates {
+        let p_gate = get_pauli_gate_from_bitslice(bitslice, gate_ind);
+        result.push_str(format!("{}", p_gate).as_str());
     }
     result
 }
 
-// --------------- PauliGate utils  --------------- // 
+// --------------- PauliGate utils  --------------- //
 
 pub fn pauli_gate_as_tuple(gate: PauliGate) -> (bool, bool) {
     match gate {
@@ -47,13 +49,13 @@ pub fn pauli_gate_from_tuple(b1: bool, b2: bool) -> PauliGate {
     }
 }
 
-pub fn char_to_pauli_gate(c: &char) -> Result<PauliGate, PauliUtilError>  {
+pub fn char_to_pauli_gate(c: &char) -> Result<PauliGate, PauliUtilError> {
     match *c {
         'I' => Ok(PauliGate::I),
         'X' => Ok(PauliGate::X),
         'Y' => Ok(PauliGate::Y),
         'Z' => Ok(PauliGate::Z),
-        _ => Err(PauliUtilError::CharNotPauliGate),
+        _ => Err(PauliUtilError::CharNotPauliGate {}),
     }
 }
 
@@ -79,9 +81,12 @@ pub fn multiply_pauli_gates(g1: PauliGate, g2: PauliGate) -> (ImaginaryCoef, Pau
     }
 }
 
-
 #[derive(Debug, Snafu)]
 pub enum PauliUtilError {
     #[snafu(display("Character is not a valid Pauli gate"))]
-    CharNotPauliGate { },
+    CharNotPauliGate {},
+
+    // TODO
+    // #[snafu(display("Bitslice must be of equal length"))]
+    // UnevenBitslice {},
 }

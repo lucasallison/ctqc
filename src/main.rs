@@ -19,10 +19,6 @@ use generator_sets::pauli_trees::PauliTrees;
 use generator_sets::row_wise_bitvec::RowWiseBitVec;
 use generator_sets::GeneratorSet;
 
-// TODO
-// Floating point error margin
-static FP_ERROR_MARGIN: f64 = 0.0000000001;
-
 /// Quantum circuit simulator based on the sabilizer formalism.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -113,7 +109,7 @@ fn main() {
 
     // No second file provided, run the simulation
     if args.equiv_circuit_file == "None" {
-        simulator.simulate(&circuit) 
+        simulator.simulate(&circuit)
 
     // Second file provided, run an equivalence check
     } else {

@@ -26,7 +26,7 @@ impl fmt::Display for GateType {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Gate {
     pub gate_type: GateType,
     pub qubit_1: usize,
@@ -235,6 +235,8 @@ impl Circuit {
     }
 }
 
+// We could make the gates vector public and use its iterator directly,
+// but this way we can prevent any other code from modifying the gates.
 pub struct CircuitIterator<'a> {
     circuit: &'a Circuit,
     gate_index: usize,

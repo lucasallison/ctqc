@@ -1,5 +1,5 @@
-use lazy_static::lazy_static;
 use std::collections::HashMap;
+use lazy_static::lazy_static;
 
 use crate::pauli_string::PauliGate;
 
@@ -70,7 +70,6 @@ lazy_static! {
 
 }
 
-// No coefficient change
 pub struct CNOTPauliLookUpOutput {
     pub q1_p_gate: PauliGate,
     pub q2_p_gate: PauliGate,

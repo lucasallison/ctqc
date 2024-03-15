@@ -1,11 +1,10 @@
 use ordered_float::OrderedFloat;
 
-use crate::FP_ERROR_MARGIN;
+use super::FP_ERROR_MARGIN;
 
 /// A set that can be associated to a Pauli string. The list
-/// keeps track of generators that the Pauli belongs to (i.e., it
-/// is the generator or if the generator is a sum of Pauli strings
-/// it is one of the Pauli strings that make up the generator) and
+/// keeps track of the generators that the Pauli string belongs to (i.e., 
+/// the Pauli string is part of the sum of Pauli strings that make up the generator)
 /// its coefficient.
 #[derive(Clone, Hash, PartialEq, Eq)]
 pub struct CoefficientList {
@@ -13,7 +12,8 @@ pub struct CoefficientList {
 }
 
 impl CoefficientList {
-    /// Create a new Coeffients list with a single generator.
+    /// Create a new Coeffients list with a single coefficient
+    /// set to 1.0 associated to the provided generator index.
     pub fn new(generator_index: usize) -> CoefficientList {
         CoefficientList {
             coefficients: vec![(generator_index, OrderedFloat::from(1.0))],
@@ -28,6 +28,7 @@ impl CoefficientList {
     }
 
     /// Merge the provided coeffiencts list with the current one.
+    /// Ensures that the coefficients are sorted by (generator) index.
     pub fn merge(&mut self, other: &CoefficientList) {
         let mut merged_coefficients =
             Vec::with_capacity(self.coefficients.len() + other.coefficients.len());

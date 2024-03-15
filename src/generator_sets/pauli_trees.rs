@@ -1,16 +1,17 @@
+use std::collections::{hash_map::Entry, HashMap};
+
 use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
-use std::collections::{hash_map::Entry, HashMap};
 
-use super::coefficient_list::CoefficientList;
-use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::h_s_conjugations_map::HSConjugationsMap;
+use super::shared::coefficient_list::CoefficientList;
+use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
+use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::GeneratorSet;
-use crate::pauli_string::PauliGate;
-use crate::pauli_string::utils as PauliUtils;
+
 use crate::circuit::{Gate, GateType};
-// use crate::FP_ERROR_MARGIN;
+use crate::pauli_string::utils as PauliUtils;
+use crate::pauli_string::PauliGate;
 
 /// Each generator is stored as a tree. Each tree is identifiable
 /// by a unqiue root node. The internal nodes of various tree can be shared.
@@ -910,7 +911,7 @@ impl GeneratorSet for PauliTrees {
 
         match gate.gate_type {
             GateType::H | GateType::S => {
-                self.h_s_conjugations_map.update(gate, conjugate_dagger);
+                self.h_s_conjugations_map.update(gate, conjugate_dagger).unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),

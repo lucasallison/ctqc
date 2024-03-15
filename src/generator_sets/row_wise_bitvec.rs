@@ -1,22 +1,24 @@
+use std::collections::{hash_map::Entry, HashMap};
+use std::fmt;
+
 use bitvec::access::BitSafeUsize;
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rand::prelude::*;
 use rayon::prelude::*;
-use std::collections::{hash_map::Entry, HashMap};
-use std::fmt;
 use std::sync::Mutex;
 
-use super::coefficient_list::CoefficientList;
-use super::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::h_s_conjugations_map::HSConjugationsMap;
-use crate::pauli_string::PauliGate;
-use crate::pauli_string::utils as PauliUtils;
-use crate::utils::imaginary_coefficient::ImaginaryCoef;
+use super::shared::coefficient_list::CoefficientList;
+use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
+use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::shared::FP_ERROR_MARGIN;
 use super::GeneratorSet;
+
 use crate::circuit::{Gate, GateType};
-use crate::FP_ERROR_MARGIN;
+use crate::pauli_string::utils as PauliUtils;
+use crate::pauli_string::PauliGate;
+use crate::utils::imaginary_coefficient::ImaginaryCoef;
 
 /// Implementation of a generator set that stores the
 /// Pauli strings in a single large bitvec.
@@ -690,9 +692,7 @@ impl RowWiseBitVec {
 
             // We have multiplied `m_pstr` with a term (or no term) of each generator, start backtracking
             if gen_ind == self.n_qubits {
-
-
-                // TODO explain why !m_coef.i   
+                // TODO explain why !m_coef.i
                 // If the result is a Pauli string with a single Z gate at the z_index
                 // update the sum
                 if !m_coef.i && self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
@@ -838,6 +838,7 @@ impl GeneratorSet for RowWiseBitVec {
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
             _ => {
+                // TODO return error?
                 panic!("Can only conjugate a H, S, CNOT, or Rz gate")
             }
         }
@@ -850,7 +851,7 @@ impl GeneratorSet for RowWiseBitVec {
 
         let p0 = 0.5 + 0.5 * self.sum_z_stabilizer_coefficients(i);
 
-          // // Measure true or false with probability p0 or 1-p0 respectively
+        // // Measure true or false with probability p0 or 1-p0 respectively
         // let measurment = [(true, p0), (false, 1.0 - p0)]
         //     .choose_weighted(&mut thread_rng(), |item| item.1)
         //     .unwrap()
