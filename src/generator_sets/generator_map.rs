@@ -2,7 +2,6 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::error::Error;
 use std::fmt;
 
-use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 use rayon::iter::Map;
@@ -316,27 +315,41 @@ impl GeneratorSet for GeneratorMap {
     }
 
     fn size(&self) -> usize {
-        // self.generator_components.len()
-        0
+        self.pauli_strings_src.len()
     }
 }
 
 impl fmt::Display for GeneratorMap {
-    // fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    //     for (pstr, coef_list) in &self.pauli_strings_src {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
-    //         let mut coef_multiplier = 1.0;
+        for (pstr, coef_list) in &self.pauli_strings_src {
 
-    //         write!(f, "{}: (", pstr)?;
+            let mut actual_pstr = pstr.clone();
+            let mut coef_multiplier = 1.0;
 
-    //         for c in coef_list.coefficients.iter() {
-    //             write!(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
-    //         }
-    //         write!(")\n")?;
-    //     }
+            for qubit_index in 0..self.n_qubits {
 
-    //     Ok(())
-    // }
+                let current_p_gate = pstr.get_pauli_gate(qubit_index);
+                let actual_p_gate = self
+                    .h_s_conjugations_map
+                    .get_actual_p_gate(qubit_index, current_p_gate);
+                actual_pstr.set_pauli_gate(qubit_index, actual_p_gate);
+                
+                coef_multiplier *= self
+                    .h_s_conjugations_map
+                    .get_coefficient_multiplier(qubit_index, current_p_gate);
+            }
+
+            write!(f, "{}: (", actual_pstr)?;
+
+            for c in coef_list.coefficients.iter() {
+                write!(f, "{}: {}, ", c.0, c.1 * coef_multiplier)?;
+            }
+            write!(f, ")\n")?;
+        }
+
+        Ok(())
+    }
 }
 
 // ------------------ Components and Generator Info --------------------------------------
@@ -493,189 +506,6 @@ impl fmt::Display for GeneratorMap {
 
 //         Ok(true)
 //     }
-
-//     fn conjugate_cnot(&mut self, gate: &Gate) -> Result<bool, Box<dyn Error>> {
-//         let qubit_2 = gate.qubit_2.unwrap();
-
-//         let q1_target_pauli_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize);
-//         let q2_target_pauli_gate = self.pstr.get_pauli_gate(qubit_2 as usize);
-
-//         // The pauli string does not change from conjugation
-//         if !CNOT_CONJ_UPD_RULES.contains_key(&(q1_target_pauli_gate, q2_target_pauli_gate)) {
-//             return Ok(false);
-//         }
-
-//         let look_up_output = CNOT_CONJ_UPD_RULES
-//             .get(&(q1_target_pauli_gate, q2_target_pauli_gate))
-//             .unwrap();
-
-//         self.multiply_generator_coefficients(look_up_output.coefficient as f64);
-
-//         // The pauli string does not change from conjugation
-//         // TODO maybe just remove them from the map?
-//         if !look_up_output.pstr_changed {
-//             return Ok(false);
-//         }
-
-//         // We update the pauli string with the gate resulting from the conjugation
-//         self.pstr
-//             .set_pauli_gate(gate.qubit_1 as usize, look_up_output.q1_p_gate);
-//         self.pstr
-//             .set_pauli_gate(qubit_2 as usize, look_up_output.q2_p_gate);
-
-//         Ok(true)
-//     }
-
-//     // When X, Y are conjugated by an Rz gate we obtain two compontents. The first component represents
-//     // the Pauli string with updated coeffients. We do not need to create a new component for this
-//     // but just update self. The second component does represent a different Pauli string, for which
-//     // we create a new component. Since the component does not change when we conjugate an
-//     // I, Z we return None in that case and leave self unchanged.
-//     pub fn conjugate_rz(
-//         &mut self,
-//         gate: &Gate,
-//         conjugate_dagger: bool,
-//     ) -> Result<Option<Component>, Box<dyn Error>> {
-//         let target_gate = self.pstr.get_pauli_gate(gate.qubit_1 as usize);
-
-//         if target_gate == PauliGate::Z || target_gate == PauliGate::I {
-//             return Ok(None);
-//         }
-
-//         let mut new_component: Component;
-
-//         match target_gate {
-//             PauliGate::X => {
-//                 // Rz(θ)^†XRz(θ) = cos(θ)X  - sin(θ)Y
-//                 // Rz(θ)XRz(θ)^† = cos(θ)X  + sin(θ)Y
-//                 new_component = self.clone();
-//                 self.multiply_generator_coefficients(gate.angle.unwrap().cos());
-//                 new_component.multiply_generator_coefficients(gate.angle.unwrap().sin());
-
-//                 if conjugate_dagger {
-//                     new_component.multiply_generator_coefficients(-1.0);
-//                 }
-
-//                 new_component
-//                     .pstr
-//                     .set_pauli_gate(gate.qubit_1 as usize, PauliGate::Y);
-
-//                 return Ok(Some(new_component));
-//             }
-
-//             PauliGate::Y => {
-//                 // Rz(θ)YRz(θ)^† = -sin(θ)X + cos(θ)Y
-//                 // Rz(θ)^†YRz(θ) = sin(θ)X  + cos(θ)Y
-//                 new_component = self.clone();
-//                 self.multiply_generator_coefficients(gate.angle.unwrap().sin());
-//                 new_component.multiply_generator_coefficients(gate.angle.unwrap().cos());
-
-//                 if !conjugate_dagger {
-//                     new_component.multiply_generator_coefficients(-1.0);
-//                 }
-
-//                 new_component
-//                     .pstr
-//                     .set_pauli_gate(gate.qubit_1 as usize, PauliGate::X);
-
-//                 return Ok(Some(new_component));
-//             }
-
-//             _ => {
-//                 return Ok(None);
-//             }
-//         }
-//     }
-
-//     // Removes all generators with coefficient 0 and returns if the compont is still valid,
-//     // that is, it is part of at least one generator.
-//     pub fn remove_zero_coefficient_generators(&mut self) -> bool {
-//         self.generator_info.retain(|generator_info| {
-//             generator_info.coefficient > OrderedFloat(0.0 + FP_ERROR_MARGIN)
-//                 || generator_info.coefficient + FP_ERROR_MARGIN
-//                     < OrderedFloat(0.0 - FP_ERROR_MARGIN)
-//         });
-//         return self.valid();
-//     }
-
-//     pub fn valid(&self) -> bool {
-//         self.generator_info.len() > 0
-//     }
-
-//     // Merges two components, returns 'true' this Pauli string is a component
-//     // of any generator, i.e., there exists a non zero coefficient of this Pauli
-//     // string for a generator.
-//     // TODO refactor?
-//     pub fn merge(&mut self, other: &Component) -> Result<bool, ComponentError> {
-//         if self.pstr != other.pstr {
-//             return Err(ComponentError::MergeUnequalPStr {
-//                 pstr_1: self.pstr.clone(),
-//                 pstr_2: other.pstr.clone(),
-//             });
-//         }
-
-//         if self.generator_info.len() == 0 || other.generator_info.len() == 0 {
-//             return Err(ComponentError::MergeComponentWithoutGen {});
-//         }
-
-//         let mut merged_generator_info = Vec::<GeneratorInfo>::new();
-//         let mut ind_self: usize = 0;
-//         let mut ind_other: usize = 0;
-
-//         while ind_self < self.generator_info.len() && ind_other < other.generator_info.len() {
-//             let self_generator_info = self.generator_info[ind_self];
-//             let other_generator_info = other.generator_info[ind_other];
-
-//             if self_generator_info.generator_index == other_generator_info.generator_index {
-//                 let new_coefficient =
-//                     self_generator_info.coefficient + other_generator_info.coefficient;
-//                 if new_coefficient == OrderedFloat(0.0) {
-//                     ind_self += 1;
-//                     ind_other += 1;
-//                     continue;
-//                 }
-//                 let mut new_generator_info = self_generator_info;
-//                 new_generator_info.coefficient += other_generator_info.coefficient;
-//                 merged_generator_info.push(new_generator_info);
-//                 ind_self += 1;
-//                 ind_other += 1;
-//             } else if self_generator_info.generator_index < other_generator_info.generator_index {
-//                 merged_generator_info.push(self_generator_info);
-//                 ind_self += 1;
-//             } else {
-//                 merged_generator_info.push(other_generator_info);
-//                 ind_other += 1;
-//             }
-//         }
-
-//         while ind_self < self.generator_info.len() {
-//             merged_generator_info.push(self.generator_info[ind_self]);
-//             ind_self += 1;
-//         }
-
-//         while ind_other < other.generator_info.len() {
-//             merged_generator_info.push(other.generator_info[ind_other]);
-//             ind_other += 1;
-//         }
-
-//         self.generator_info = merged_generator_info;
-//         Ok(self.generator_info.len() > 0)
-//     }
-// }
-
-// impl fmt::Display for Component {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "{}: ", self.pstr)?;
-//         for generator_info in &self.generator_info {
-//             write!(
-//                 f,
-//                 "({}: {}), ",
-//                 generator_info.generator_index, generator_info.coefficient
-//             )?;
-//         }
-//         Ok(())
-//     }
-// }
 
 // // ------------------ Errors --------------------------------------
 

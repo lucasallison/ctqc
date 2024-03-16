@@ -4,7 +4,7 @@ use std::fmt;
 pub mod utils;
 use utils as PauliUtils;
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum PauliGate {
     I,
     X,
@@ -44,7 +44,7 @@ impl PauliString {
     }
 
     pub fn get_pauli_gate(&self, index: usize) -> PauliGate {
-        PauliUtils::pauli_gate_from_tuple(self.pstr[index], self.pstr[index + 1])
+        PauliUtils::pauli_gate_from_tuple(self.pstr[2*index], self.pstr[2*index + 1])
     }
 
     pub fn len(&self) -> usize {
@@ -87,8 +87,8 @@ impl<'a> Iterator for PauliStringIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.index < self.pstr.len() {
-            self.index += 2;
-            Some(self.pstr.get_pauli_gate(self.index))
+            self.index += 1;
+            Some(self.pstr.get_pauli_gate(self.index-1))
         } else {
             None
         }

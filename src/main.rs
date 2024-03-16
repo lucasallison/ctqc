@@ -77,7 +77,7 @@ fn circuit_from_file(file: String) -> Circuit {
 
 fn main() {
     // TODO remove
-    std::env::set_var("RUST_BACKTRACE", "1");
+    // std::env::set_var("RUST_BACKTRACE", "1");
 
     let args = Args::parse();
 
