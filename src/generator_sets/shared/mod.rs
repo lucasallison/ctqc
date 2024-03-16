@@ -1,4 +1,3 @@
-
 // Code shared among the generator set implementations
 
 pub mod coefficient_list;

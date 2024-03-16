@@ -85,7 +85,6 @@ pub fn multiply_pauli_gates(g1: PauliGate, g2: PauliGate) -> (ImaginaryCoef, Pau
 pub enum PauliUtilError {
     #[snafu(display("Character is not a valid Pauli gate"))]
     CharNotPauliGate {},
-
     // TODO
     // #[snafu(display("Bitslice must be of equal length"))]
     // UnevenBitslice {},

@@ -8,36 +8,34 @@ use ordered_float::OrderedFloat;
 use rayon::iter::Map;
 use snafu::prelude::*;
 
-use super::GeneratorSet;
-use super::shared::FP_ERROR_MARGIN;
-use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::shared::coefficient_list::CoefficientList;
-use super::shared::conjugation_look_up_tables::{
-    CNOT_CONJ_UPD_RULES, H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
-};
+use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
+use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::shared::FP_ERROR_MARGIN;
+use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
 use crate::pauli_string::{PauliGate, PauliString};
 
-#[derive(Clone)]
-// TODO rename
-pub struct MapEntry {
-    pub pstr: PauliString,
-    pub coef_list: CoefficientList,
-}
+// #[derive(Clone)]
+// // TODO rename
+// pub struct MapEntry {
+//     pub pstr: PauliString,
+//     pub coef_list: CoefficientList,
+// }
 
-impl MapEntry {
-    pub fn new(pstr: PauliString, coef_list: CoefficientList) -> MapEntry {
-        MapEntry {
-            pstr,
-            coef_list,
-        }
-    }
-}
+// impl MapEntry {
+//     pub fn new(pstr: PauliString, coef_list: CoefficientList) -> MapEntry {
+//         MapEntry {
+//             pstr,
+//             coef_list,
+//         }
+//     }
+// }
 
 pub struct GeneratorMap {
-    pauli_strings_src: HashMap<PauliString, MapEntry, FxBuildHasher>,
-    pauli_strings_dst: HashMap<PauliString, MapEntry, FxBuildHasher>,
+    pauli_strings_src: HashMap<PauliString, CoefficientList, FxBuildHasher>,
+    pauli_strings_dst: HashMap<PauliString, CoefficientList, FxBuildHasher>,
     h_s_conjugations_map: HSConjugationsMap,
     n_qubits: usize,
 }
@@ -56,27 +54,22 @@ impl GeneratorMap {
         }
     }
 
-    // fn insert_or_merge(
-    //     map: &mut HashMap<PauliString, Component, FxBuildHasher>,
-    //     component: Component,
-    // ) -> Result<(), Box<dyn Error>> {
-    //     let pstr = component.pstr.clone();
-    //     match map.entry(pstr) {
-    //         Entry::Occupied(mut c) => {
-    //             let c = c.get_mut();
+    fn insert_or_merge_into_dst(&mut self, pstr: PauliString, coef_list: CoefficientList) {
+        match self.pauli_strings_dst.entry(pstr) {
+            Entry::Occupied(mut e) => {
+                let existing_coef_list = e.get_mut();
 
-    //             let valid = c.merge(&component)?;
+                existing_coef_list.merge(&coef_list);
 
-    //             if !valid {
-    //                 map.remove(&component.pstr);
-    //             }
-    //         }
-    //         Entry::Vacant(e) => {
-    //             e.insert(component);
-    //         }
-    //     }
-    //     Ok(())
-    // }
+                if existing_coef_list.is_empty() {
+                    e.remove_entry();
+                }
+            }
+            Entry::Vacant(e) => {
+                e.insert(coef_list);
+            }
+        }
+    } 
 
     fn set_default(&mut self) {
         self.pauli_strings_src = Self::empty_map(self.n_qubits);
@@ -84,54 +77,117 @@ impl GeneratorMap {
         self.h_s_conjugations_map = HSConjugationsMap::new(self.n_qubits);
     }
 
-    fn empty_map(size: usize) -> HashMap<PauliString, MapEntry, FxBuildHasher> {
-        HashMap::<PauliString, MapEntry, FxBuildHasher>::with_capacity_and_hasher(
+    fn empty_map(size: usize) -> HashMap<PauliString, CoefficientList, FxBuildHasher> {
+        HashMap::<PauliString, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             size,
             FxBuildHasher::default(),
         )
     }
 
-    fn apply_h_s_conjugations(&self, entry: &mut MapEntry, q_index: usize) {
-        let current_p_gate = entry.pstr.get_pauli_gate(q_index);
+    fn apply_h_s_conjugations(
+        &self,
+        pstr: &mut PauliString,
+        coef_list: &mut CoefficientList,
+        q_index: usize,
+    ) {
+        let current_p_gate = pstr.get_pauli_gate(q_index);
         let actual_p_gate = self
             .h_s_conjugations_map
             .get_actual_p_gate(q_index, current_p_gate);
-        entry.pstr.set_pauli_gate(q_index, actual_p_gate);
-        entry.coef_list.multiply(self.h_s_conjugations_map.get_coefficient_multiplier(q_index, current_p_gate));
+        pstr.set_pauli_gate(q_index, actual_p_gate);
+        coef_list.multiply(
+            self.h_s_conjugations_map
+                .get_coefficient_multiplier(q_index, current_p_gate),
+        );
     }
 
     fn conjugate_cnot(&mut self, gate: &Gate) {
         let qubit_2 = gate.qubit_2.unwrap();
 
-        for (_, mut entry) in self.pauli_strings_src.drain() {
+        let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
 
-            self.apply_h_s_conjugations(&mut entry, gate.qubit_1);
-            self.apply_h_s_conjugations(&mut entry, qubit_2);
+        for (mut pstr, mut coef_list) in pstrs_src.drain() {
+            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate.qubit_1);
+            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, qubit_2);
 
-
-
-            let q1_target_p_gate = entry.pstr.get_pauli_gate(gate.qubit_1);
-            let q2_target_p_gate = entry.pstr.get_pauli_gate(qubit_2);
+            let q1_target_p_gate = pstr.get_pauli_gate(gate.qubit_1);
+            let q2_target_p_gate = pstr.get_pauli_gate(qubit_2);
 
             let look_up_output = CNOT_CONJ_UPD_RULES
                 .get(&(q1_target_p_gate, q2_target_p_gate))
                 .unwrap();
 
-            entry.coef_list.multiply(look_up_output.coefficient);
+            coef_list.multiply(look_up_output.coefficient);
 
-            entry.pstr.set_pauli_gate(gate.qubit_1, look_up_output.q1_p_gate);
-            entry.pstr.set_pauli_gate(qubit_2, look_up_output.q2_p_gate);
+            pstr.set_pauli_gate(gate.qubit_1, look_up_output.q1_p_gate);
+            pstr.set_pauli_gate(qubit_2, look_up_output.q2_p_gate);
+
+            self.insert_or_merge_into_dst(pstr, coef_list);
         }
+
+        self.pauli_strings_src = std::mem::take(&mut pstrs_src);
+        std::mem::swap(&mut self.pauli_strings_src, &mut self.pauli_strings_dst);
 
         self.h_s_conjugations_map.reset(gate.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
-
     }
 
     fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        unimplemented!();
-    }
 
+        let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
+
+        // Reserve addtional memory for potential new Pauli strings
+        self.pauli_strings_dst.reserve(pstrs_src.len()/2);
+
+        for (mut pstr, mut coef_list) in pstrs_src.drain() {
+            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate.qubit_1);
+
+            let target_pgate = pstr.get_pauli_gate(gate.qubit_1);
+
+            if target_pgate == PauliGate::Z || target_pgate == PauliGate::I {
+                self.pauli_strings_dst.insert(pstr, coef_list);
+                continue;
+            }
+
+            let mut new_pstr = pstr.clone();
+            let mut new_coef_list = coef_list.clone();
+
+            pstr.set_pauli_gate(gate.qubit_1, PauliGate::X);
+            new_pstr.set_pauli_gate(gate.qubit_1, PauliGate::Y);
+
+            match (target_pgate, conjugate_dagger) {
+                (PauliGate::X, false) => {
+                    coef_list.multiply(gate.angle.unwrap().cos());
+                    new_coef_list.multiply(gate.angle.unwrap().sin());
+                }
+                (PauliGate::Y, false) => {
+                    coef_list.multiply(-1.0 * gate.angle.unwrap().sin());
+                    new_coef_list.multiply(gate.angle.unwrap().cos());
+                }
+                (PauliGate::X, true) => {
+                    coef_list.multiply(gate.angle.unwrap().cos());
+                    new_coef_list.multiply(-1.0 * gate.angle.unwrap().sin());
+                }
+                (PauliGate::Y, true) => {
+                    coef_list.multiply(gate.angle.unwrap().sin());
+                    new_coef_list.multiply(gate.angle.unwrap().cos());
+                }
+                _ => {
+                    unreachable!()
+                }
+            }
+
+            self.insert_or_merge_into_dst(pstr, coef_list);
+            self.insert_or_merge_into_dst(new_pstr, new_coef_list);
+        }
+
+        // Take back ownership of the source map, which is now empty
+        self.pauli_strings_src = std::mem::take(&mut pstrs_src);
+        // Swap src and dest map, so the src map contains the updated Pauli strings
+        std::mem::swap(&mut self.pauli_strings_src, &mut self.pauli_strings_dst);
+
+        self.h_s_conjugations_map.reset(gate.qubit_1);
+    }
 }
 
 impl GeneratorSet for GeneratorMap {
@@ -148,8 +204,7 @@ impl GeneratorSet for GeneratorMap {
             let mut pstr = PauliString::new(self.n_qubits);
             pstr.set_pauli_gate(generator_index, p_gate);
             let coef_list = CoefficientList::new(generator_index);
-            let entry = MapEntry::new(pstr, coef_list);
-            self.pauli_strings_src.insert(pstr, entry);
+            self.pauli_strings_src.insert(pstr, coef_list);
         }
     }
 
@@ -201,10 +256,9 @@ impl GeneratorSet for GeneratorMap {
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-
         match gate.gate_type {
             GateType::H | GateType::S => {
-                self.h_s_conjugations_map.update(gate, conjugate_dagger);
+                self.h_s_conjugations_map.update(gate, conjugate_dagger).unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
@@ -268,12 +322,21 @@ impl GeneratorSet for GeneratorMap {
 }
 
 impl fmt::Display for GeneratorMap {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // for component in self.generator_components.values() {
-        //     write!(f, "{}\n", component)?;
-        // }
-        Ok(())
-    }
+    // fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    //     for (pstr, coef_list) in &self.pauli_strings_src {
+
+    //         let mut coef_multiplier = 1.0;
+
+    //         write!(f, "{}: (", pstr)?;
+
+    //         for c in coef_list.coefficients.iter() {
+    //             write!(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
+    //         }
+    //         write!(")\n")?;
+    //     }
+
+    //     Ok(())
+    // }
 }
 
 // ------------------ Components and Generator Info --------------------------------------

@@ -5,11 +5,11 @@ use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 use ordered_float::OrderedFloat;
 
-use super::GeneratorSet;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::shared::FP_ERROR_MARGIN;
+use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
 use crate::pauli_string::utils as PauliUtils;
@@ -319,7 +319,9 @@ impl GeneratorSet for ColumnWiseBitVec {
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
-                self.h_s_conjugations_map.update(gate, conjugate_dagger).unwrap();
+                self.h_s_conjugations_map
+                    .update(gate, conjugate_dagger)
+                    .unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),

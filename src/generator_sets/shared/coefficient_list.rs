@@ -3,7 +3,7 @@ use ordered_float::OrderedFloat;
 use super::FP_ERROR_MARGIN;
 
 /// A set that can be associated to a Pauli string. The list
-/// keeps track of the generators that the Pauli string belongs to (i.e., 
+/// keeps track of the generators that the Pauli string belongs to (i.e.,
 /// the Pauli string is part of the sum of Pauli strings that make up the generator)
 /// its coefficient.
 #[derive(Clone, Hash, PartialEq, Eq)]

@@ -53,7 +53,11 @@ impl HSConjugationsMap {
     }
 
     /// Apply the conjugation rules for the provided H or S gate to the map.
-    pub fn update(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), HSConjugationsMapError> {
+    pub fn update(
+        &mut self,
+        gate: &Gate,
+        conjugate_dagger: bool,
+    ) -> Result<(), HSConjugationsMapError> {
         for e in self.map[gate.qubit_1].iter_mut() {
             let target_pauli_gate = e.0;
 
@@ -67,7 +71,7 @@ impl HSConjugationsMap {
                         S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap()
                     }
                 }
-                _ => return Err(HSConjugationsMapError::InvalideGate { gate: gate.clone() })
+                _ => return Err(HSConjugationsMapError::InvalideGate { gate: gate.clone() }),
             };
 
             e.0 = look_up_output.p_gate;
@@ -97,9 +101,11 @@ impl HSConjugationsMap {
     }
 }
 
-
 #[derive(Debug, Snafu)]
 pub enum HSConjugationsMapError {
-    #[snafu(display("{} invalid: Can only H or S to update the H/S conjugations map.", gate))]
+    #[snafu(display(
+        "{} invalid: Can only H or S to update the H/S conjugations map.",
+        gate
+    ))]
     InvalideGate { gate: Gate },
 }
