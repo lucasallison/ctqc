@@ -4,6 +4,7 @@ use bitvec::prelude::*;
 use snafu::prelude::*;
 
 // --------------- Bitvec utils  --------------- //
+
 pub fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
     pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
 }
@@ -81,11 +82,20 @@ pub fn multiply_pauli_gates(g1: PauliGate, g2: PauliGate) -> (ImaginaryCoef, Pau
     }
 }
 
+// --------------- Other utils  --------------- //
+
+/// Returns which gate should be used as the only non-identity
+/// gate when construction/checking for generators.
+pub fn generator_non_identity_gate(zero_state_generator: bool) -> PauliGate {
+    if zero_state_generator {
+        PauliGate::Z
+    } else {
+        PauliGate::X
+    }
+}
+
 #[derive(Debug, Snafu)]
 pub enum PauliUtilError {
     #[snafu(display("Character is not a valid Pauli gate"))]
     CharNotPauliGate {},
-    // TODO
-    // #[snafu(display("Bitslice must be of equal length"))]
-    // UnevenBitslice {},
 }

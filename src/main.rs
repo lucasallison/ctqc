@@ -47,7 +47,7 @@ struct Args {
     /// Provide after how many gates the simulator should "clean" the
     /// data structure, e.g., remove redundently stored Pauli strings, zero
     /// coefficient Pauli strings, etc...
-    #[arg(short, long, default_value_t = 1000, verbatim_doc_comment)]
+    #[arg(short, long, default_value_t = 10, verbatim_doc_comment)]
     clean: usize,
 
     /// Provide number of threads to use
@@ -77,7 +77,7 @@ fn circuit_from_file(file: String) -> Circuit {
 
 fn main() {
     // TODO remove
-    // std::env::set_var("RUST_BACKTRACE", "1");
+    std::env::set_var("RUST_BACKTRACE", "1");
 
     let args = Args::parse();
 

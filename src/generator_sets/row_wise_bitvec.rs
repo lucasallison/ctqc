@@ -87,6 +87,14 @@ impl RowWiseBitVec {
         self.pstr_first_bit(i) + 2 * self.n_qubits - 1
     }
 
+
+    /// Returns the bitslice with the bits of the Pauli string at the given index
+    fn pstr_as_bitslice(&self, pstr_ind: usize) -> &BitSlice {
+        let start = self.pstr_first_bit(pstr_ind);
+        let end = self.pstr_last_bit(pstr_ind);
+        &self.pauli_strings[start..=end]
+    }
+
     /// Clones the bits of the ith Pauli string and appends them to the end of the bitvec.
     fn extend_from_within(&mut self, i: usize) {
         let start = self.pstr_first_bit(i);
@@ -443,25 +451,24 @@ impl RowWiseBitVec {
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
-    pub fn gather(&self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
+    pub fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size,
             FxBuildHasher::default(),
         );
 
-        for pstr_ind in 0..self.size {
-            let start = self.pstr_first_bit(pstr_ind);
-            let end = self.pstr_last_bit(pstr_ind);
+        let mut gen_info = std::mem::take(&mut self.generator_info);
 
-            let pstr = self.pauli_strings[start..=end].to_bitvec();
-            let gen_info = &self.generator_info[pstr_ind];
+        for (pstr_ind, coef_list)in gen_info.drain(..).enumerate()  {
+
+            let pstr = self.pstr_as_bitslice(pstr_ind).to_bitvec();
 
             match map.entry(pstr) {
                 Entry::Occupied(mut e) => {
-                    e.get_mut().merge(gen_info);
+                    e.get_mut().merge(&coef_list);
                 }
                 Entry::Vacant(e) => {
-                    e.insert(gen_info.clone());
+                    e.insert(coef_list);
                 }
             }
         }
@@ -473,12 +480,12 @@ impl RowWiseBitVec {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
-        for (pstr, coefficients) in map.iter_mut() {
+        for (pstr, mut coefficients) in map.drain() {
             if coefficients.is_empty() {
                 continue;
             }
-            self.pauli_strings.extend_from_bitslice(pstr);
-            self.generator_info.push(coefficients.clone());
+            self.pauli_strings.extend_from_bitslice(&pstr);
+            self.generator_info.push(coefficients);
         }
 
         self.size = self.generator_info.len();
@@ -648,13 +655,6 @@ impl RowWiseBitVec {
         coef
     }
 
-    fn pstr_as_bitslice(&self, pstr_ind: usize) -> &BitSlice {
-        let start = self.pstr_first_bit(pstr_ind);
-        let end = self.pstr_last_bit(pstr_ind);
-
-        &self.pauli_strings[start..=end]
-    }
-
     fn sum_z_stabilizer_coefficients(&self, z_index: usize) -> f64 {
         let mut sum = 0.0;
 
@@ -766,11 +766,7 @@ impl GeneratorSet for RowWiseBitVec {
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default(self.n_qubits);
 
-        let p_gate = if zero_state_generators {
-            PauliGate::Z
-        } else {
-            PauliGate::X
-        };
+        let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generators);
 
         // TODO: is this neccessary?
         self.pauli_strings.resize(2 * self.size * self.size, false);

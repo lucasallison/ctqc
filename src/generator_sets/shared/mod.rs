@@ -3,8 +3,7 @@
 pub mod coefficient_list;
 pub mod conjugation_look_up_tables;
 pub mod h_s_conjugations_map;
-
-// Constants
+pub mod errors;
 
 // TODO
 // Floating point error margin

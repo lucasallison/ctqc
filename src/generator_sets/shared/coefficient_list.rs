@@ -71,6 +71,17 @@ impl CoefficientList {
 
         self.coefficients.is_empty()
     }
+
+    /// Returns if the coefficient list would be valid for the ith generator.
+    /// This is the case if:
+    /// 1. The coefficient list only contains the coefficient of the ith generator
+    /// 2. The coefficient is 1.0.
+    pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
+        self.coefficients.len() == 1
+            && self.coefficients[0].0 == i
+            && self.coefficients[0].1 <= OrderedFloat(1.0)
+            && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_MARGIN)
+    }
 }
 
 #[cfg(test)]
