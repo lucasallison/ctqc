@@ -87,7 +87,6 @@ impl RowWiseBitVec {
         self.pstr_first_bit(i) + 2 * self.n_qubits - 1
     }
 
-
     /// Returns the bitslice with the bits of the Pauli string at the given index
     fn pstr_as_bitslice(&self, pstr_ind: usize) -> &BitSlice {
         let start = self.pstr_first_bit(pstr_ind);
@@ -433,7 +432,6 @@ impl RowWiseBitVec {
                     }
                 }
                 new_pstrs.extend_from_bitslice(&new_pstr);
-                // println!("new_pstrs: {} after {}", new_pstrs.len(), target_p_gate);
             }
 
             let mut new_data = all_new_pstrs.lock().unwrap();
@@ -459,8 +457,7 @@ impl RowWiseBitVec {
 
         let mut gen_info = std::mem::take(&mut self.generator_info);
 
-        for (pstr_ind, coef_list)in gen_info.drain(..).enumerate()  {
-
+        for (pstr_ind, coef_list) in gen_info.drain(..).enumerate() {
             let pstr = self.pstr_as_bitslice(pstr_ind).to_bitvec();
 
             match map.entry(pstr) {
@@ -491,135 +488,6 @@ impl RowWiseBitVec {
         self.size = self.generator_info.len();
     }
 
-    /// Equivalent to the scatter function, but also
-    /// returns the index of the ith generator of the all zero state,
-    /// which can be used by the `clean_and_find` function. If it does not exist,
-    /// we return the size of the generator set.
-    /// Deleberately put into seperate functions because checking
-    fn scatter_and_find(
-        &mut self,
-        mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>,
-        i: usize,
-    ) -> usize {
-        self.pauli_strings.clear();
-        self.generator_info.clear();
-
-        let mut ith_generator_index = self.size;
-
-        for (pstr_index, (pstr, coefficients)) in map.iter_mut().enumerate() {
-            if coefficients.is_empty() {
-                continue;
-            }
-
-            if self.is_single_z_pstr(pstr, i) {
-                ith_generator_index = pstr_index;
-            }
-
-            self.pauli_strings.extend_from_bitslice(pstr);
-            self.generator_info.push(coefficients.clone());
-        }
-
-        self.size = self.generator_info.len();
-        ith_generator_index
-    }
-
-    /// Returns wheter the Pauli string contains only identity gates
-    /// and a single Z gate at the ith position, i.e.,
-    /// I^⊗{i-1}ZI^⊗{n-i}.
-    fn is_single_z_pstr(&self, pstr: &BitSlice, i: usize) -> bool {
-        for gate_ind in 0..self.n_qubits {
-            let pgate =
-                PauliUtils::pauli_gate_from_tuple(pstr[2 * gate_ind], pstr[2 * gate_ind + 1]);
-
-            if (gate_ind == i && pgate != PauliGate::Z) || (gate_ind != i && pgate != PauliGate::I)
-            {
-                return false;
-            }
-        }
-        true
-    }
-
-    /// Equivalent to the clean function but also returns the index
-    /// of the ith generator of the all zero state, i.e., the position
-    /// of I^⊗{i-1}ZI^⊗{n-i} in the list of generators.
-    /// The reason for this is because before we do a measurement we must clean up the
-    /// generators. Returning the position of the ith generator prevents us from searching
-    /// for it again. If it does not exist, we return the size of the generator set.
-    fn clean_and_find(&mut self, i: usize) -> usize {
-        let map = self.gather();
-        self.scatter_and_find(map, i)
-    }
-
-    /// Removes the ith Pauli string
-    fn remove_pstr(&mut self, i: usize) {
-        let start = self.pstr_first_bit(i);
-        let end = self.pstr_last_bit(i);
-
-        self.pauli_strings.drain(start..=end);
-        self.generator_info.remove(i);
-        self.size -= 1;
-    }
-
-    /// Updates all Pauli strings after a measurement
-    fn measurement_update(&mut self, qubit: usize, measurement: bool, p0: f64) {
-        // When we have measured a zero or a 1, all Pauli strings that are updated are
-        // multiplied by 1/(p_0 * 4) or 1/(p_1 * 4) respectively.
-        let multiplier = if measurement {
-            1.0 / ((1.0 - p0) * 4.0)
-        } else {
-            1.0 / (p0 * 4.0)
-        };
-
-        for pstr_ind in 0..self.size {
-            let target_p_gate = self.get_pauli_gate(pstr_ind, qubit);
-
-            match target_p_gate {
-                // Measurement 0: I -> 1/(p0 * 4) * (2I + 2Z)
-                // Measurement 1: I -> 1/(p1 * 4) * (2I - 2Z)
-                PauliGate::I => {
-                    self.extend_from_within(pstr_ind);
-                    self.set_pauli_gate(PauliGate::Z, self.size, qubit);
-                    self.size += 1;
-
-                    self.generator_info[pstr_ind].multiply(2.0 * multiplier);
-
-                    self.generator_info
-                        .push(self.generator_info[pstr_ind].clone());
-
-                    if measurement {
-                        self.generator_info.last_mut().unwrap().multiply(-1.0);
-                    }
-                }
-
-                // Measurement 0, 1: X -> 1/(p0 * 4) * 2X
-                PauliGate::X => {
-                    self.generator_info[pstr_ind].multiply(2.0 * multiplier);
-                }
-
-                // Measurement 0, 1: Y -> -
-                PauliGate::Y => {
-                    self.remove_pstr(pstr_ind);
-                }
-
-                // Measurement 0: Z -> 1/(p0 * 4) * (2Z + 2I)
-                // Measurement 1: Z -> 1/(p1 * 4) * (2Z - 2I)
-                PauliGate::Z => {
-                    self.extend_from_within(pstr_ind);
-                    self.set_pauli_gate(PauliGate::I, self.size, qubit);
-                    self.size += 1;
-
-                    self.generator_info[pstr_ind].multiply(2.0 * multiplier);
-
-                    self.generator_info
-                        .push(self.generator_info[pstr_ind].clone());
-
-                    if measurement {
-                        self.generator_info.last_mut().unwrap().multiply(-1.0);
-                    }
-                }
-            }
-        }
-    }
 
     /// Creates a vector which at each index (representing the generator index)
     /// contains another vector of tuples. The tuples represent the Pauli strings
@@ -695,7 +563,7 @@ impl RowWiseBitVec {
                 // TODO explain why !m_coef.i
                 // If the result is a Pauli string with a single Z gate at the z_index
                 // update the sum
-                if !m_coef.i && self.is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
+                if !m_coef.i && PauliUtils::is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
                     sum += m_coef.real;
                 }
 
@@ -768,9 +636,6 @@ impl GeneratorSet for RowWiseBitVec {
 
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generators);
 
-        // TODO: is this neccessary?
-        self.pauli_strings.resize(2 * self.size * self.size, false);
-
         for generator_index in 0..self.n_qubits {
             self.set_pauli_gate(p_gate, generator_index, generator_index);
             self.generator_info
@@ -782,54 +647,51 @@ impl GeneratorSet for RowWiseBitVec {
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
         self.set_default(1);
 
-        if zero_state_generator {
-            self.set_pauli_gate(PauliGate::Z, 0, i);
-        } else {
-            self.set_pauli_gate(PauliGate::X, 0, i);
-        };
+        let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
+        self.set_pauli_gate(p_gate, 0, i);
 
         self.generator_info.push(CoefficientList::new(i));
     }
 
-    fn is_x_or_z_generators(&mut self, _check_zero_state: bool) -> bool {
-        unimplemented!()
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+        self.apply_all_h_s_conjugations();
+
+        if self.size != self.n_qubits {
+            return false;
+        }
+
+        for pstr_ind in 0..self.n_qubits {
+            let pstr = self.pstr_as_bitslice(pstr_ind);
+            let coef_list = &self.generator_info[pstr_ind];
+
+            if !PauliUtils::bitslice_is_ith_generator(&pstr, pstr_ind, check_zero_state)
+                || !coef_list.is_valid_ith_generator_coef_list(pstr_ind)
+            {
+                return false;
+            }
+        }
+
+        true
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
-        if self.size != 1
-            || self.generator_info[0].coefficients.len() != 1
-            || self.generator_info[0].coefficients[0].0 != i
-            // TODO or -1.0?
-            || self.generator_info[0].coefficients[0].1 < OrderedFloat(1.0 - FP_ERROR_MARGIN)
-        {
+        if self.size != 1 {
             return false;
         }
 
-        for gate_ind in 0..self.n_qubits {
-            let p_gate = self.get_pauli_gate(0, gate_ind);
+        let pstr = self.pstr_as_bitslice(0);
 
-            if gate_ind == i {
-                if (check_zero_state && p_gate != PauliGate::Z)
-                    || (!check_zero_state && p_gate != PauliGate::X)
-                {
-                    return false;
-                }
-            } else {
-                if p_gate != PauliGate::I {
-                    return false;
-                }
-            }
-        }
-        true
+        PauliUtils::bitslice_is_ith_generator(pstr, i, check_zero_state)
+            && self.generator_info[0].is_valid_ith_generator_coef_list(i)
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
-                self.h_s_conjugations_map.update(gate, conjugate_dagger);
+                self.h_s_conjugations_map.update(gate, conjugate_dagger).unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),

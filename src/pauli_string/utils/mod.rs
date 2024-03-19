@@ -3,16 +3,44 @@ use crate::utils::imaginary_coefficient::ImaginaryCoef;
 use bitvec::prelude::*;
 use snafu::prelude::*;
 
-// --------------- Bitvec utils  --------------- //
+// --------------- BitVec/BitSlice utils  --------------- //
+// TODO Should we check whether the bitslices are valid Pauli strings, i.e. of even length?
 
-pub fn get_pauli_gate_from_bitslice(p_str: &BitSlice, j: usize) -> PauliGate {
-    pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
+pub fn get_pauli_gate_from_bitslice(pstr: &BitSlice, j: usize) -> PauliGate {
+    pauli_gate_from_tuple(pstr[2 * j], pstr[2 * j + 1])
 }
 
-pub fn set_pauli_gate_in_bitslice(p_str: &mut BitSlice, p_gate: PauliGate, j: usize) {
-    let (b1, b2) = pauli_gate_as_tuple(p_gate);
-    p_str.set(2 * j, b1);
-    p_str.set(2 * j + 1, b2);
+pub fn set_pauli_gate_in_bitslice(pstr: &mut BitSlice, pgate: PauliGate, j: usize) {
+    let (b1, b2) = pauli_gate_as_tuple(pgate);
+    pstr.set(2 * j, b1);
+    pstr.set(2 * j + 1, b2);
+}
+
+/// Returns wheter the Pauli string contains only identity gates
+/// and a single Z gate at the ith position, i.e., I^⊗{i-1}ZI^⊗{n-i}
+/// The functionility is the same as `bitslice_is_ith_generator` but
+/// this function provides clarity in some contexts.
+pub fn is_single_z_pstr(pstr: &BitSlice, i: usize) -> bool {
+    bitslice_is_ith_generator(pstr, i, true)
+}
+
+/// Returns true if the bitslice is the ith generator of the all zero/plust state,
+/// i.e., I^⊗{i-1}ZI^⊗{n-i} or I^⊗{i-1}ZI^⊗{n-i}.
+pub fn bitslice_is_ith_generator(pstr: &BitSlice, i: usize, zero_state_generator: bool) -> bool {
+    let n_gates = pstr.len() / 2;
+    let non_identity_gate = generator_non_identity_gate(zero_state_generator);
+
+    for gate_ind in 0..n_gates {
+        let p_gate = get_pauli_gate_from_bitslice(pstr, gate_ind);
+
+        if (gate_ind == i && p_gate != non_identity_gate)
+            || (gate_ind != i && p_gate != PauliGate::I)
+        {
+            return false;
+        }
+    }
+
+    true
 }
 
 // TODO remove?

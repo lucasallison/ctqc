@@ -1,10 +1,7 @@
 use std::collections::{hash_map::Entry, HashMap};
-use std::error::Error;
 use std::fmt;
 
 use fxhash::FxBuildHasher;
-use rayon::iter::Map;
-use snafu::prelude::*;
 
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -15,6 +12,7 @@ use crate::circuit::{Gate, GateType};
 use crate::pauli_string::utils as PauliUtils;
 use crate::pauli_string::{PauliGate, PauliString};
 
+/// Stores a map of Pauli strings and their associated coefficient lists.
 pub struct GeneratorMap {
     pauli_strings_src: HashMap<PauliString, CoefficientList, FxBuildHasher>,
     pauli_strings_dst: HashMap<PauliString, CoefficientList, FxBuildHasher>,
@@ -67,10 +65,8 @@ impl GeneratorMap {
     }
 
     fn apply_all_h_s_conjugations(&mut self) {
-
         let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
         for (mut pstr, mut coef_list) in pstrs_src.drain() {
-
             for gate_ind in 0..self.n_qubits {
                 self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate_ind);
             }
@@ -188,18 +184,15 @@ impl GeneratorMap {
     }
 
     fn contains_ith_x_or_z_generator(&self, i: usize, zero_state_generator: bool) -> bool {
-        // TODO have to apply h/s conjugation
-
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
         let mut pstr = PauliString::new(self.n_qubits);
         pstr.set_pauli_gate(i, p_gate);
 
         match self.pauli_strings_src.get(&pstr) {
-            Some(coef_list) => { return coef_list.is_valid_ith_generator_coef_list(i) },
-            None => { return false },
+            Some(coef_list) => return coef_list.is_valid_ith_generator_coef_list(i),
+            None => return false,
         }
     }
-
 }
 
 impl GeneratorSet for GeneratorMap {
