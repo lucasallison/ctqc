@@ -20,3 +20,5 @@ Cargo.lock
 *.ctqc
 
 *.DS_Store
+
+.gitconfig

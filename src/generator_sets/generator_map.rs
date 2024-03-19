@@ -66,6 +66,23 @@ impl GeneratorMap {
         )
     }
 
+    fn apply_all_h_s_conjugations(&mut self) {
+
+        let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
+        for (mut pstr, mut coef_list) in pstrs_src.drain() {
+
+            for gate_ind in 0..self.n_qubits {
+                self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate_ind);
+            }
+            self.insert_or_merge_into_dst(pstr, coef_list);
+        }
+
+        self.pauli_strings_src = std::mem::take(&mut pstrs_src);
+        std::mem::swap(&mut self.pauli_strings_src, &mut self.pauli_strings_dst);
+
+        self.h_s_conjugations_map.reset_all();
+    }
+
     fn apply_h_s_conjugations(
         &self,
         pstr: &mut PauliString,
@@ -178,12 +195,8 @@ impl GeneratorMap {
         pstr.set_pauli_gate(i, p_gate);
 
         match self.pauli_strings_src.get(&pstr) {
-            Some(coef_list) => {
-                println!("failed match"); 
-                return coef_list.is_valid_ith_generator_coef_list(i)},
-            None => {
-                println!("no match"); 
-                return false},
+            Some(coef_list) => { return coef_list.is_valid_ith_generator_coef_list(i) },
+            None => { return false },
         }
     }
 
@@ -216,6 +229,8 @@ impl GeneratorSet for GeneratorMap {
     }
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+        self.apply_all_h_s_conjugations();
+
         if !(self.size() == self.n_qubits) {
             return false;
         }
@@ -229,6 +244,8 @@ impl GeneratorSet for GeneratorMap {
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        self.apply_all_h_s_conjugations();
+
         if !(self.size() == 1) {
             return false;
         }
