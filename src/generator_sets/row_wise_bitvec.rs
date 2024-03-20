@@ -269,9 +269,15 @@ impl RowWiseBitVec {
     fn seq_conjugate_cnot(&mut self, cnot: &Gate) {
 
         for pstr_ind in 0..self.size {
-            let mut pstr = BitSliceUsizeOrSafe::BitSlice(self.pstr_as_bitslice_mut(pstr_ind));
+
+            // We don't use `self.pstr_as_bislice_mut` here to avoid borrowing issues
+            let start = self.pstr_first_bit(pstr_ind);
+            let end = self.pstr_last_bit(pstr_ind);
+            let mut pstr = BitSliceUsizeOrSafe::BitSlice(&mut self.pauli_strings[start..=end]);
+
             let gen_info = &mut self.generator_info;
             let hs_map = &self.h_s_conjugations_map;
+
             Self::conjugate_bitslice_with_cnot(
                 &mut pstr,
                 &mut gen_info[pstr_ind],
