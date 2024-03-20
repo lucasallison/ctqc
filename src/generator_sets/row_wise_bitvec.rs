@@ -20,6 +20,11 @@ use crate::pauli_string::utils as PauliUtils;
 use crate::pauli_string::PauliGate;
 use crate::utils::imaginary_coefficient::ImaginaryCoef;
 
+enum BitSliceUsizeOrSafe<'a> {
+    BitSlice(&'a mut BitSlice),
+    BitSliceBitSafeUsize(&'a mut BitSlice<BitSafeUsize>),
+}
+
 /// Implementation of a generator set that stores the
 /// Pauli strings in a single large bitvec.
 pub struct RowWiseBitVec {
@@ -56,15 +61,16 @@ impl RowWiseBitVec {
         self.h_s_conjugations_map = HSConjugationsMap::new(self.n_qubits);
     }
 
-    /// Returns the jth gate of the ith Pauli string
-    fn get_pauli_gate(&self, i: usize, j: usize) -> PauliGate {
-        let index = self.pstr_gate_index(i, j);
+    /// Returns the gate of the Pauli string from the provided indices
+    fn get_pauli_gate(&self, pstr_ind: usize, gate_ind: usize) -> PauliGate {
+        let index = self.pstr_gate_index(pstr_ind, gate_ind);
         PauliUtils::pauli_gate_from_tuple(self.pauli_strings[index], self.pauli_strings[index + 1])
     }
 
-    /// Sets the jth gate of the ith Pauli string
-    fn set_pauli_gate(&mut self, p_gate: PauliGate, i: usize, j: usize) {
-        let index = self.pstr_gate_index(i, j);
+    /// Sets the gate of the Pauli string at the provided indices with the
+    /// provided PauliGate
+    fn set_pauli_gate(&mut self, p_gate: PauliGate, pstr_ind: usize, gate_ind: usize) {
+        let index = self.pstr_gate_index(pstr_ind, gate_ind);
 
         let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
 
@@ -72,19 +78,19 @@ impl RowWiseBitVec {
         self.pauli_strings.set(index + 1, b2);
     }
 
-    /// Get the internal index of the jth gate of the ith Pauli string
-    fn pstr_gate_index(&self, i: usize, j: usize) -> usize {
-        2 * i * self.n_qubits + 2 * j
+    /// Get the internal index of the gate of the Pauli string at the given indices
+    fn pstr_gate_index(&self, pstr_ind: usize, gate_ind: usize) -> usize {
+        2 * pstr_ind * self.n_qubits + 2 * gate_ind
     }
 
-    /// Get the index of the first bit of the ith Pauli string
-    fn pstr_first_bit(&self, i: usize) -> usize {
-        2 * i * self.n_qubits
+    /// Get the index of the first bit of the Pauli string at the given index
+    fn pstr_first_bit(&self, pstr_ind: usize) -> usize {
+        2 * pstr_ind * self.n_qubits
     }
 
-    /// Get the index of the last bit of the ith Pauli string
-    fn pstr_last_bit(&self, i: usize) -> usize {
-        self.pstr_first_bit(i) + 2 * self.n_qubits - 1
+    /// Get the index of the last bit of Pauli string at the given index
+    fn pstr_last_bit(&self, pstr_ind: usize) -> usize {
+        self.pstr_first_bit(pstr_ind) + 2 * self.n_qubits - 1
     }
 
     /// Returns the bitslice with the bits of the Pauli string at the given index
@@ -94,10 +100,18 @@ impl RowWiseBitVec {
         &self.pauli_strings[start..=end]
     }
 
-    /// Clones the bits of the ith Pauli string and appends them to the end of the bitvec.
-    fn extend_from_within(&mut self, i: usize) {
-        let start = self.pstr_first_bit(i);
-        let end = self.pstr_last_bit(i);
+    /// Returns the mutable bitslice with the bits of the Pauli string at the given index
+    fn pstr_as_bitslice_mut(&mut self, pstr_ind: usize) -> &mut BitSlice {
+        let start = self.pstr_first_bit(pstr_ind);
+        let end = self.pstr_last_bit(pstr_ind);
+        &mut self.pauli_strings[start..=end]
+    }
+
+    /// Clones the bits of the Pauli string at the provided index and appends
+    /// them to the end of the bitvec.
+    fn extend_from_within(&mut self, pstr_ind: usize) {
+        let start = self.pstr_first_bit(pstr_ind);
+        let end = self.pstr_last_bit(pstr_ind);
         self.pauli_strings.extend_from_within(start..=end);
     }
 
@@ -128,40 +142,58 @@ impl RowWiseBitVec {
     // -------------------- Parallel helper functions -------------------------- //
     //
     // The following functions are deliberately not associated to self, to make sharing
-    // among threads easier.
+    // among threads easier. They are also deliberately not moved to the Pauli utils
+    // module, as they are specific to the RowWiseBitVec implementation.
 
-    /// Returns the jth gate of the provided slice representing a Pauli string
-    // TODO move to utils?
-    fn get_pauli_gate_from_bitsafeusize_bitslice(
-        p_str: &BitSlice<BitSafeUsize>,
-        j: usize,
+    /// Returns the gate from the provided index of the
+    /// provided slice representing a Pauli string
+    /// TODO
+    fn get_pauli_gate_from_bitslice_usize_or_safe(
+        pstr: &BitSliceUsizeOrSafe,
+        gate_ind: usize,
     ) -> PauliGate {
-        PauliUtils::pauli_gate_from_tuple(p_str[2 * j], p_str[2 * j + 1])
+        match pstr {
+            BitSliceUsizeOrSafe::BitSlice(bits) => {
+                PauliUtils::pauli_gate_from_tuple(bits[2 * gate_ind], bits[2 * gate_ind + 1])
+            }
+            BitSliceUsizeOrSafe::BitSliceBitSafeUsize(bits) => {
+                PauliUtils::pauli_gate_from_tuple(bits[2 * gate_ind], bits[2 * gate_ind + 1])
+            }
+        }
     }
 
-    /// Set the jth gate of the provided slice representing a Pauli string with the provided PauliGate
-    // TODO move to utils?
-    fn set_pauli_gate_in_bitsafeusize_bitslice(
-        p_str: &mut BitSlice<BitSafeUsize>,
-        p_gate: PauliGate,
-        j: usize,
+    /// Set the gate at the provided index of the provided slice representing a
+    /// Pauli string with the provided PauliGate
+    /// TODO
+    fn set_pauli_gate_in_bitslice_usize_or_safe(
+        pstr: &mut BitSliceUsizeOrSafe,
+        pgate: PauliGate,
+        gate_ind: usize,
     ) {
-        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(p_gate);
-        p_str.set(2 * j, b1);
-        p_str.set(2 * j + 1, b2);
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(pgate);
+        match pstr {
+            BitSliceUsizeOrSafe::BitSlice(bits) => {
+                bits.set(2 * gate_ind, b1);
+                bits.set(2 * gate_ind + 1, b2);
+            }
+            BitSliceUsizeOrSafe::BitSliceBitSafeUsize(bits) => {
+                bits.set(2 * gate_ind, b1);
+                bits.set(2 * gate_ind + 1, b2);
+            }
+        }
     }
 
     /// Apply the H and S conjugations to a provided slice representing a Pauli string and its coefficients.
     fn apply_slice_h_s_conjugations(
-        p_str: &mut BitSlice<BitSafeUsize>,
+        pstr: &mut BitSliceUsizeOrSafe,
         coefficients: &mut CoefficientList,
         h_s_conjugations_map: &HSConjugationsMap,
         qubit: usize,
     ) {
-        let current_p_gate = Self::get_pauli_gate_from_bitsafeusize_bitslice(p_str, qubit);
+        let current_p_gate = Self::get_pauli_gate_from_bitslice_usize_or_safe(pstr, qubit);
         let actual_p_gate = h_s_conjugations_map.get_actual_p_gate(qubit, current_p_gate);
 
-        Self::set_pauli_gate_in_bitsafeusize_bitslice(p_str, actual_p_gate, qubit);
+        Self::set_pauli_gate_in_bitslice_usize_or_safe(pstr, actual_p_gate, qubit);
 
         coefficients
             .multiply(h_s_conjugations_map.get_coefficient_multiplier(qubit, current_p_gate));
@@ -176,7 +208,7 @@ impl RowWiseBitVec {
             std::slice::ChunksMut<'_, CoefficientList>,
         >,
     > {
-        // Each process will conjugate self.size / self.n_threads Pauli strings.
+        // Each thread will conjugate self.size / self.n_threads Pauli strings.
         // As a single Pauli string is 2 * self.num_qubits bits,
         // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
         let mut pstrs_per_chunk = self.size / self.n_threads;
@@ -194,89 +226,83 @@ impl RowWiseBitVec {
 
     // ------------------------------------------------------------------------ //
 
-    /// Conjugate each Pauli string in the bitvec with a CNOT gate.
-    /// We use the update rules to adjust the Pauli gates and coefficients.
-    fn conjugate_cnot(&mut self, gate: &Gate) {
-        if self.n_threads > 1 {
-            self.par_conjugate_cnot(gate);
-            return;
-        }
+    fn conjugate_bitslice_with_cnot(
+        pstr: &mut BitSliceUsizeOrSafe,
+        coef_list: &mut CoefficientList,
+        hs_map: &HSConjugationsMap,
+        cnot: &Gate,
+    ) {
+        let qubit_2 = cnot.qubit_2.unwrap();
+        Self::apply_slice_h_s_conjugations(pstr, coef_list, hs_map, cnot.qubit_1);
+        Self::apply_slice_h_s_conjugations(pstr, coef_list, hs_map, qubit_2);
 
-        let qubit_2 = gate.qubit_2.unwrap();
+        let q1_target_p_gate = Self::get_pauli_gate_from_bitslice_usize_or_safe(pstr, cnot.qubit_1);
+        let q2_target_p_gate = Self::get_pauli_gate_from_bitslice_usize_or_safe(pstr, qubit_2);
 
-        for pstr_index in 0..self.size {
-            self.apply_h_s_conjugations(pstr_index, gate.qubit_1);
-            self.apply_h_s_conjugations(pstr_index, qubit_2);
+        let look_up_output = CNOT_CONJ_UPD_RULES
+            .get(&(q1_target_p_gate, q2_target_p_gate))
+            .unwrap();
 
-            let q1_target_p_gate = self.get_pauli_gate(pstr_index, gate.qubit_1);
-            let q2_target_p_gate = self.get_pauli_gate(pstr_index, qubit_2);
+        coef_list.multiply(look_up_output.coefficient);
 
-            let look_up_output = CNOT_CONJ_UPD_RULES
-                .get(&(q1_target_p_gate, q2_target_p_gate))
-                .unwrap();
-
-            self.generator_info[pstr_index].multiply(look_up_output.coefficient);
-
-            self.set_pauli_gate(look_up_output.q1_p_gate, pstr_index, gate.qubit_1);
-            self.set_pauli_gate(look_up_output.q2_p_gate, pstr_index, qubit_2);
-        }
-
-        self.h_s_conjugations_map.reset(gate.qubit_1);
-        self.h_s_conjugations_map.reset(qubit_2);
+        Self::set_pauli_gate_in_bitslice_usize_or_safe(
+            pstr,
+            look_up_output.q1_p_gate,
+            cnot.qubit_1,
+        );
+        Self::set_pauli_gate_in_bitslice_usize_or_safe(pstr, look_up_output.q2_p_gate, qubit_2);
     }
 
-    fn par_conjugate_cnot(&mut self, gate: &Gate) {
-        let qubit_2 = gate.qubit_2.unwrap();
+    /// Conjugate each Pauli string in the bitvec with a CNOT gate.
+    /// We use the update rules to adjust the Pauli gates and coefficients.
+    fn conjugate_cnot(&mut self, cnot: &Gate) {
+        if self.n_threads > 1 {
+            self.par_conjugate_cnot(cnot)
+        } else {
+            self.seq_conjugate_cnot(cnot)
+        }
+
+        self.h_s_conjugations_map.reset(cnot.qubit_1);
+        self.h_s_conjugations_map.reset(cnot.qubit_2.unwrap());
+    }
+
+    fn seq_conjugate_cnot(&mut self, cnot: &Gate) {
+
+        for pstr_ind in 0..self.size {
+            let mut pstr = BitSliceUsizeOrSafe::BitSlice(self.pstr_as_bitslice_mut(pstr_ind));
+            let gen_info = &mut self.generator_info;
+            let hs_map = &self.h_s_conjugations_map;
+            Self::conjugate_bitslice_with_cnot(
+                &mut pstr,
+                &mut gen_info[pstr_ind],
+                &hs_map,
+                cnot,
+            )
+        }
+    }
+
+    fn par_conjugate_cnot(&mut self, cnot: &Gate) {
+
+        let bits_per_pstr = 2 * self.n_qubits;
 
         // Copy items from self.h_s_conjugations_map to avoid borrowing issues
-        let num_qubits = self.n_qubits;
         let hs_map = self.h_s_conjugations_map.clone();
 
         let it = self.get_parallel_iterator();
 
         it.for_each(|(pstrs_chunk, gen_info_chunk)| {
             let hs_map = hs_map.clone();
-            for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(2 * num_qubits).enumerate() {
-                Self::apply_slice_h_s_conjugations(
+
+            for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(bits_per_pstr).enumerate() {
+                let mut pstr = &mut BitSliceUsizeOrSafe::BitSliceBitSafeUsize(pstr);
+                Self::conjugate_bitslice_with_cnot(
                     pstr,
                     &mut gen_info_chunk[pstr_offset],
                     &hs_map,
-                    gate.qubit_1,
-                );
-                Self::apply_slice_h_s_conjugations(
-                    pstr,
-                    &mut gen_info_chunk[pstr_offset],
-                    &hs_map,
-                    qubit_2,
-                );
-
-                let q1_target_p_gate =
-                    Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, gate.qubit_1);
-                let q2_target_p_gate =
-                    Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, qubit_2);
-
-                let look_up_output = CNOT_CONJ_UPD_RULES
-                    .get(&(q1_target_p_gate, q2_target_p_gate))
-                    .unwrap();
-
-                // self.generator_info[chunk_ind * pstrs_per_chunk + pstr_offset].multiply(look_up_output.coefficient);
-                gen_info_chunk[pstr_offset].multiply(look_up_output.coefficient);
-
-                Self::set_pauli_gate_in_bitsafeusize_bitslice(
-                    pstr,
-                    look_up_output.q1_p_gate,
-                    gate.qubit_1,
-                );
-                Self::set_pauli_gate_in_bitsafeusize_bitslice(
-                    pstr,
-                    look_up_output.q2_p_gate,
-                    qubit_2,
-                );
+                    cnot,
+                )
             }
         });
-
-        self.h_s_conjugations_map.reset(gate.qubit_1);
-        self.h_s_conjugations_map.reset(qubit_2);
     }
 
     /// Updates all Pauli strings according to the following rules:
@@ -351,101 +377,101 @@ impl RowWiseBitVec {
 
     // TODO refactor with sequential implementation, also holds for cnot
     fn par_conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        let num_qubits = self.n_qubits;
-        let hs_map = self.h_s_conjugations_map.clone();
+        // let num_qubits = self.n_qubits;
+        // let hs_map = self.h_s_conjugations_map.clone();
 
-        let it = self.get_parallel_iterator();
+        // let it = self.get_parallel_iterator();
 
-        struct NewPstrs {
-            pstrs: BitVec,
-            gen_info: Vec<CoefficientList>,
-        }
+        // struct NewPstrs {
+        //     pstrs: BitVec,
+        //     gen_info: Vec<CoefficientList>,
+        // }
 
-        let all_new_pstrs = Mutex::new(NewPstrs {
-            pstrs: BitVec::new(),
-            gen_info: Vec::new(),
-        });
+        // let all_new_pstrs = Mutex::new(NewPstrs {
+        //     pstrs: BitVec::new(),
+        //     gen_info: Vec::new(),
+        // });
 
-        it.for_each(|(pstrs_chunk, gen_info_chunk)| {
-            let hs_map = hs_map.clone();
-            let mut new_pstrs: BitVec<BitSafeUsize, Lsb0> =
-                BitVec::with_capacity(pstrs_chunk.len());
-            let mut new_gen_info = Vec::with_capacity(gen_info_chunk.len());
+        // it.for_each(|(pstrs_chunk, gen_info_chunk)| {
+        //     let hs_map = hs_map.clone();
+        //     let mut new_pstrs: BitVec<BitSafeUsize, Lsb0> =
+        //         BitVec::with_capacity(pstrs_chunk.len());
+        //     let mut new_gen_info = Vec::with_capacity(gen_info_chunk.len());
 
-            for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(2 * num_qubits).enumerate() {
-                Self::apply_slice_h_s_conjugations(
-                    pstr,
-                    &mut gen_info_chunk[pstr_offset],
-                    &hs_map,
-                    gate.qubit_1,
-                );
+        //     for (pstr_offset, pstr) in pstrs_chunk.chunks_mut(2 * num_qubits).enumerate() {
+        //         Self::apply_slice_h_s_conjugations(
+        //             pstr,
+        //             &mut gen_info_chunk[pstr_offset],
+        //             &hs_map,
+        //             gate.qubit_1,
+        //         );
 
-                let target_p_gate =
-                    Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, gate.qubit_1);
+        //         let target_p_gate =
+        //             Self::get_pauli_gate_from_bitsafeusize_bitslice(pstr, gate.qubit_1);
 
-                if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
-                    continue;
-                }
+        //         if target_p_gate == PauliGate::Z || target_p_gate == PauliGate::I {
+        //             continue;
+        //         }
 
-                let mut new_pstr = BitVec::from_bitslice(pstr);
-                Self::set_pauli_gate_in_bitsafeusize_bitslice(pstr, PauliGate::X, gate.qubit_1);
-                Self::set_pauli_gate_in_bitsafeusize_bitslice(
-                    &mut new_pstr,
-                    PauliGate::Y,
-                    gate.qubit_1,
-                );
+        //         let mut new_pstr = BitVec::from_bitslice(pstr);
+        //         Self::set_pauli_gate_in_bitsafeusize_bitslice(pstr, PauliGate::X, gate.qubit_1);
+        //         Self::set_pauli_gate_in_bitsafeusize_bitslice(
+        //             &mut new_pstr,
+        //             PauliGate::Y,
+        //             gate.qubit_1,
+        //         );
 
-                new_gen_info.push(gen_info_chunk[pstr_offset].clone());
+        //         new_gen_info.push(gen_info_chunk[pstr_offset].clone());
 
-                // Multiply coeffients with +/- and cos/sin
-                match (target_p_gate, conjugate_dagger) {
-                    (PauliGate::X, false) => {
-                        gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().cos());
-                        new_gen_info
-                            .last_mut()
-                            .unwrap()
-                            .multiply(gate.angle.unwrap().sin());
-                    }
-                    (PauliGate::Y, false) => {
-                        gen_info_chunk[pstr_offset].multiply(-1.0 * gate.angle.unwrap().sin());
-                        new_gen_info
-                            .last_mut()
-                            .unwrap()
-                            .multiply(gate.angle.unwrap().cos());
-                    }
-                    (PauliGate::X, true) => {
-                        gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().cos());
-                        new_gen_info
-                            .last_mut()
-                            .unwrap()
-                            .multiply(-1.0 * gate.angle.unwrap().sin());
-                    }
-                    (PauliGate::Y, true) => {
-                        gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().sin());
-                        new_gen_info
-                            .last_mut()
-                            .unwrap()
-                            .multiply(gate.angle.unwrap().cos());
-                    }
-                    _ => {
-                        unreachable!()
-                    }
-                }
-                new_pstrs.extend_from_bitslice(&new_pstr);
-            }
+        //         // Multiply coeffients with +/- and cos/sin
+        //         match (target_p_gate, conjugate_dagger) {
+        //             (PauliGate::X, false) => {
+        //                 gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().cos());
+        //                 new_gen_info
+        //                     .last_mut()
+        //                     .unwrap()
+        //                     .multiply(gate.angle.unwrap().sin());
+        //             }
+        //             (PauliGate::Y, false) => {
+        //                 gen_info_chunk[pstr_offset].multiply(-1.0 * gate.angle.unwrap().sin());
+        //                 new_gen_info
+        //                     .last_mut()
+        //                     .unwrap()
+        //                     .multiply(gate.angle.unwrap().cos());
+        //             }
+        //             (PauliGate::X, true) => {
+        //                 gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().cos());
+        //                 new_gen_info
+        //                     .last_mut()
+        //                     .unwrap()
+        //                     .multiply(-1.0 * gate.angle.unwrap().sin());
+        //             }
+        //             (PauliGate::Y, true) => {
+        //                 gen_info_chunk[pstr_offset].multiply(gate.angle.unwrap().sin());
+        //                 new_gen_info
+        //                     .last_mut()
+        //                     .unwrap()
+        //                     .multiply(gate.angle.unwrap().cos());
+        //             }
+        //             _ => {
+        //                 unreachable!()
+        //             }
+        //         }
+        //         new_pstrs.extend_from_bitslice(&new_pstr);
+        //     }
 
-            let mut new_data = all_new_pstrs.lock().unwrap();
-            new_data.pstrs.extend_from_bitslice(&new_pstrs);
-            new_data.gen_info.extend_from_slice(&new_gen_info);
-        });
+        //     let mut new_data = all_new_pstrs.lock().unwrap();
+        //     new_data.pstrs.extend_from_bitslice(&new_pstrs);
+        //     new_data.gen_info.extend_from_slice(&new_gen_info);
+        // });
 
-        let new_data = all_new_pstrs.lock().unwrap();
+        // let new_data = all_new_pstrs.lock().unwrap();
 
-        self.pauli_strings.extend_from_bitslice(&new_data.pstrs);
-        self.generator_info.extend_from_slice(&new_data.gen_info);
-        self.size = self.generator_info.len();
+        // self.pauli_strings.extend_from_bitslice(&new_data.pstrs);
+        // self.generator_info.extend_from_slice(&new_data.gen_info);
+        // self.size = self.generator_info.len();
 
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        // self.h_s_conjugations_map.reset(gate.qubit_1);
     }
 
     /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
@@ -487,7 +513,6 @@ impl RowWiseBitVec {
 
         self.size = self.generator_info.len();
     }
-
 
     /// Creates a vector which at each index (representing the generator index)
     /// contains another vector of tuples. The tuples represent the Pauli strings
@@ -691,7 +716,9 @@ impl GeneratorSet for RowWiseBitVec {
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
-                self.h_s_conjugations_map.update(gate, conjugate_dagger).unwrap();
+                self.h_s_conjugations_map
+                    .update(gate, conjugate_dagger)
+                    .unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
