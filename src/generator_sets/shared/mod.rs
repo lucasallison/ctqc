@@ -3,13 +3,11 @@ use crate::pauli_string::PauliGate;
 
 /// Code shared among the generator set implementations
 
-
 /// Modules defining shared functionality
 pub mod coefficient_list;
 pub mod conjugation_look_up_tables;
 pub mod errors;
 pub mod h_s_conjugations_map;
-
 
 /// Miscellaneous shared constant(s) and functions
 
@@ -29,12 +27,8 @@ pub fn rz_conj_coef_multipliers(
     // Multiply coeffients with +/- and cos/sin
     match (target_pgate, conjugate_dagger) {
         (PauliGate::X, false) => return (rz.angle.unwrap().cos(), rz.angle.unwrap().sin()),
-        (PauliGate::Y, false) => {
-            return (-1.0 * rz.angle.unwrap().sin(), rz.angle.unwrap().cos())
-        }
-        (PauliGate::X, true) => {
-            return (rz.angle.unwrap().cos(), -1.0 * rz.angle.unwrap().sin())
-        }
+        (PauliGate::Y, false) => return (-1.0 * rz.angle.unwrap().sin(), rz.angle.unwrap().cos()),
+        (PauliGate::X, true) => return (rz.angle.unwrap().cos(), -1.0 * rz.angle.unwrap().sin()),
         (PauliGate::Y, true) => return (rz.angle.unwrap().sin(), rz.angle.unwrap().cos()),
         _ => {
             panic!(

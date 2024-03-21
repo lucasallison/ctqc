@@ -6,8 +6,8 @@ use fxhash::FxBuildHasher;
 
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::shared::errors::GenertorSetError;
+use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -918,10 +918,7 @@ impl GeneratorSet for PauliTrees {
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
-            _ => { 
-                return Err(GenertorSetError::InvalidGateToConjugate { })
-                
-            }
+            _ => return Err(GenertorSetError::InvalidGateToConjugate {}),
         }
         Ok(())
     }

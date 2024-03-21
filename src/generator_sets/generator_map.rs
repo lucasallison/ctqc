@@ -3,11 +3,11 @@ use std::fmt;
 
 use fxhash::FxBuildHasher;
 
+use super::shared as Shared;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::shared::errors::GenertorSetError;
-use super::shared as Shared;
+use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -153,7 +153,7 @@ impl GeneratorMap {
 
             let (x_mult, y_mult) =
                 Shared::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
-            
+
             coef_list.multiply(x_mult);
             new_coef_list.multiply(y_mult);
 
@@ -241,7 +241,7 @@ impl GeneratorSet for GeneratorMap {
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
-            _ => { return Err(GenertorSetError::InvalidGateToConjugate { }) }
+            _ => return Err(GenertorSetError::InvalidGateToConjugate {}),
         }
         Ok(())
     }

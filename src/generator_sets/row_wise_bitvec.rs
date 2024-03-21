@@ -51,6 +51,10 @@ impl RowWiseBitVec {
         }
     }
 
+    // -------------------- Helper Functions -------------------------- //
+    // 
+    // Helper functions for the conjugations, measurements and clean up.
+
     /// Sets the RowWiseBitVec to contain `size` amount of Pauli strings
     /// consisting of identity gates only. No generator coefficient information is stored,
     /// only memory is allocated for it.
@@ -102,13 +106,6 @@ impl RowWiseBitVec {
         &self.pauli_strings[start..=end]
     }
 
-    /// Returns the mutable bitslice with the bits of the Pauli string at the given index
-    fn pstr_as_bitslice_mut(&mut self, pstr_ind: usize) -> &mut BitSlice {
-        let start = self.pstr_first_bit(pstr_ind);
-        let end = self.pstr_last_bit(pstr_ind);
-        &mut self.pauli_strings[start..=end]
-    }
-
     /// Clones the bits of the Pauli string at the provided index and appends
     /// them to the end of the bitvec.
     fn extend_from_within(&mut self, pstr_ind: usize) {
@@ -140,16 +137,40 @@ impl RowWiseBitVec {
                 .get_coefficient_multiplier(j, current_p_gate),
         );
     }
+    
+    // Return a parallel iterator over chunks of Pauli strings and their coefficients
+    fn get_parallel_iterator(
+        &mut self,
+    ) -> rayon::iter::IterBridge<
+        std::iter::Zip<
+            bitvec::slice::ChunksMut<'_, usize, LocalBits>,
+            std::slice::ChunksMut<'_, CoefficientList>,
+        >,
+    > {
+        // Each thread will conjugate self.size / self.n_threads Pauli strings.
+        // As a single Pauli string is 2 * self.num_qubits bits,
+        // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
+        let mut pstrs_per_chunk = self.size / self.n_threads;
+        if self.size < self.n_threads {
+            pstrs_per_chunk = 1;
+        }
+        let bits_per_process = (2 * self.n_qubits) * pstrs_per_chunk;
 
-    // -------------------- Parallel helper functions -------------------------- //
+        // Iterator we want to parallelize
+        self.pauli_strings
+            .chunks_mut(bits_per_process)
+            .zip(self.generator_info.chunks_mut(pstrs_per_chunk))
+            .par_bridge()
+    }
+
+    // -------------------- (Non-Self) Helper Functions -------------------------- //
     //
     // The following functions are deliberately not associated to self, to make sharing
     // among threads easier. They are also deliberately not moved to the Pauli utils
     // module, as they are specific to the RowWiseBitVec implementation.
 
     /// Returns the gate from the provided index of the
-    /// provided slice representing a Pauli string
-    /// TODO
+    /// provided UOSBitSlice representing a Pauli string
     fn get_pauli_gate_from_uos_bitslice(pstr: &UOSBitSlice, gate_ind: usize) -> PauliGate {
         match pstr {
             UOSBitSlice::Usize(bits) => {
@@ -161,9 +182,8 @@ impl RowWiseBitVec {
         }
     }
 
-    /// Set the gate at the provided index of the provided slice representing a
+    /// Set the gate at the provided index of the provided UOSBitSlice representing a
     /// Pauli string with the provided PauliGate
-    /// TODO
     fn set_pauli_gate_in_uos_bitslice(pstr: &mut UOSBitSlice, pgate: PauliGate, gate_ind: usize) {
         let (b1, b2) = PauliUtils::pauli_gate_as_tuple(pgate);
         match pstr {
@@ -194,29 +214,20 @@ impl RowWiseBitVec {
             .multiply(h_s_conjugations_map.get_coefficient_multiplier(qubit, current_p_gate));
     }
 
-    // Return a parallel iterator over chunks of Pauli strings and their coefficients
-    fn get_parallel_iterator(
-        &mut self,
-    ) -> rayon::iter::IterBridge<
-        std::iter::Zip<
-            bitvec::slice::ChunksMut<'_, usize, LocalBits>,
-            std::slice::ChunksMut<'_, CoefficientList>,
-        >,
-    > {
-        // Each thread will conjugate self.size / self.n_threads Pauli strings.
-        // As a single Pauli string is 2 * self.num_qubits bits,
-        // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
-        let mut pstrs_per_chunk = self.size / self.n_threads;
-        if self.size < self.n_threads {
-            pstrs_per_chunk = 1;
-        }
-        let bits_per_process = (2 * self.n_qubits) * pstrs_per_chunk;
+    // -------------------------- Pauli Pools Helper Functions ------------------------- //
 
-        // Iterator we want to parallelize
-        self.pauli_strings
-            .chunks_mut(bits_per_process)
-            .zip(self.generator_info.chunks_mut(pstrs_per_chunk))
-            .par_bridge()
+    // Replace the current Pauli strings with the Pauli string in the provided
+    // pstrs and coefficents.
+    pub fn replace(&mut self, p_strs: &[(BitVec, CoefficientList)]) {
+        self.pauli_strings.clear();
+        self.generator_info.clear();
+
+        for (pstr, coefficients) in p_strs.iter() {
+            self.pauli_strings.extend_from_bitslice(pstr);
+            self.generator_info.push(coefficients.clone());
+        }
+
+        self.size = self.generator_info.len();
     }
 
     // -------------------------- CNOT conjugation ------------------------- //
@@ -429,7 +440,7 @@ impl RowWiseBitVec {
     /// that comprise the sum of the stabilizer generator with the corresponding
     /// index. Each tuple contains the index of the Pauli string and the coefficient.
     fn create_gen_to_pstr_map(&self) -> Vec<Vec<(usize, f64)>> {
-        // TODO adjust capacity
+        // TODO adjust capacity in a smart way?
         let mut gen_to_pstr = vec![Vec::with_capacity(1); self.n_qubits];
 
         for pstr_index in 0..self.size {
@@ -441,8 +452,7 @@ impl RowWiseBitVec {
         gen_to_pstr
     }
 
-    // Multiplies pstr_1 and pstr_2.
-    // The result is stored in pstr_1 and any coefficient is returned
+    /// Multiplies pstr_1 and pstr_2. result is stored in pstr_1 and any coefficient is returned.
     fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ImaginaryCoef {
         let mut coef = ImaginaryCoef::new(1.0, false);
 
@@ -458,21 +468,28 @@ impl RowWiseBitVec {
         coef
     }
 
+    /// Calculates all combinations of generator multiplications and sums the coefficients
+    /// of the Pauli strings that consist of only identity gates and a single Z gate 
+    /// at the provided index.
     fn sum_z_stabilizer_coefficients(&self, z_index: usize) -> f64 {
         let mut sum = 0.0;
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
 
-        // TODO rename variables
+        // Keep track of the current term of each generator, e.g.,
+        // if indexes[0] is 5 we are processing the fifth term of the first generator.
+        // We can find the associated Pauli string index at gen_to_pstr[0][5].0
+        // and the coefficient at gen_to_pstr[0][5].1
         let mut indexes: Vec<usize> = vec![0; self.size];
+
+        // The generator from which are we going to multiply a term
         let mut gen_ind: usize = 0;
+
+        // The resulting Pauli string and coefficient (multiplied_pstr, multiplied_coef)
         let mut m_pstr = bitvec![0; 2*self.n_qubits]; // only identity gates
         let mut m_coef = ImaginaryCoef::new(1.0, false);
 
         loop {
-            if gen_ind == 0 {
-                println!("Starting from scratch...")
-            }
 
             // For each generator multiply the 'm_pstr' with the ith (stored in indexes[gen_ind])
             // term of the generator and update the coefficient accordingly. If we have already
@@ -483,11 +500,9 @@ impl RowWiseBitVec {
                 let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                 let pstr = self.pstr_as_bitslice(pstr_ind);
 
-                m_coef.mutliply_with_f64(coef);
-
-                // println!("MUL: m_pstr: {:?}, g: {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), PauliUtils::pstr_bitslice_as_str(pstr));
                 let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
-                // println!("RES: m_pstr: {:?}, g: {}", PauliUtils::pstr_bitslice_as_str(&m_pstr), PauliUtils::pstr_bitslice_as_str(pstr));
+
+                m_coef.mutliply_with_f64(coef);
                 m_coef.multiply(&multiply_coef_res);
             }
 
@@ -507,12 +522,12 @@ impl RowWiseBitVec {
                 loop {
                     // Undo the multiplication of the indexes[gen_ind] term of the generator with gen_ind
                     if indexes[gen_ind] < gen_to_pstr[gen_ind].len() {
-                        // TODO refactor with the code above?
                         let (pstr_ind, coef) = gen_to_pstr[gen_ind][indexes[gen_ind]];
                         let pstr = self.pstr_as_bitslice(pstr_ind);
 
-                        m_coef.divide_by_f64(coef);
                         let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
+
+                        m_coef.divide_by_f64(coef);
                         m_coef.divide(&multiply_coef_res);
                     }
 
@@ -524,17 +539,15 @@ impl RowWiseBitVec {
                     // of the generator with gen_ind to multiply with m_pstr, stop backtracking
                     if indexes[gen_ind] <= gen_to_pstr[gen_ind].len() {
                         break;
+                    }
 
                     // We have backtracked the generator with gen_ind, go the the previous one
-                    } else {
-                        indexes[gen_ind] = 0;
+                    indexes[gen_ind] = 0;
 
-                        if gen_ind == 0 {
-                            return sum;
-                        }
-
-                        gen_ind -= 1;
+                    if gen_ind == 0 {
+                        return sum;
                     }
+                    gen_ind -= 1;
                 }
             }
         }
@@ -577,23 +590,6 @@ impl RowWiseBitVec {
             }
             self.pauli_strings.extend_from_bitslice(&pstr);
             self.generator_info.push(coefficients);
-        }
-
-        self.size = self.generator_info.len();
-    }
-
-
-    // -------------------------- Pauli Pools Helper Functions ------------------------- //
-
-    // Replace the current Pauli strings with the Pauli string in the provided
-    // pstrs and coefficents.
-    pub fn replace(&mut self, p_strs: &[(BitVec, CoefficientList)]) {
-        self.pauli_strings.clear();
-        self.generator_info.clear();
-
-        for (pstr, coefficients) in p_strs.iter() {
-            self.pauli_strings.extend_from_bitslice(pstr);
-            self.generator_info.push(coefficients.clone());
         }
 
         self.size = self.generator_info.len();
