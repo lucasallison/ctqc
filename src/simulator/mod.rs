@@ -52,7 +52,7 @@ impl<'a> Simulator<'a> {
 
         println!("Sampling measurements...");
 
-        let mut measurement_sampler = self.generator_set.get_measurement_sample();
+        let mut measurement_sampler = self.generator_set.get_measurement_sampler();
 
         for qubit in circuit.measurements().iter() {
 

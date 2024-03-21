@@ -104,7 +104,7 @@ impl HSConjugationsMap {
 #[derive(Debug, Snafu)]
 pub enum HSConjugationsMapError {
     #[snafu(display(
-        "{} invalid: Can only H or S to update the H/S conjugations map.",
+        "{} invalid: Can only use H or S to update the H/S conjugations map.",
         gate
     ))]
     InvalideGate { gate: Gate },

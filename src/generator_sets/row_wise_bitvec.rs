@@ -1,4 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap};
+use std::collections::HashMap;
 use std::fmt;
 
 use bitvec::access::BitSafeUsize;
@@ -536,7 +536,7 @@ impl GeneratorSet for RowWiseBitVec {
         Ok(())
     }
 
-    fn get_measurement_sample(&mut self) -> MeasurementSampler {
+    fn get_measurement_sampler(&mut self) -> MeasurementSampler {
         self.apply_all_h_s_conjugations();
         self.clean();
 

@@ -47,6 +47,10 @@ impl PauliString {
         PauliUtils::pauli_gate_from_tuple(self.pstr[2 * index], self.pstr[2 * index + 1])
     }
 
+    pub fn as_bitslice(&self) -> &BitSlice {
+        &self.pstr
+    }
+
     pub fn len(&self) -> usize {
         self.pstr.len() / 2
     }

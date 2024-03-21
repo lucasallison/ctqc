@@ -2,6 +2,7 @@ use std::collections::{hash_map::Entry, HashMap};
 use std::fmt;
 
 use fxhash::FxBuildHasher;
+use bitvec::prelude::*;
 
 use super::measurement_sampler::MeasurementSampler;
 use super::shared as Shared;
@@ -246,8 +247,21 @@ impl GeneratorSet for GeneratorMap {
         Ok(())
     }
 
-    fn get_measurement_sample(&mut self) -> MeasurementSampler {
-        unimplemented!()
+    fn get_measurement_sampler(&mut self) -> MeasurementSampler {
+
+        let mut pauli_strings = BitVec::with_capacity(2 * self.n_qubits * self.size());
+        let mut generator_info =  Vec::with_capacity(self.size());
+
+        let mut map = self.pauli_strings_src.clone();
+        for (pstr, mut coefficients) in map.drain() {
+            if coefficients.is_empty() {
+                continue;
+            }
+            pauli_strings.extend_from_bitslice(pstr.as_bitslice());
+            generator_info.push(coefficients);
+        }
+
+        MeasurementSampler::new(pauli_strings, generator_info, self.n_qubits)
     }
 
     /// Since we only ever save unique Pauli strings associated to

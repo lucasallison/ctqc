@@ -331,7 +331,7 @@ impl GeneratorSet for ColumnWiseBitVec {
         Ok(())
     }
 
-    fn get_measurement_sample(&mut self) -> MeasurementSampler {
+    fn get_measurement_sampler(&mut self) -> MeasurementSampler {
         unimplemented!()
     }
 

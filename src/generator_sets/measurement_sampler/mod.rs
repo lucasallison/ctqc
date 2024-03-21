@@ -198,6 +198,7 @@ impl MeasurementSampler {
     /// to the provided measurement.
     // TODO reference explaination?
     fn measurement_update(&mut self, i: usize, measurement: bool, p0: f64) {
+        println!("Update");
 
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size,

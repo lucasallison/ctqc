@@ -35,7 +35,7 @@ pub trait GeneratorSet: Display {
 
     /// Return a measurment sampler for the state represented by the generator set
     /// at the moment the function is called.
-    fn get_measurement_sample(&mut self) -> MeasurementSampler;
+    fn get_measurement_sampler(&mut self) -> MeasurementSampler;
 
     /// Performs any clean-up operations on the generator set, such as, merging duplicate Pauli strings
     /// and removing Pauli strings with zero coefficients.
