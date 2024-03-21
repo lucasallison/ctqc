@@ -8,6 +8,7 @@ use rayon::prelude::*;
 
 use super::row_wise_bitvec::RowWiseBitVec;
 use super::shared::coefficient_list::CoefficientList;
+use super::shared::errors::GenertorSetError;
 use super::GeneratorSet;
 
 use crate::circuit::Gate;
@@ -131,10 +132,11 @@ impl GeneratorSet for PauliPools {
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError> {
         self.pauli_pools.par_iter_mut().for_each(|rwbv| {
-            rwbv.conjugate(gate, conjugate_dagger);
+            rwbv.conjugate(gate, conjugate_dagger).unwrap();
         });
+        Ok(())
     }
 
     fn measure(&mut self, _i: usize) -> (bool, f64) {

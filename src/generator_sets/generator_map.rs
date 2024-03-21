@@ -6,6 +6,8 @@ use fxhash::FxBuildHasher;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::shared::errors::GenertorSetError;
+use super::shared as Shared;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -96,16 +98,16 @@ impl GeneratorMap {
         );
     }
 
-    fn conjugate_cnot(&mut self, gate: &Gate) {
-        let qubit_2 = gate.qubit_2.unwrap();
+    fn conjugate_cnot(&mut self, cnot: &Gate) {
+        let qubit_2 = cnot.qubit_2.unwrap();
 
         let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
 
         for (mut pstr, mut coef_list) in pstrs_src.drain() {
-            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate.qubit_1);
+            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, cnot.qubit_1);
             self.apply_h_s_conjugations(&mut pstr, &mut coef_list, qubit_2);
 
-            let q1_target_p_gate = pstr.get_pauli_gate(gate.qubit_1);
+            let q1_target_p_gate = pstr.get_pauli_gate(cnot.qubit_1);
             let q2_target_p_gate = pstr.get_pauli_gate(qubit_2);
 
             let look_up_output = CNOT_CONJ_UPD_RULES
@@ -114,7 +116,7 @@ impl GeneratorMap {
 
             coef_list.multiply(look_up_output.coefficient);
 
-            pstr.set_pauli_gate(gate.qubit_1, look_up_output.q1_p_gate);
+            pstr.set_pauli_gate(cnot.qubit_1, look_up_output.q1_p_gate);
             pstr.set_pauli_gate(qubit_2, look_up_output.q2_p_gate);
 
             self.insert_or_merge_into_dst(pstr, coef_list);
@@ -123,20 +125,20 @@ impl GeneratorMap {
         self.pauli_strings_src = std::mem::take(&mut pstrs_src);
         std::mem::swap(&mut self.pauli_strings_src, &mut self.pauli_strings_dst);
 
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(cnot.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
-    fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
         let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
 
         // Reserve addtional memory for potential new Pauli strings
         self.pauli_strings_dst.reserve(pstrs_src.len() / 2);
 
         for (mut pstr, mut coef_list) in pstrs_src.drain() {
-            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate.qubit_1);
+            self.apply_h_s_conjugations(&mut pstr, &mut coef_list, rz.qubit_1);
 
-            let target_pgate = pstr.get_pauli_gate(gate.qubit_1);
+            let target_pgate = pstr.get_pauli_gate(rz.qubit_1);
 
             if target_pgate == PauliGate::Z || target_pgate == PauliGate::I {
                 self.pauli_strings_dst.insert(pstr, coef_list);
@@ -146,30 +148,14 @@ impl GeneratorMap {
             let mut new_pstr = pstr.clone();
             let mut new_coef_list = coef_list.clone();
 
-            pstr.set_pauli_gate(gate.qubit_1, PauliGate::X);
-            new_pstr.set_pauli_gate(gate.qubit_1, PauliGate::Y);
+            pstr.set_pauli_gate(rz.qubit_1, PauliGate::X);
+            new_pstr.set_pauli_gate(rz.qubit_1, PauliGate::Y);
 
-            match (target_pgate, conjugate_dagger) {
-                (PauliGate::X, false) => {
-                    coef_list.multiply(gate.angle.unwrap().cos());
-                    new_coef_list.multiply(gate.angle.unwrap().sin());
-                }
-                (PauliGate::Y, false) => {
-                    coef_list.multiply(-1.0 * gate.angle.unwrap().sin());
-                    new_coef_list.multiply(gate.angle.unwrap().cos());
-                }
-                (PauliGate::X, true) => {
-                    coef_list.multiply(gate.angle.unwrap().cos());
-                    new_coef_list.multiply(-1.0 * gate.angle.unwrap().sin());
-                }
-                (PauliGate::Y, true) => {
-                    coef_list.multiply(gate.angle.unwrap().sin());
-                    new_coef_list.multiply(gate.angle.unwrap().cos());
-                }
-                _ => {
-                    unreachable!()
-                }
-            }
+            let (x_mult, y_mult) =
+                Shared::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
+            
+            coef_list.multiply(x_mult);
+            new_coef_list.multiply(y_mult);
 
             self.insert_or_merge_into_dst(pstr, coef_list);
             self.insert_or_merge_into_dst(new_pstr, new_coef_list);
@@ -180,7 +166,7 @@ impl GeneratorMap {
         // Swap src and dest map, so the src map contains the updated Pauli strings
         std::mem::swap(&mut self.pauli_strings_src, &mut self.pauli_strings_dst);
 
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     fn contains_ith_x_or_z_generator(&self, i: usize, zero_state_generator: bool) -> bool {
@@ -246,7 +232,7 @@ impl GeneratorSet for GeneratorMap {
         self.contains_ith_x_or_z_generator(i, check_zero_state)
     }
 
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError> {
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map
@@ -255,11 +241,9 @@ impl GeneratorSet for GeneratorMap {
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
-            _ => {
-                // TODO return error?
-                panic!("Can only conjugate a H, S, CNOT, or Rz gate")
-            }
+            _ => { return Err(GenertorSetError::InvalidGateToConjugate { }) }
         }
+        Ok(())
     }
 
     fn measure(&mut self, _i: usize) -> (bool, f64) {

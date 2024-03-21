@@ -9,7 +9,10 @@ codegen-units = 1
 
 [dependencies]
 lazy_static = "1.4.0"
-bitvec = "1"
+# We use a fork from https://github.com/ferrilab/bitvec
+# where we fixed a small (but important for this project)
+# bug: https://github.com/lucasallison/bitvec/commit/38a88bc50973fa9319c87c385b4f5e6ec4700e01
+bitvec = { git = "https://github.com/lucasallison/bitvec" }
 ordered-float = "4.1.0"
 clap = { version = "4.4.4", features = ["derive"] }
 snafu = "0.7.5"

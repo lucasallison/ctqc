@@ -8,6 +8,7 @@ use ordered_float::OrderedFloat;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::shared::errors::GenertorSetError;
 use super::shared::FP_ERROR_MARGIN;
 use super::GeneratorSet;
 
@@ -316,7 +317,7 @@ impl GeneratorSet for ColumnWiseBitVec {
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError>{
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map
@@ -326,9 +327,10 @@ impl GeneratorSet for ColumnWiseBitVec {
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
             _ => {
-                panic!("Can only conjugate a H, S, CNOT, or Rz gate")
+                return Err(GenertorSetError::InvalidGateToConjugate { })
             }
         }
+        Ok(())
     }
 
     fn measure(&mut self, _i: usize) -> (bool, f64) {
