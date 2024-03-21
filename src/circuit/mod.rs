@@ -10,7 +10,6 @@ pub enum GateType {
     H,
     CNOT,
     S,
-    M,
     Rz,
 }
 
@@ -20,7 +19,6 @@ impl fmt::Display for GateType {
             GateType::H => write!(f, "H"),
             GateType::CNOT => write!(f, "CNOT"),
             GateType::S => write!(f, "S"),
-            GateType::M => write!(f, "M"),
             GateType::Rz => write!(f, "Rz"),
         }
     }
@@ -50,7 +48,6 @@ impl Gate {
                 GateType::CNOT
             }
             "S" => GateType::S,
-            "M" => GateType::M,
             "Rz" => {
                 if angle.is_none() {
                     return Err(CircuitError::RzMissingAngle {});
@@ -107,18 +104,20 @@ impl fmt::Display for Gate {
 
 // Useful regexes when parsing the circuit file
 lazy_static! {
-    static ref H_S_M_RE: Regex = Regex::new(r"^(H|S|M) (\d+)$").unwrap();
+    static ref H_S_RE: Regex = Regex::new(r"^(H|S) (\d+)$").unwrap();
     static ref CNOT_RE: Regex = Regex::new(r"^CNOT (\d+) (\d+)$").unwrap();
     static ref T_RE: Regex = Regex::new(r"^T (\d+)$").unwrap();
     static ref RZ_RE: Regex = Regex::new(r"^Rz\(.*\) (\d+)$").unwrap();
     static ref RZ_ANGLE_RE: Regex = Regex::new(r"\((.*)\)").unwrap();
     static ref RZ_DIGIT_RE: Regex = Regex::new(r"\d+$").unwrap();
+    static ref M_RE: Regex = Regex::new(r"^M (\d+)$").unwrap();
 }
 
 /// Struct representing a quantum circuit, i.e., a sequence of gates.
 pub struct Circuit {
     name: String,
     gates: Vec<Gate>,
+    measurements: Vec<usize>,
     n_qubits: usize,
 }
 
@@ -127,6 +126,7 @@ impl Circuit {
         let mut circuit = Circuit {
             name: file.clone(),
             gates: Vec::new(),
+            measurements: Vec::new(),
             n_qubits: 0,
         };
 
@@ -146,7 +146,7 @@ impl Circuit {
             qubit_2 = None;
             angle = None;
 
-            if H_S_M_RE.is_match(line) {
+            if H_S_RE.is_match(line) {
                 let gate_qubit = line.split(" ").collect::<Vec<&str>>();
                 gate_type = gate_qubit[0].to_string();
                 qubit_1 = gate_qubit[1].parse::<usize>()?;
@@ -173,6 +173,10 @@ impl Circuit {
                     .unwrap()
                     .as_str()
                     .parse::<usize>()?;
+            } else if M_RE.is_match(line) {
+                let gate_qubit = line.split(" ").collect::<Vec<&str>>();
+                circuit.measurements.push(gate_qubit[1].parse::<usize>()?);
+                continue;
             } else {
                 return Err(Box::new(ParseError::InvalidLine {
                     line: line.to_string(),
@@ -232,6 +236,10 @@ impl Circuit {
             gate_index: self.gates.len() - 1,
             reverse: true,
         }
+    }
+
+    pub fn measurements(&self) -> &Vec<usize> {
+        &self.measurements
     }
 }
 

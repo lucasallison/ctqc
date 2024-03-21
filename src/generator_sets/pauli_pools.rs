@@ -6,6 +6,7 @@ use core::panic;
 use fxhash::FxBuildHasher;
 use rayon::prelude::*;
 
+use super::measurement_sampler::MeasurementSampler;
 use super::row_wise_bitvec::RowWiseBitVec;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::errors::GenertorSetError;
@@ -139,7 +140,7 @@ impl GeneratorSet for PauliPools {
         Ok(())
     }
 
-    fn measure(&mut self, _i: usize) -> (bool, f64) {
+    fn get_measurement_sample(&mut self) -> MeasurementSampler {
         unimplemented!()
     }
 

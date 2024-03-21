@@ -5,7 +5,6 @@ use snafu::prelude::*;
 use std::error::Error;
 
 use crate::circuit::Circuit;
-use crate::circuit::GateType;
 use crate::generator_sets::GeneratorSet;
 
 lazy_static! {
@@ -46,6 +45,26 @@ impl<'a> Simulator<'a> {
         self.sim(circuit, false, &progress_bar);
 
         progress_bar.finish();
+
+        if circuit.measurements().is_empty() {
+            return;
+        }
+
+        println!("Sampling measurements...");
+
+        let mut measurement_sampler = self.generator_set.get_measurement_sample();
+
+        for qubit in circuit.measurements().iter() {
+
+            let (measurement, p0) = measurement_sampler.sample(*qubit);
+            println!(
+                    "* Qubit {} -> {} (p0: {}, p1: {})",
+                        qubit,
+                        measurement as u8,
+                        p0,
+                        1.0 - p0
+                    );
+        }
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
@@ -215,21 +234,7 @@ impl<'a> Simulator<'a> {
                 self.generator_set.clean();
             }
 
-            match gate.gate_type {
-                GateType::M => {
-                    let (measurement, p0) = self.generator_set.measure(gate.qubit_1);
-                    println!(
-                        "Measurment of qubit {} -> {} (p0: {}, p1: {})",
-                        gate.qubit_1,
-                        measurement as u8,
-                        p0,
-                        1.0 - p0
-                    );
-                }
-                _ => {
-                    self.generator_set.conjugate(gate, inverse);
-                }
-            }
+            self.generator_set.conjugate(gate, inverse);
 
             progress_bar.inc(1);
 

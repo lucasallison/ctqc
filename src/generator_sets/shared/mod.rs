@@ -1,3 +1,10 @@
+use std::collections::{hash_map::Entry, HashMap};
+
+use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
+
+use coefficient_list::CoefficientList;
+
 use crate::circuit::Gate;
 use crate::pauli_string::PauliGate;
 
@@ -35,6 +42,21 @@ pub fn rz_conj_coef_multipliers(
                 "`rz_conj_coef_multipliers` can only be used to determine the \
                 coeficient multipliers when the target Pauli gate is an X or Y"
             )
+        }
+    }
+}
+
+pub fn insert_pstr_bitvec_into_map(
+    map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
+    pstr: BitVec,
+    coef_list: CoefficientList,
+) {
+    match map.entry(pstr) {
+        Entry::Occupied(mut e) => {
+            e.get_mut().merge(&coef_list);
+        }
+        Entry::Vacant(e) => {
+            e.insert(coef_list);
         }
     }
 }

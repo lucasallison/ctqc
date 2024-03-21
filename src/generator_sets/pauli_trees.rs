@@ -4,6 +4,7 @@ use bitvec::prelude::*;
 use fxhash;
 use fxhash::FxBuildHasher;
 
+use super::measurement_sampler::MeasurementSampler;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::shared::errors::GenertorSetError;
@@ -918,12 +919,11 @@ impl GeneratorSet for PauliTrees {
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
-            _ => return Err(GenertorSetError::InvalidGateToConjugate {}),
         }
         Ok(())
     }
 
-    fn measure(&mut self, _i: usize) -> (bool, f64) {
+    fn get_measurement_sample(&mut self) -> MeasurementSampler {
         unimplemented!()
     }
 
