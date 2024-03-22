@@ -824,12 +824,12 @@ impl PauliTrees {
         (actual_pgate, coef_mult)
     }
 
-    fn conjugate_cnot(&mut self, gate: &Gate) {
-        let qubit_2 = gate.qubit_2.unwrap();
+    fn conjugate_cnot(&mut self, cnot: &Gate) {
+        let qubit_2 = cnot.qubit_2.unwrap();
 
         for pstr_index in 0..self.size() {
             let (q1_actual_pgate, q1_coef_mul) =
-                self.get_actual_p_gate_and_coef_mul(pstr_index, gate.qubit_1);
+                self.get_actual_p_gate_and_coef_mul(pstr_index, cnot.qubit_1);
             let (q2_actual_pgate, q2_coef_mul) =
                 self.get_actual_p_gate_and_coef_mul(pstr_index, qubit_2);
 
@@ -840,22 +840,22 @@ impl PauliTrees {
             self.coeff_lists[pstr_index]
                 .multiply(look_up_output.coefficient * q1_coef_mul * q2_coef_mul);
 
-            self.set_pgate(pstr_index, gate.qubit_1, look_up_output.q1_p_gate);
+            self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate);
             self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate);
         }
 
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(cnot.qubit_1);
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
-    fn conjugate_rz(&mut self, gate: &Gate, conjugate_dagger: bool) {
+    fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
         for pstr_index in 0..self.size() {
             let (actual_pgate, coef_mul) =
-                self.get_actual_p_gate_and_coef_mul(pstr_index, gate.qubit_1);
+                self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
             // Apply the H/S conjugations
             self.coeff_lists[pstr_index].multiply(coef_mul);
-            self.set_pgate(pstr_index, gate.qubit_1, actual_pgate);
+            self.set_pgate(pstr_index, rz.qubit_1, actual_pgate);
 
             if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
                 continue;
@@ -869,13 +869,13 @@ impl PauliTrees {
             self.coeff_lists.push(self.coeff_lists[pstr_index].clone());
 
             if actual_pgate == PauliGate::X {
-                self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::Y);
+                self.set_pgate(self.size() - 1, rz.qubit_1, PauliGate::Y);
             } else if actual_pgate == PauliGate::Y {
-                self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::X);
+                self.set_pgate(self.size() - 1, rz.qubit_1, PauliGate::X);
             }
 
             let (x_mult, y_mult) =
-                Utils::rz_conj_coef_multipliers(gate, &actual_pgate, conjugate_dagger);
+                Utils::rz_conj_coef_multipliers(rz, &actual_pgate, conjugate_dagger);
             let (first_mult, last_mult) = if actual_pgate == PauliGate::X {
                 (x_mult, y_mult)
             } else {
@@ -885,7 +885,7 @@ impl PauliTrees {
             self.coeff_lists[pstr_index].multiply(first_mult);
             self.coeff_lists.last_mut().unwrap().multiply(last_mult);
         }
-        self.h_s_conjugations_map.reset(gate.qubit_1);
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 }
 

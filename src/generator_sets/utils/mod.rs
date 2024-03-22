@@ -1,10 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap};
-
-use bitvec::prelude::*;
-use fxhash::FxBuildHasher;
-
-use super::pauli_string::{utils as PauliUtils, PauliGate, PauliString};
-use super::shared::coefficient_list::CoefficientList;
+use super::pauli_string::PauliGate;
 
 use crate::circuit::Gate;
 
