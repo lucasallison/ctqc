@@ -229,7 +229,7 @@ impl<'a> Simulator<'a> {
             let progress_bar_msg = format!("{} pauli string(s)", self.generator_set.size());
             progress_bar.set_message(progress_bar_msg);
 
-            if i != 0 && i % self.clean_cycles == 0 {
+            if self.clean_cycles != 0 && i != 0 && i % self.clean_cycles == 0 {
                 self.generator_set.clean();
             }
 

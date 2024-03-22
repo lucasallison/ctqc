@@ -432,7 +432,8 @@ impl RowWiseBitVec {
 
     // -------------------------- Clean Up ------------------------- //
 
-    /// Gather all unique Pauli strings in a map and merge coefficients for duplicates
+    /// Gather all unique Pauli strings in a map.
+    /// Important! the row wise bitvector is emptied in order to populate te map.
     // Declared public for Pauli Pools
     pub fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(

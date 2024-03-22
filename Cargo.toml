@@ -1,5 +1,5 @@
 [package]
-name = "CTQC"
+name = "ctqc"
 version = "1.0.0"
 edition = "2021"
 

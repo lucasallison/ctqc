@@ -13,6 +13,7 @@ use super::GeneratorSet;
 
 use crate::circuit::Gate;
 
+// TODO Implement a batch conjugation
 pub struct PauliPools {
     // Each thread will manage 1 Pauli pool. Each pool is
     // managed by using a RowWiseBitvec.
@@ -24,20 +25,33 @@ pub struct PauliPools {
 impl PauliPools {
     // Creates and returns an empty RowWiseBitVec
     pub fn new(n_qubits: usize, n_threads: usize) -> PauliPools {
-        PauliPools {
+        println!("Creating PauliPools with {} threads.", n_threads);
+        if n_threads < 2 {
+            eprintln!("WARNING! n_threads < 2, using 2 threads instead.");
+        }
+
+        let n_threads = if n_threads < 2 { 2 } else { n_threads };
+
+        let mut pp = PauliPools {
             pauli_pools: Vec::with_capacity(n_threads),
             n_threads: n_threads,
             n_qubits: n_qubits,
+        };
+
+        for _ in 0..n_threads {
+            pp.pauli_pools.push(RowWiseBitVec::new(n_qubits, 1));
         }
+
+        pp
     }
 
+    /// Collect all Pauli strings from all the row-wise bitvectors
     fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut pstrs = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size(),
             FxBuildHasher::default(),
         );
 
-        // Collect all Pauli strings from all RowWiseBitVecs
         for rwbv in &mut self.pauli_pools {
             let mut rwbv_pstrs = rwbv.gather();
 
@@ -49,21 +63,15 @@ impl PauliPools {
         pstrs
     }
 
-    fn scatter(&mut self, mut pstrs: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
-        PauliMap::clean_map(&mut pstrs);
-
-        // Redistribution of Pauli strings
+    /// Redistributes the Pauli strings amoung the row-wise bitvectors
+    fn scatter(&mut self, pstrs: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+        let n_pstrs = pstrs.len();
         let pstrs: Vec<_> = pstrs.into_iter().collect();
-        let pstrs_per_pool = (pstrs.len() as f64 / self.n_threads as f64).ceil() as usize;
+        let pstrs_per_pool = n_pstrs.div_ceil(self.n_threads);
 
         for (i, chunk) in pstrs.chunks(pstrs_per_pool).enumerate() {
             self.pauli_pools[i].replace(chunk);
         }
-    }
-
-    fn merge_and_distribute(&mut self) {
-        let pstrs = self.gather();
-        self.scatter(pstrs);
     }
 }
 
@@ -75,49 +83,6 @@ impl GeneratorSet for PauliPools {
         let generators = gm.take_pstr_map();
 
         self.scatter(generators);
-
-        // let p_gate = if zero_state_generators {
-        //     PauliGate::Z
-        // } else {
-        //     PauliGate::X
-        // };
-
-        // let p_strs_per_pool = (self.n_qubits as f64 / self.n_threads as f64).ceil() as usize;
-
-        // for pool_index in 0..self.n_threads {
-        //     let mut p_strs =
-        //         HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
-        //             self.n_qubits,
-        //             FxBuildHasher::default(),
-        //         );
-
-        //     let mut p_str_in_pool_index = 0;
-
-        //     loop {
-        //         let generator_index = pool_index * p_strs_per_pool + p_str_in_pool_index;
-
-        //         if generator_index >= self.n_qubits || p_str_in_pool_index >= p_strs_per_pool {
-        //             break;
-        //         }
-
-        //         let mut p_str = BitVec::repeat(false, self.n_qubits * 2);
-        //         Self::set_pauli_gate_in_bitvec(&mut p_str, p_gate, generator_index);
-
-        //         match p_strs.entry(p_str) {
-        //             Entry::Occupied(_) => {
-        //                 panic!("Duplicate generator found in the generator set.")
-        //             }
-        //             Entry::Vacant(e) => {
-        //                 e.insert(CoefficientList::new(generator_index));
-        //             }
-        //         }
-
-        //         p_str_in_pool_index += 1;
-        //     }
-
-        //     self.pauli_pools.push(RowWiseBitVec::new(self.n_qubits, 1));
-        //     self.pauli_pools.last_mut().unwrap().scatter(p_strs);
-        // }
     }
 
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
@@ -130,9 +95,9 @@ impl GeneratorSet for PauliPools {
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         let mut pstrs = PauliMap::from_map(self.gather(), self.n_qubits);
-
         let res = pstrs.is_x_or_z_generators(check_zero_state);
-
+        
+        // In case we want to continue
         self.scatter(pstrs.take_pstr_map());
 
         res
@@ -165,11 +130,9 @@ impl GeneratorSet for PauliPools {
     /// Merges all duplicate Pauli strings and removes all Pauli strings
     /// with zero coefficients.
     fn clean(&mut self) {
-        self.pauli_pools.par_iter_mut().for_each(|rwbv| {
-            rwbv.clean();
-        });
-
-        self.merge_and_distribute();
+        let mut pstrs = self.gather();
+        PauliMap::clean_map(&mut pstrs);
+        self.scatter(pstrs);
     }
 
     fn size(&self) -> usize {
