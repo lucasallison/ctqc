@@ -55,15 +55,14 @@ impl<'a> Simulator<'a> {
         let mut measurement_sampler = self.generator_set.get_measurement_sampler();
 
         for qubit in circuit.measurements().iter() {
-
             let (measurement, p0) = measurement_sampler.sample(*qubit);
             println!(
-                    "* Qubit {} -> {} (p0: {}, p1: {})",
-                        qubit,
-                        measurement as u8,
-                        p0,
-                        1.0 - p0
-                    );
+                "* Qubit {} -> {} (p0: {}, p1: {})",
+                qubit,
+                measurement as u8,
+                p0,
+                1.0 - p0
+            );
         }
     }
 
@@ -111,7 +110,7 @@ impl<'a> Simulator<'a> {
             return Ok(());
         }
 
-        println!("Circuits are equivalent");
+        println!("\nCircuits are equivalent");
         Ok(())
     }
 

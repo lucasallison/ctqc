@@ -1,10 +1,12 @@
-use crate::circuit::Gate;
 use std::fmt::Display;
+use crate::circuit::Gate;
 
-mod shared;
-
-pub mod measurement_sampler;
+mod measurement_sampler;
 use measurement_sampler::MeasurementSampler;
+
+mod pauli_string;
+mod shared;
+mod utils;
 
 // Implementations of the GeneratorSet trait
 pub mod column_wise_bitvec;
@@ -27,11 +29,7 @@ pub trait GeneratorSet: Display {
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(
-        &mut self,
-        gate: &Gate,
-        conjugate_dagger: bool,
-    ) -> Result<(), shared::errors::GenertorSetError>;
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool);
 
     /// Return a measurment sampler for the state represented by the generator set
     /// at the moment the function is called.

@@ -2,9 +2,6 @@ use clap::Parser;
 use snafu::prelude::*;
 use std::error::Error;
 
-mod pauli_string;
-mod utils;
-
 mod circuit;
 use circuit::Circuit;
 

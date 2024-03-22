@@ -1,5 +1,5 @@
 use super::PauliGate;
-use crate::utils::imaginary_coefficient::ImaginaryCoef;
+use crate::generator_sets::utils::imaginary_coefficient::ImaginaryCoef;
 use bitvec::prelude::*;
 use snafu::prelude::*;
 
@@ -41,21 +41,6 @@ pub fn bitslice_is_ith_generator(pstr: &BitSlice, i: usize, zero_state_generator
     }
 
     true
-}
-
-// TODO remove?
-pub fn pstr_bitslice_as_str(bitslice: &BitSlice) -> String {
-    // TODO error?
-    assert!(bitslice.len() % 2 == 0, "Bitslice length must be even");
-
-    let n_gates = bitslice.len() / 2;
-
-    let mut result = String::new();
-    for gate_ind in 0..n_gates {
-        let p_gate = get_pauli_gate_from_bitslice(bitslice, gate_ind);
-        result.push_str(format!("{}", p_gate).as_str());
-    }
-    result
 }
 
 // --------------- PauliGate utils  --------------- //

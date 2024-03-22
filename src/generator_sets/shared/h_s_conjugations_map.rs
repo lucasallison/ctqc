@@ -1,10 +1,8 @@
-use snafu::prelude::*;
-
-use super::conjugation_look_up_tables::{
+use crate::generator_sets::utils::conjugation_look_up_tables::{
     H_CONJ_UPD_RULES, S_CONJ_UPD_RULES, S_DAGGER_CONJ_UPD_RULES,
 };
 use crate::circuit::{Gate, GateType};
-use crate::pauli_string::PauliGate;
+use crate::generator_sets::pauli_string::PauliGate;
 
 /// A 'map' that stores the conjugations of the H and S gates.
 /// For each qubit, we store a triple of tuples of the form (PauliGate, f64).
@@ -57,7 +55,7 @@ impl HSConjugationsMap {
         &mut self,
         gate: &Gate,
         conjugate_dagger: bool,
-    ) -> Result<(), HSConjugationsMapError> {
+    ) {
         for e in self.map[gate.qubit_1].iter_mut() {
             let target_pauli_gate = e.0;
 
@@ -71,13 +69,12 @@ impl HSConjugationsMap {
                         S_CONJ_UPD_RULES.get(&target_pauli_gate).unwrap()
                     }
                 }
-                _ => return Err(HSConjugationsMapError::InvalideGate { gate: gate.clone() }),
+                _ => { panic!("Invalid gate type for HSConjugationsMap update") }
             };
 
             e.0 = look_up_output.p_gate;
             e.1 *= look_up_output.coefficient;
         }
-        Ok(())
     }
 
     /// Return the gate that should be at the qubit index of the Pauli string
@@ -99,13 +96,4 @@ impl HSConjugationsMap {
             PauliGate::I => 1.0,
         }
     }
-}
-
-#[derive(Debug, Snafu)]
-pub enum HSConjugationsMapError {
-    #[snafu(display(
-        "{} invalid: Can only use H or S to update the H/S conjugations map.",
-        gate
-    ))]
-    InvalideGate { gate: Gate },
 }

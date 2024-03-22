@@ -2,16 +2,15 @@ use std::collections::HashMap;
 
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
-use rand::prelude::*;
 use indicatif::ProgressBar;
 use indicatif::ProgressStyle;
+use rand::prelude::*;
 
-use super::shared as Shared;
+use super::pauli_string::utils as PauliUtils;
+use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
-
-use crate::pauli_string::utils as PauliUtils;
-use crate::pauli_string::PauliGate;
-use crate::utils::imaginary_coefficient::ImaginaryCoef;
+use super::utils::imaginary_coefficient::ImaginaryCoef;
+use super::utils as Utils;
 
 /// A struct that is constructed from a generator set in order to sample measurements.
 pub struct MeasurementSampler {
@@ -33,6 +32,29 @@ impl MeasurementSampler {
             n_qubits,
             size: 0,
         };
+        ms.size = ms.generator_info.len();
+        ms
+    }
+
+    pub fn from_map(
+        mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>,
+        n_qubits: usize,
+    ) -> MeasurementSampler {
+        let mut ms = MeasurementSampler {
+            pauli_strings: BitVec::with_capacity(2 * map.len() * n_qubits),
+            generator_info: Vec::with_capacity(map.len()),
+            n_qubits: n_qubits,
+            size: 0,
+        };
+
+        for (pstr, mut coefficients) in map.drain() {
+            if coefficients.is_empty() {
+                continue;
+            }
+            ms.pauli_strings.extend_from_bitslice(&pstr);
+            ms.generator_info.push(coefficients);
+        }
+
         ms.size = ms.generator_info.len();
         ms
     }
@@ -101,7 +123,6 @@ impl MeasurementSampler {
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
 
-
         let mut n_combos = 1;
         for pstrs in gen_to_pstr.iter() {
             n_combos *= pstrs.len();
@@ -109,12 +130,10 @@ impl MeasurementSampler {
 
         let progress_bar = ProgressBar::new(n_combos as u64);
 
-        let progress_style_str =
-            "[{elapsed_precise}] {bar} -- {msg}";
+        let progress_style_str = "[{elapsed_precise}] {bar} -- {msg}";
         progress_bar.set_message(format!("Sampling qubit {}", z_index));
 
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
-
 
         // Keep track of the current term of each generator, e.g.,
         // if indexes[0] is 5 we are processing the fifth term of the first generator.
@@ -225,7 +244,7 @@ impl MeasurementSampler {
                         coef_list.multiply(1.0 / (2.0 * p0));
                     }
 
-                    Shared::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
+                    Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
                 }
                 _ => {
                     // When we measure |0⟩:
@@ -261,8 +280,8 @@ impl MeasurementSampler {
                     coef_list.multiply(base_mult);
                     new_coef_list.multiply(base_mult * new_pstr_mult);
 
-                    Shared::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
-                    Shared::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
+                    Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
+                    Utils::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
                 }
             }
         }

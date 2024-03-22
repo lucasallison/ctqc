@@ -7,14 +7,13 @@ use fxhash::FxBuildHasher;
 use rayon::prelude::*;
 
 use super::measurement_sampler::MeasurementSampler;
-use super::row_wise_bitvec::RowWiseBitVec;
+use super::pauli_string::utils as PauliUtils;
+use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
-use super::shared::errors::GenertorSetError;
+use super::row_wise_bitvec::RowWiseBitVec;
 use super::GeneratorSet;
 
 use crate::circuit::Gate;
-use crate::pauli_string::utils as PauliUtils;
-use crate::pauli_string::PauliGate;
 
 pub struct PauliPools {
     // Each thread will manage 1 Pauli pool. Each pool is
@@ -133,11 +132,10 @@ impl GeneratorSet for PauliPools {
     }
 
     /// Conjugates all stored Pauli strings with the provided gate.
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         self.pauli_pools.par_iter_mut().for_each(|rwbv| {
-            rwbv.conjugate(gate, conjugate_dagger).unwrap();
+            rwbv.conjugate(gate, conjugate_dagger);
         });
-        Ok(())
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {

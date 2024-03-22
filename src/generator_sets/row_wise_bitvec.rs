@@ -8,16 +8,15 @@ use rayon::prelude::*;
 use std::sync::Mutex;
 
 use super::measurement_sampler::MeasurementSampler;
-use super::shared as Shared;
+use super::pauli_string::utils as PauliUtils;
+use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
-use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::shared::errors::GenertorSetError;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
+use super::utils as Utils;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
-use crate::pauli_string::utils as PauliUtils;
-use crate::pauli_string::PauliGate;
 
 /// (UsizeOrSafeBitSlice) Represents a bitslice that is one of two types: BitSlice<usize> or BitSlice<BitSafeUsize>.
 enum UOSBitSlice<'a> {
@@ -343,7 +342,7 @@ impl RowWiseBitVec {
             self.size += 1;
 
             let (x_mult, y_mult) =
-                Shared::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
+                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
             self.generator_info[pstr_index].multiply(x_mult);
             self.generator_info.last_mut().unwrap().multiply(y_mult);
@@ -409,7 +408,7 @@ impl RowWiseBitVec {
                 new_gen_info.push(gen_info_chunk[pstr_offset].clone());
 
                 let (x_mult, y_mult) =
-                    Shared::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
+                    Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
                 gen_info_chunk[pstr_offset].multiply(x_mult);
                 new_gen_info.last_mut().unwrap().multiply(y_mult);
@@ -444,7 +443,7 @@ impl RowWiseBitVec {
         for (pstr_ind, coef_list) in gen_info.drain(..).enumerate() {
             let pstr = self.pstr_as_bitslice(pstr_ind).to_bitvec();
 
-            Shared::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
+            Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
         }
         map
     }
@@ -490,6 +489,7 @@ impl GeneratorSet for RowWiseBitVec {
     }
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+        self.clean();
         self.apply_all_h_s_conjugations();
 
         if self.size != self.n_qubits {
@@ -506,11 +506,11 @@ impl GeneratorSet for RowWiseBitVec {
                 return false;
             }
         }
-
         true
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        self.clean();
         self.apply_all_h_s_conjugations();
 
         if self.size != 1 {
@@ -523,17 +523,15 @@ impl GeneratorSet for RowWiseBitVec {
             && self.generator_info[0].is_valid_ith_generator_coef_list(i)
     }
 
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map
                     .update(gate, conjugate_dagger)
-                    .unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }
-        Ok(())
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
@@ -541,7 +539,7 @@ impl GeneratorSet for RowWiseBitVec {
         self.clean();
 
         // We clone instead of using std::mem::take in case
-        // we want to apply more gates 
+        // we want to apply more gates
         MeasurementSampler::new(
             self.pauli_strings.clone(),
             self.generator_info.clone(),

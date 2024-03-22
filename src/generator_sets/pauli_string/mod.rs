@@ -37,6 +37,17 @@ impl PauliString {
         }
     }
 
+    pub fn _from_bitvec(pstr: BitVec) -> PauliString {
+        if pstr.len() % 2 != 0 || pstr.len() < 2 {
+            panic!("Pauli string must have even length and contain at least one gate.");
+        }
+        PauliString { pstr }
+    }
+
+    pub fn as_bitslice(&self) -> &BitSlice {
+        &self.pstr
+    }
+
     pub fn set_pauli_gate(&mut self, index: usize, gate: PauliGate) {
         let (b1, b2) = PauliUtils::pauli_gate_as_tuple(gate);
         self.pstr.set(2 * index, b1);
@@ -45,10 +56,6 @@ impl PauliString {
 
     pub fn get_pauli_gate(&self, index: usize) -> PauliGate {
         PauliUtils::pauli_gate_from_tuple(self.pstr[2 * index], self.pstr[2 * index + 1])
-    }
-
-    pub fn as_bitslice(&self) -> &BitSlice {
-        &self.pstr
     }
 
     pub fn len(&self) -> usize {

@@ -1,20 +1,19 @@
 use std::collections::{hash_map::Entry, HashMap};
 use std::fmt;
 
-use fxhash::FxBuildHasher;
 use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
 
 use super::measurement_sampler::MeasurementSampler;
-use super::shared as Shared;
+use super::pauli_string::utils as PauliUtils;
+use super::pauli_string::{PauliGate, PauliString};
 use super::shared::coefficient_list::CoefficientList;
-use super::shared::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::shared::errors::GenertorSetError;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::utils as Utils;
+use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
-use crate::pauli_string::utils as PauliUtils;
-use crate::pauli_string::{PauliGate, PauliString};
 
 /// Stores a map of Pauli strings and their associated coefficient lists.
 pub struct GeneratorMap {
@@ -154,7 +153,7 @@ impl GeneratorMap {
             new_pstr.set_pauli_gate(rz.qubit_1, PauliGate::Y);
 
             let (x_mult, y_mult) =
-                Shared::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
+                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
             coef_list.multiply(x_mult);
             new_coef_list.multiply(y_mult);
@@ -171,6 +170,7 @@ impl GeneratorMap {
         self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
+    /// Returns true if the Pauli string with the given index contains an X or Z gate
     fn contains_ith_x_or_z_generator(&self, i: usize, zero_state_generator: bool) -> bool {
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
         let mut pstr = PauliString::new(self.n_qubits);
@@ -234,23 +234,20 @@ impl GeneratorSet for GeneratorMap {
         self.contains_ith_x_or_z_generator(i, check_zero_state)
     }
 
-    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) -> Result<(), GenertorSetError> {
+    fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
             GateType::H | GateType::S => {
                 self.h_s_conjugations_map
                     .update(gate, conjugate_dagger)
-                    .unwrap();
             }
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }
-        Ok(())
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
-
         let mut pauli_strings = BitVec::with_capacity(2 * self.n_qubits * self.size());
-        let mut generator_info =  Vec::with_capacity(self.size());
+        let mut generator_info = Vec::with_capacity(self.size());
 
         let mut map = self.pauli_strings_src.clone();
         for (pstr, mut coefficients) in map.drain() {
