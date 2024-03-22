@@ -1,4 +1,4 @@
-# Quantum Cicrcuit Simulator
+# CTQC: Clifford + T Quantum Circuit Simulator
 
 A rust implementation of a quantum circuit simulator based on the stabilizer formalism. 
 
