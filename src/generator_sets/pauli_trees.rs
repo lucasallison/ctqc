@@ -5,12 +5,13 @@ use fxhash;
 use fxhash::FxBuildHasher;
 
 use super::measurement_sampler::MeasurementSampler;
+use super::pauli_map::PauliMap;
 use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
-use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::utils as Utils;
+use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -653,7 +654,7 @@ impl PauliTrees {
 
         for pstr_ind in 0..self.size() {
             let (pstr, coef_list) = self.get_pstr_with_hs_conjugations(pstr_ind);
-            Utils::insert_pstr_bitvec_into_map(&mut m, pstr, coef_list);
+            PauliMap::insert_pstr_bitvec_into_map(&mut m, pstr, coef_list);
         }
 
         m
@@ -873,39 +874,16 @@ impl PauliTrees {
                 self.set_pgate(self.size() - 1, gate.qubit_1, PauliGate::X);
             }
 
-            match (actual_pgate, conjugate_dagger) {
-                (PauliGate::X, false) => {
-                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.coeff_lists
-                        .last_mut()
-                        .unwrap()
-                        .multiply(gate.angle.unwrap().sin());
-                }
-                (PauliGate::Y, false) => {
-                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.coeff_lists
-                        .last_mut()
-                        .unwrap()
-                        .multiply(-1.0 * gate.angle.unwrap().sin());
-                }
-                (PauliGate::X, true) => {
-                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.coeff_lists
-                        .last_mut()
-                        .unwrap()
-                        .multiply(-1.0 * gate.angle.unwrap().sin());
-                }
-                (PauliGate::Y, true) => {
-                    self.coeff_lists[pstr_index].multiply(gate.angle.unwrap().cos());
-                    self.coeff_lists
-                        .last_mut()
-                        .unwrap()
-                        .multiply(gate.angle.unwrap().sin());
-                }
-                _ => {
-                    unreachable!()
-                }
-            }
+            let (x_mult, y_mult) =
+                Utils::rz_conj_coef_multipliers(gate, &actual_pgate, conjugate_dagger);
+            let (first_mult, last_mult) = if actual_pgate == PauliGate::X {
+                (x_mult, y_mult)
+            } else {
+                (y_mult, x_mult)
+            };
+
+            self.coeff_lists[pstr_index].multiply(first_mult);
+            self.coeff_lists.last_mut().unwrap().multiply(last_mult);
         }
         self.h_s_conjugations_map.reset(gate.qubit_1);
     }
@@ -947,36 +925,15 @@ impl GeneratorSet for PauliTrees {
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.clean();
 
-        if self.size() != self.n_qubits {
-            return false;
-        }
-
-        let pstr_to_coef_map = self.get_pstr_to_coef_map();
-
-        for gen_ind in 0..self.n_qubits {
-            if !Utils::contains_ith_x_or_z_generator(
-                &pstr_to_coef_map,
-                gen_ind,
-                check_zero_state,
-                self.n_qubits,
-            ) {
-                return false;
-            }
-        }
-        true
+        let mut pstr_map = PauliMap::from_map(self.get_pstr_to_coef_map(), self.n_qubits);
+        pstr_map.is_x_or_z_generators(check_zero_state)
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.clean();
 
-        if self.size() != 1 {
-            return false;
-        }
-
-        let (pstr, coef_list) = self.get_pstr_with_hs_conjugations(0);
-
-        PauliUtils::bitslice_is_ith_generator(&pstr, i, check_zero_state)
-            && coef_list.is_valid_ith_generator_coef_list(i)
+        let mut pstr_map = PauliMap::from_map(self.get_pstr_to_coef_map(), self.n_qubits);
+        pstr_map.is_single_x_or_z_generator(check_zero_state, i)
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
@@ -985,10 +942,7 @@ impl GeneratorSet for PauliTrees {
         }
 
         match gate.gate_type {
-            GateType::H | GateType::S => {
-                self.h_s_conjugations_map
-                    .update(gate, conjugate_dagger)
-            }
+            GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }

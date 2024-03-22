@@ -10,7 +10,7 @@ use simulator::Simulator;
 
 mod generator_sets;
 use generator_sets::column_wise_bitvec::ColumnWiseBitVec;
-use generator_sets::generator_map::GeneratorMap;
+use generator_sets::pauli_map::PauliMap;
 use generator_sets::pauli_pools::PauliPools;
 use generator_sets::pauli_trees::PauliTrees;
 use generator_sets::row_wise_bitvec::RowWiseBitVec;
@@ -81,7 +81,7 @@ fn main() {
     let circuit = circuit_from_file(args.circuit_file);
 
     let mut generator_set: Box<dyn GeneratorSet> = match args.data_structure.as_str() {
-        "map" => Box::new(GeneratorMap::new(circuit.n_qubits(), args.threads)),
+        "map" => Box::new(PauliMap::new(circuit.n_qubits(), args.threads)),
         "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits(), args.threads)),
         "rbitvec" => Box::new(RowWiseBitVec::new(circuit.n_qubits(), args.threads)),
         "ppools" => Box::new(PauliPools::new(circuit.n_qubits(), args.threads)),

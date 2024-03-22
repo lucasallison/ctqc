@@ -37,7 +37,7 @@ impl PauliString {
         }
     }
 
-    pub fn _from_bitvec(pstr: BitVec) -> PauliString {
+    pub fn from_bitvec(pstr: BitVec) -> PauliString {
         if pstr.len() % 2 != 0 || pstr.len() < 2 {
             panic!("Pauli string must have even length and contain at least one gate.");
         }

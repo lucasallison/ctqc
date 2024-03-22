@@ -3,16 +3,15 @@ use std::collections::{hash_map::Entry, HashMap};
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 
+use super::pauli_string::{utils as PauliUtils, PauliGate, PauliString};
 use super::shared::coefficient_list::CoefficientList;
-use super::pauli_string::{PauliString, PauliGate, utils as PauliUtils};
 
 use crate::circuit::Gate;
 
-pub mod imaginary_coefficient;
 pub mod conjugation_look_up_tables;
+pub mod imaginary_coefficient;
 
 /// Miscellaneous shared functions
-
 
 /// Returns two floats with which the coefficients of the Pauli strings should be multiplied
 /// when a Rz gate is conjugated to the target qubit X/Y. The first float is the multiplier
@@ -35,39 +34,5 @@ pub fn rz_conj_coef_multipliers(
                 coeficient multipliers when the target Pauli gate is an X or Y"
             )
         }
-    }
-}
-
-/// Inserts the Pauli string into the map or merges the coefficient list with
-/// the existing one if the Pauli string already exists.
-pub fn insert_pstr_bitvec_into_map(
-    map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
-    pstr: BitVec,
-    coef_list: CoefficientList,
-) {
-    match map.entry(pstr) {
-        Entry::Occupied(mut e) => {
-            e.get_mut().merge(&coef_list);
-        }
-        Entry::Vacant(e) => {
-            e.insert(coef_list);
-        }
-    }
-}
-
-/// Returns true if the Pauli string with the given index contains an X or Z gate
-pub fn contains_ith_x_or_z_generator(
-    map: &HashMap<BitVec, CoefficientList, FxBuildHasher>,
-    i: usize,
-    zero_state_generator: bool,
-    n_qubits: usize,
-) -> bool {
-    let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
-    let mut pstr = PauliString::new(n_qubits);
-    pstr.set_pauli_gate(i, p_gate);
-
-    match map.get(pstr.as_bitslice()) {
-        Some(coef_list) => return coef_list.is_valid_ith_generator_coef_list(i),
-        None => return false,
     }
 }

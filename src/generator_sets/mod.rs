@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use crate::circuit::Gate;
+use std::fmt::Display;
 
 mod measurement_sampler;
 use measurement_sampler::MeasurementSampler;
@@ -10,7 +10,7 @@ mod utils;
 
 // Implementations of the GeneratorSet trait
 pub mod column_wise_bitvec;
-pub mod generator_map;
+pub mod pauli_map;
 pub mod pauli_pools;
 pub mod pauli_trees;
 pub mod row_wise_bitvec;

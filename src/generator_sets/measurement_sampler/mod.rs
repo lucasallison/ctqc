@@ -10,7 +10,8 @@ use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
 use super::utils::imaginary_coefficient::ImaginaryCoef;
-use super::utils as Utils;
+
+use crate::generator_sets::pauli_map::PauliMap;
 
 /// A struct that is constructed from a generator set in order to sample measurements.
 pub struct MeasurementSampler {
@@ -244,7 +245,7 @@ impl MeasurementSampler {
                         coef_list.multiply(1.0 / (2.0 * p0));
                     }
 
-                    Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
                 }
                 _ => {
                     // When we measure |0⟩:
@@ -280,8 +281,8 @@ impl MeasurementSampler {
                     coef_list.multiply(base_mult);
                     new_coef_list.multiply(base_mult * new_pstr_mult);
 
-                    Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
-                    Utils::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
                 }
             }
         }

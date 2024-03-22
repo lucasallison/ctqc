@@ -8,12 +8,13 @@ use rayon::prelude::*;
 use std::sync::Mutex;
 
 use super::measurement_sampler::MeasurementSampler;
+use super::pauli_map::PauliMap;
 use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
-use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::utils as Utils;
+use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -339,6 +340,10 @@ impl RowWiseBitVec {
             self.extend_from_within(pstr_index);
             self.set_pauli_gate(PauliGate::X, pstr_index, rz.qubit_1);
             self.set_pauli_gate(PauliGate::Y, self.size, rz.qubit_1);
+
+            self.generator_info
+                .push(self.generator_info[pstr_index].clone());
+
             self.size += 1;
 
             let (x_mult, y_mult) =
@@ -346,9 +351,6 @@ impl RowWiseBitVec {
 
             self.generator_info[pstr_index].multiply(x_mult);
             self.generator_info.last_mut().unwrap().multiply(y_mult);
-
-            self.generator_info
-                .push(self.generator_info[pstr_index].clone());
         }
     }
 
@@ -443,8 +445,10 @@ impl RowWiseBitVec {
         for (pstr_ind, coef_list) in gen_info.drain(..).enumerate() {
             let pstr = self.pstr_as_bitslice(pstr_ind).to_bitvec();
 
-            Utils::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
+            PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
         }
+        self.pauli_strings.clear();
+        self.size = 0;
         map
     }
 
@@ -489,46 +493,28 @@ impl GeneratorSet for RowWiseBitVec {
     }
 
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
-        self.clean();
         self.apply_all_h_s_conjugations();
 
-        if self.size != self.n_qubits {
-            return false;
-        }
+        let mut pstrs = self.gather();
+        PauliMap::clean_map(&mut pstrs);
+        self.scatter(pstrs.clone());
 
-        for pstr_ind in 0..self.n_qubits {
-            let pstr = self.pstr_as_bitslice(pstr_ind);
-            let coef_list = &self.generator_info[pstr_ind];
-
-            if !PauliUtils::bitslice_is_ith_generator(&pstr, pstr_ind, check_zero_state)
-                || !coef_list.is_valid_ith_generator_coef_list(pstr_ind)
-            {
-                return false;
-            }
-        }
-        true
+        PauliMap::from_map(pstrs, self.n_qubits).is_x_or_z_generators(check_zero_state)
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
-        self.clean();
         self.apply_all_h_s_conjugations();
 
-        if self.size != 1 {
-            return false;
-        }
+        let mut pstrs = self.gather();
+        PauliMap::clean_map(&mut pstrs);
+        self.scatter(pstrs.clone());
 
-        let pstr = self.pstr_as_bitslice(0);
-
-        PauliUtils::bitslice_is_ith_generator(pstr, i, check_zero_state)
-            && self.generator_info[0].is_valid_ith_generator_coef_list(i)
+        PauliMap::from_map(pstrs, self.n_qubits).is_single_x_or_z_generator(check_zero_state, i)
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
-            GateType::H | GateType::S => {
-                self.h_s_conjugations_map
-                    .update(gate, conjugate_dagger)
-            }
+            GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }

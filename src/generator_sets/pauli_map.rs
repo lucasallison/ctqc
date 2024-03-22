@@ -16,20 +16,20 @@ use super::GeneratorSet;
 use crate::circuit::{Gate, GateType};
 
 /// Stores a map of Pauli strings and their associated coefficient lists.
-pub struct GeneratorMap {
-    pauli_strings_src: HashMap<PauliString, CoefficientList, FxBuildHasher>,
-    pauli_strings_dst: HashMap<PauliString, CoefficientList, FxBuildHasher>,
+pub struct PauliMap {
+    pauli_strings_src: HashMap<BitVec, CoefficientList, FxBuildHasher>,
+    pauli_strings_dst: HashMap<BitVec, CoefficientList, FxBuildHasher>,
     h_s_conjugations_map: HSConjugationsMap,
     n_qubits: usize,
 }
 
-impl GeneratorMap {
-    pub fn new(n_qubits: usize, n_threads: usize) -> GeneratorMap {
+impl PauliMap {
+    pub fn new(n_qubits: usize, n_threads: usize) -> PauliMap {
         if n_threads > 1 {
-            eprintln!("WARNING: GeneratorMap does not support parallelism. Ignoring n_threads.");
+            eprintln!("WARNING: PauliMap does not support parallelism. Ignoring n_threads.");
         }
 
-        GeneratorMap {
+        PauliMap {
             pauli_strings_src: Self::empty_map(n_qubits),
             pauli_strings_dst: Self::empty_map(n_qubits),
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
@@ -43,25 +43,8 @@ impl GeneratorMap {
         self.h_s_conjugations_map = HSConjugationsMap::new(self.n_qubits);
     }
 
-    fn insert_or_merge_into_dst(&mut self, pstr: PauliString, coef_list: CoefficientList) {
-        match self.pauli_strings_dst.entry(pstr) {
-            Entry::Occupied(mut e) => {
-                let existing_coef_list = e.get_mut();
-
-                existing_coef_list.merge(&coef_list);
-
-                if existing_coef_list.is_empty() {
-                    e.remove_entry();
-                }
-            }
-            Entry::Vacant(e) => {
-                e.insert(coef_list);
-            }
-        }
-    }
-
-    fn empty_map(size: usize) -> HashMap<PauliString, CoefficientList, FxBuildHasher> {
-        HashMap::<PauliString, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+    fn empty_map(size: usize) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
+        HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             size,
             FxBuildHasher::default(),
         )
@@ -73,7 +56,7 @@ impl GeneratorMap {
             for gate_ind in 0..self.n_qubits {
                 self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate_ind);
             }
-            self.insert_or_merge_into_dst(pstr, coef_list);
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list)
         }
 
         self.pauli_strings_src = std::mem::take(&mut pstrs_src);
@@ -84,15 +67,16 @@ impl GeneratorMap {
 
     fn apply_h_s_conjugations(
         &self,
-        pstr: &mut PauliString,
+        pstr: &mut BitVec,
         coef_list: &mut CoefficientList,
         q_index: usize,
     ) {
-        let current_p_gate = pstr.get_pauli_gate(q_index);
+        let current_p_gate = PauliUtils::get_pauli_gate_from_bitslice(pstr, q_index);
         let actual_p_gate = self
             .h_s_conjugations_map
             .get_actual_p_gate(q_index, current_p_gate);
-        pstr.set_pauli_gate(q_index, actual_p_gate);
+
+        PauliUtils::set_pauli_gate_in_bitslice(pstr, actual_p_gate, q_index);
         coef_list.multiply(
             self.h_s_conjugations_map
                 .get_coefficient_multiplier(q_index, current_p_gate),
@@ -108,8 +92,8 @@ impl GeneratorMap {
             self.apply_h_s_conjugations(&mut pstr, &mut coef_list, cnot.qubit_1);
             self.apply_h_s_conjugations(&mut pstr, &mut coef_list, qubit_2);
 
-            let q1_target_p_gate = pstr.get_pauli_gate(cnot.qubit_1);
-            let q2_target_p_gate = pstr.get_pauli_gate(qubit_2);
+            let q1_target_p_gate = PauliUtils::get_pauli_gate_from_bitslice(&pstr, cnot.qubit_1);
+            let q2_target_p_gate = PauliUtils::get_pauli_gate_from_bitslice(&pstr, qubit_2);
 
             let look_up_output = CNOT_CONJ_UPD_RULES
                 .get(&(q1_target_p_gate, q2_target_p_gate))
@@ -117,10 +101,14 @@ impl GeneratorMap {
 
             coef_list.multiply(look_up_output.coefficient);
 
-            pstr.set_pauli_gate(cnot.qubit_1, look_up_output.q1_p_gate);
-            pstr.set_pauli_gate(qubit_2, look_up_output.q2_p_gate);
+            PauliUtils::set_pauli_gate_in_bitslice(
+                &mut pstr,
+                look_up_output.q1_p_gate,
+                cnot.qubit_1,
+            );
+            PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, look_up_output.q2_p_gate, qubit_2);
 
-            self.insert_or_merge_into_dst(pstr, coef_list);
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
         }
 
         self.pauli_strings_src = std::mem::take(&mut pstrs_src);
@@ -139,7 +127,7 @@ impl GeneratorMap {
         for (mut pstr, mut coef_list) in pstrs_src.drain() {
             self.apply_h_s_conjugations(&mut pstr, &mut coef_list, rz.qubit_1);
 
-            let target_pgate = pstr.get_pauli_gate(rz.qubit_1);
+            let target_pgate = PauliUtils::get_pauli_gate_from_bitslice(&pstr, rz.qubit_1);
 
             if target_pgate == PauliGate::Z || target_pgate == PauliGate::I {
                 self.pauli_strings_dst.insert(pstr, coef_list);
@@ -149,8 +137,8 @@ impl GeneratorMap {
             let mut new_pstr = pstr.clone();
             let mut new_coef_list = coef_list.clone();
 
-            pstr.set_pauli_gate(rz.qubit_1, PauliGate::X);
-            new_pstr.set_pauli_gate(rz.qubit_1, PauliGate::Y);
+            PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, PauliGate::X, rz.qubit_1);
+            PauliUtils::set_pauli_gate_in_bitslice(&mut new_pstr, PauliGate::Y, rz.qubit_1);
 
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
@@ -158,8 +146,8 @@ impl GeneratorMap {
             coef_list.multiply(x_mult);
             new_coef_list.multiply(y_mult);
 
-            self.insert_or_merge_into_dst(pstr, coef_list);
-            self.insert_or_merge_into_dst(new_pstr, new_coef_list);
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, new_pstr, new_coef_list);
         }
 
         // Take back ownership of the source map, which is now empty
@@ -170,29 +158,89 @@ impl GeneratorMap {
         self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
+    // ----------------- Public functions ----------------- //
+    //
+    // The following functions are deliberately not not associated to self
+    // and public so other modules can use them.
+
+    /// Removes all Pauli strings with zero coefficients from the map
+    pub fn clean_map(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+        map.retain(|_, coef_list| !coef_list.is_empty());
+    }
+
+    /// Inserts the Pauli string into the map or merges the coefficient list with
+    /// the existing one if the Pauli string already exists.
+    pub fn insert_pstr_bitvec_into_map(
+        map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
+        pstr: BitVec,
+        coef_list: CoefficientList,
+    ) {
+        match map.entry(pstr) {
+            Entry::Occupied(mut e) => {
+                let existing_coef_list = e.get_mut();
+
+                existing_coef_list.merge(&coef_list);
+
+                if existing_coef_list.is_empty() {
+                    e.remove_entry();
+                }
+            }
+            Entry::Vacant(e) => {
+                e.insert(coef_list);
+            }
+        }
+    }
+
     /// Returns true if the Pauli string with the given index contains an X or Z gate
-    fn contains_ith_x_or_z_generator(&self, i: usize, zero_state_generator: bool) -> bool {
+    pub fn contains_ith_x_or_z_generator(
+        map: &HashMap<BitVec, CoefficientList, FxBuildHasher>,
+        i: usize,
+        zero_state_generator: bool,
+        n_qubits: usize,
+    ) -> bool {
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
-        let mut pstr = PauliString::new(self.n_qubits);
+        let mut pstr = PauliString::new(n_qubits);
         pstr.set_pauli_gate(i, p_gate);
 
-        match self.pauli_strings_src.get(&pstr) {
+        match map.get(pstr.as_bitslice()) {
             Some(coef_list) => return coef_list.is_valid_ith_generator_coef_list(i),
             None => return false,
         }
     }
+
+    pub fn from_map(map: HashMap<BitVec, CoefficientList, FxBuildHasher>, n_qubits: usize) -> Self {
+        let dst_map_size = map.len();
+        PauliMap {
+            pauli_strings_src: map,
+            pauli_strings_dst: HashMap::with_capacity_and_hasher(
+                dst_map_size,
+                FxBuildHasher::default(),
+            ),
+            h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
+            n_qubits,
+        }
+    }
+
+    /// Returns the Pauli strings map and resets the generator set to its default state
+    pub fn take_pstr_map(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
+        let map = std::mem::take(&mut self.pauli_strings_src);
+        self.set_default();
+        map
+    }
 }
 
-impl GeneratorSet for GeneratorMap {
+impl GeneratorSet for PauliMap {
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default();
 
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generators);
 
         for generator_index in 0..self.n_qubits {
-            let mut pstr = PauliString::new(self.n_qubits);
-            pstr.set_pauli_gate(generator_index, p_gate);
+            let mut pstr = bitvec![0; 2 * self.n_qubits];
+            PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, p_gate, generator_index);
+
             let coef_list = CoefficientList::new(generator_index);
+
             self.pauli_strings_src.insert(pstr, coef_list);
         }
     }
@@ -202,8 +250,8 @@ impl GeneratorSet for GeneratorMap {
         self.set_default();
 
         let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
-        let mut pstr = PauliString::new(self.n_qubits);
-        pstr.set_pauli_gate(i, p_gate);
+        let mut pstr = bitvec![0; 2 * self.n_qubits];
+        PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, p_gate, i);
 
         let coef_list = CoefficientList::new(i);
         self.pauli_strings_src.insert(pstr, coef_list);
@@ -217,7 +265,12 @@ impl GeneratorSet for GeneratorMap {
         }
 
         for i in 0..self.n_qubits {
-            if !self.contains_ith_x_or_z_generator(i, check_zero_state) {
+            if !Self::contains_ith_x_or_z_generator(
+                &self.pauli_strings_src,
+                i,
+                check_zero_state,
+                self.n_qubits,
+            ) {
                 return false;
             }
         }
@@ -231,34 +284,24 @@ impl GeneratorSet for GeneratorMap {
             return false;
         }
 
-        self.contains_ith_x_or_z_generator(i, check_zero_state)
+        Self::contains_ith_x_or_z_generator(
+            &self.pauli_strings_src,
+            i,
+            check_zero_state,
+            self.n_qubits,
+        )
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
-            GateType::H | GateType::S => {
-                self.h_s_conjugations_map
-                    .update(gate, conjugate_dagger)
-            }
+            GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
-        let mut pauli_strings = BitVec::with_capacity(2 * self.n_qubits * self.size());
-        let mut generator_info = Vec::with_capacity(self.size());
-
-        let mut map = self.pauli_strings_src.clone();
-        for (pstr, mut coefficients) in map.drain() {
-            if coefficients.is_empty() {
-                continue;
-            }
-            pauli_strings.extend_from_bitslice(pstr.as_bitslice());
-            generator_info.push(coefficients);
-        }
-
-        MeasurementSampler::new(pauli_strings, generator_info, self.n_qubits)
+        MeasurementSampler::from_map(self.pauli_strings_src.clone(), self.n_qubits)
     }
 
     /// Since we only ever save unique Pauli strings associated to
@@ -270,25 +313,30 @@ impl GeneratorSet for GeneratorMap {
     }
 }
 
-impl fmt::Display for GeneratorMap {
+impl fmt::Display for PauliMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (pstr, coef_list) in &self.pauli_strings_src {
             let mut actual_pstr = pstr.clone();
             let mut coef_multiplier = 1.0;
 
             for qubit_index in 0..self.n_qubits {
-                let current_p_gate = pstr.get_pauli_gate(qubit_index);
+                let current_p_gate =
+                    PauliUtils::get_pauli_gate_from_bitslice(&actual_pstr, qubit_index);
                 let actual_p_gate = self
                     .h_s_conjugations_map
                     .get_actual_p_gate(qubit_index, current_p_gate);
-                actual_pstr.set_pauli_gate(qubit_index, actual_p_gate);
+                PauliUtils::set_pauli_gate_in_bitslice(
+                    &mut actual_pstr,
+                    actual_p_gate,
+                    qubit_index,
+                );
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
                     .get_coefficient_multiplier(qubit_index, current_p_gate);
             }
 
-            write!(f, "{}: (", actual_pstr)?;
+            write!(f, "{}: (", PauliString::from_bitvec(actual_pstr))?;
 
             for c in coef_list.coefficients.iter() {
                 write!(f, "{}: {}, ", c.0, c.1 * coef_multiplier)?;

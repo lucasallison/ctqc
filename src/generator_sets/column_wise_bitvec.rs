@@ -319,10 +319,7 @@ impl GeneratorSet for ColumnWiseBitVec {
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
         match gate.gate_type {
-            GateType::H | GateType::S => {
-                self.h_s_conjugations_map
-                    .update(gate, conjugate_dagger)
-            }
+            GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
             GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
         }
