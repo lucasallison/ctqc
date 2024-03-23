@@ -1,7 +1,8 @@
+use core::panic;
+
 use super::PauliGate;
 use crate::generator_sets::utils::imaginary_coefficient::ImaginaryCoef;
 use bitvec::prelude::*;
-use snafu::prelude::*;
 
 // --------------- BitVec/BitSlice utils  --------------- //
 // TODO Should we check whether the bitslices are valid Pauli strings, i.e. of even length?
@@ -63,17 +64,18 @@ pub fn pauli_gate_from_tuple(b1: bool, b2: bool) -> PauliGate {
     }
 }
 
-pub fn char_to_pauli_gate(c: &char) -> Result<PauliGate, PauliUtilError> {
+pub fn char_to_pauli_gate(c: &char) -> PauliGate {
     match *c {
-        'I' => Ok(PauliGate::I),
-        'X' => Ok(PauliGate::X),
-        'Y' => Ok(PauliGate::Y),
-        'Z' => Ok(PauliGate::Z),
-        _ => Err(PauliUtilError::CharNotPauliGate {}),
+        'I' => PauliGate::I,
+        'X' => PauliGate::X,
+        'Y' => PauliGate::Y,
+        'Z' => PauliGate::Z,
+        _ => panic!("Character is not a valid Pauli gate"),
     }
 }
 
 pub fn multiply_pauli_gates(g1: PauliGate, g2: PauliGate) -> (ImaginaryCoef, PauliGate) {
+    // The products are given by the caley table:
     //   |  X     Y     Z
     // ---------------------
     // X |   I |  iZ | -iY
@@ -105,10 +107,4 @@ pub fn generator_non_identity_gate(zero_state_generator: bool) -> PauliGate {
     } else {
         PauliGate::X
     }
-}
-
-#[derive(Debug, Snafu)]
-pub enum PauliUtilError {
-    #[snafu(display("Character is not a valid Pauli gate"))]
-    CharNotPauliGate {},
 }

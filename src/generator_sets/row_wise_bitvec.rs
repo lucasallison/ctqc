@@ -7,6 +7,13 @@ use fxhash::FxBuildHasher;
 use rayon::prelude::*;
 use std::sync::Mutex;
 
+// Explicit use statements for parallel iteration
+use bitvec::slice::ChunksMut as BitSliceChunksMut;
+use rayon::iter::IterBridge;
+use rayon::iter::ParallelBridge;
+use std::iter::Zip;
+use std::slice::ChunksMut;
+
 use super::measurement_sampler::MeasurementSampler;
 use super::pauli_map::PauliMap;
 use super::pauli_string::utils as PauliUtils;
@@ -139,24 +146,21 @@ impl RowWiseBitVec {
     // Return a parallel iterator over chunks of Pauli strings and their coefficients
     fn get_parallel_iterator(
         &mut self,
-    ) -> rayon::iter::IterBridge<
-        std::iter::Zip<
-            bitvec::slice::ChunksMut<'_, usize, LocalBits>,
-            std::slice::ChunksMut<'_, CoefficientList>,
-        >,
-    > {
+    ) -> IterBridge<Zip<BitSliceChunksMut<'_, usize, LocalBits>, ChunksMut<'_, CoefficientList>>>
+    {
         // Each thread will conjugate self.size / self.n_threads Pauli strings.
         // As a single Pauli string is 2 * self.num_qubits bits,
         // each process needs 2 * self.num_qubits * (self.size / self.n_threads) bits.
-        let mut pstrs_per_chunk = self.size / self.n_threads;
-        if self.size < self.n_threads {
-            pstrs_per_chunk = 1;
-        }
-        let bits_per_process = (2 * self.n_qubits) * pstrs_per_chunk;
+        let pstrs_per_chunk = if self.size < self.n_threads {
+            self.size() / self.n_threads
+        } else {
+            1
+        };
+        let bits_per_thread = (2 * self.n_qubits) * pstrs_per_chunk;
 
         // Iterator we want to parallelize
         self.pauli_strings
-            .chunks_mut(bits_per_process)
+            .chunks_mut(bits_per_thread)
             .zip(self.generator_info.chunks_mut(pstrs_per_chunk))
             .par_bridge()
     }
@@ -306,7 +310,7 @@ impl RowWiseBitVec {
         });
     }
 
-    // -------------------------- Rz conjugation ------------------------- //
+    // -------------------------- Rz Conjugation ------------------------- //
 
     /// Updates all Pauli strings according to the following rules:
     /// Rz(θ)XRz(θ)^† =  cos(θ)X + sin(θ)Y

@@ -96,7 +96,7 @@ impl GeneratorSet for PauliPools {
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         let mut pstrs = PauliMap::from_map(self.gather(), self.n_qubits);
         let res = pstrs.is_x_or_z_generators(check_zero_state);
-        
+
         // In case we want to continue
         self.scatter(pstrs.take_pstr_map());
 

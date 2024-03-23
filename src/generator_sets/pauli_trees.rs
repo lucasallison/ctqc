@@ -20,11 +20,11 @@ use crate::circuit::{Gate, GateType};
 /// by a unqiue root node. The internal nodes of various tree can be shared.
 pub struct PauliTrees {
     h_s_conjugations_map: HSConjugationsMap,
-    coeff_lists: Vec<CoefficientList>,
+    generator_info: Vec<CoefficientList>,
 
     /// Each entry in the root node table is a reference to the root node
     /// of a Pauli string stored in the node table. The index of an entry
-    /// has an associated coefficient list in the `coeff_lists` vector
+    /// has an associated coefficient list in the `generator_info` vector
     /// at the same index, which stores the coefficient information of the generator
     /// for that particular the Pauli string.
     root_node_table: BitVec,
@@ -72,7 +72,7 @@ impl PauliTrees {
 
         let mut p = PauliTrees {
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
-            coeff_lists: Vec::new(),
+            generator_info: Vec::new(),
 
             root_node_table: BitVec::new(),
 
@@ -95,7 +95,7 @@ impl PauliTrees {
 
     fn set_default(&mut self) {
         self.h_s_conjugations_map = HSConjugationsMap::new(self.n_qubits);
-        self.coeff_lists.clear();
+        self.generator_info.clear();
 
         self.root_node_table.clear();
 
@@ -449,7 +449,7 @@ impl PauliTrees {
         let node_index = self.recursive_insert_pstr(&pstr);
         let root_node = self.node_index_to_root_node(node_index);
         self.root_node_table.extend_from_bitslice(&root_node);
-        self.coeff_lists.push(c_list);
+        self.generator_info.push(c_list);
     }
 
     /// If we are given more than `self.pgates_per_leaf` gates,
@@ -626,7 +626,7 @@ impl PauliTrees {
     /// with the H/S conjugations applied.
     fn get_pstr_with_hs_conjugations(&self, pstr_ind: usize) -> (BitVec, CoefficientList) {
         let mut pstr = self.pstr_as_bitvec(pstr_ind);
-        let mut coef_list = self.coeff_lists[pstr_ind].clone();
+        let mut coef_list = self.generator_info[pstr_ind].clone();
 
         let mut coef_multiplier = 1.0;
         for gate_ind in 0..self.n_qubits {
@@ -759,10 +759,10 @@ impl PauliTrees {
             let root_node_index = self.root_node_index(pstr_index);
             match m.entry(root_node_index) {
                 Entry::Occupied(mut e) => {
-                    e.get_mut().merge(&self.coeff_lists[pstr_index].clone());
+                    e.get_mut().merge(&self.generator_info[pstr_index].clone());
                 }
                 Entry::Vacant(e) => {
-                    e.insert(self.coeff_lists[pstr_index].clone());
+                    e.insert(self.generator_info[pstr_index].clone());
                 }
             }
         }
@@ -773,7 +773,7 @@ impl PauliTrees {
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
         // Scatter all unique Pauli strings
         self.root_node_table.clear();
-        self.coeff_lists.clear();
+        self.generator_info.clear();
 
         for (root_index, c_list) in m.iter_mut() {
             if c_list.is_empty() {
@@ -782,7 +782,7 @@ impl PauliTrees {
 
             let root_node = self.index_to_bitvec(*root_index, self.n_bits_per_root_node());
             self.root_node_table.extend_from_bitslice(&root_node);
-            self.coeff_lists.push(c_list.clone());
+            self.generator_info.push(c_list.clone());
         }
     }
 
@@ -798,7 +798,7 @@ impl PauliTrees {
 
         for pstr_index in 0..self.size() {
             let pstr = self.pstr_as_bitvec(pstr_index);
-            let c_list = self.coeff_lists[pstr_index].clone();
+            let c_list = self.generator_info[pstr_index].clone();
             resized_ptrees.insert_pstr(pstr, c_list)
         }
 
@@ -837,7 +837,7 @@ impl PauliTrees {
                 .get(&(q1_actual_pgate, q2_actual_pgate))
                 .unwrap();
 
-            self.coeff_lists[pstr_index]
+            self.generator_info[pstr_index]
                 .multiply(look_up_output.coefficient * q1_coef_mul * q2_coef_mul);
 
             self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate);
@@ -854,7 +854,7 @@ impl PauliTrees {
                 self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
             // Apply the H/S conjugations
-            self.coeff_lists[pstr_index].multiply(coef_mul);
+            self.generator_info[pstr_index].multiply(coef_mul);
             self.set_pgate(pstr_index, rz.qubit_1, actual_pgate);
 
             if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
@@ -866,7 +866,8 @@ impl PauliTrees {
                     ..(pstr_index + 1) * self.n_bits_per_root_node(),
             );
 
-            self.coeff_lists.push(self.coeff_lists[pstr_index].clone());
+            self.generator_info
+                .push(self.generator_info[pstr_index].clone());
 
             if actual_pgate == PauliGate::X {
                 self.set_pgate(self.size() - 1, rz.qubit_1, PauliGate::Y);
@@ -882,8 +883,8 @@ impl PauliTrees {
                 (y_mult, x_mult)
             };
 
-            self.coeff_lists[pstr_index].multiply(first_mult);
-            self.coeff_lists.last_mut().unwrap().multiply(last_mult);
+            self.generator_info[pstr_index].multiply(first_mult);
+            self.generator_info.last_mut().unwrap().multiply(last_mult);
         }
         self.h_s_conjugations_map.reset(rz.qubit_1);
     }
@@ -959,7 +960,7 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn size(&self) -> usize {
-        self.coeff_lists.len()
+        self.generator_info.len()
     }
 }
 
@@ -972,7 +973,7 @@ impl std::fmt::Display for PauliTrees {
             let pstr = self.ith_pstr_as_str(pstr_index);
 
             for (i, pgate) in pstr.chars().enumerate() {
-                let current_pgate = PauliUtils::char_to_pauli_gate(&pgate).unwrap();
+                let current_pgate = PauliUtils::char_to_pauli_gate(&pgate);
 
                 let actual_pgate = self
                     .h_s_conjugations_map
@@ -987,7 +988,7 @@ impl std::fmt::Display for PauliTrees {
 
             s.push_str(" (");
 
-            for c in self.coeff_lists[pstr_index].coefficients.iter() {
+            for c in self.generator_info[pstr_index].coefficients.iter() {
                 s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
             }
             s.push_str(")\n");

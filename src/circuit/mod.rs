@@ -45,6 +45,9 @@ impl Gate {
                 if qubit_2.is_none() {
                     return Err(CircuitError::MissingSecondQubit {});
                 }
+                if qubit_1 == qubit_2.unwrap() {
+                    return Err(CircuitError::SameControlAndTargetQubit {});
+                }
                 GateType::CNOT
             }
             "S" => GateType::S,
@@ -299,4 +302,7 @@ pub enum CircuitError {
 
     #[snafu(display("An angle should only be provided for an Rz gate."))]
     AngleProvidedForNonRzGate {},
+
+    #[snafu(display("CNOT control and target qubit cannot be the same."))]
+    SameControlAndTargetQubit {},
 }
