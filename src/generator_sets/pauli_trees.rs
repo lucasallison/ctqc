@@ -65,7 +65,6 @@ impl PauliTrees {
         n_node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
-
         let mut p = PauliTrees {
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             generator_info: Vec::new(),

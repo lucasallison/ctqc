@@ -204,9 +204,12 @@ impl PauliMap {
         }
     }
 
-    /// Creates a PauliMap from a map of Pauli strings. It does not clean the input map, it stores it as 
+    /// Creates a PauliMap from a map of Pauli strings. It does not clean the input map, it stores it as
     /// provided.
-    pub fn from_map(map: HashMap<BitVec, CoefficientList, FxBuildHasher>, n_qubits: usize) -> PauliMap {
+    pub fn from_map(
+        map: HashMap<BitVec, CoefficientList, FxBuildHasher>,
+        n_qubits: usize,
+    ) -> PauliMap {
         let dst_map_size = map.len();
         PauliMap {
             pauli_strings_src: map,

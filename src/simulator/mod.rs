@@ -5,46 +5,84 @@ use snafu::prelude::*;
 use std::error::Error;
 
 use crate::circuit::Circuit;
-use crate::generator_sets::GeneratorSet;
+use crate::generator_sets::{GeneratorSet, GeneratorSetImplementation, get_generator_set_implementation};
 
 lazy_static! {
     static ref DAG_CHAR: char = std::char::from_u32(8224).unwrap();
 }
 
-/// Executes the simulation/equivalence check
-pub struct Simulator<'a> {
-    generator_set: &'a mut dyn GeneratorSet,
-    clean_cycles: usize,
-    verbose: bool,
+pub enum LogLevel {
+    /// Prints the generator set after each conjugation
+    Debug,
+    /// Prints progress bar
+    ProgressBar,
+    /// Prints JSON with statistics about the simulation/equivalence check
+    JSON,
 }
 
-impl<'a> Simulator<'a> {
+impl LogLevel {
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "debug" => LogLevel::Debug,
+            "progress_bar" => LogLevel::ProgressBar,
+            "json" => LogLevel::JSON,
+            // Default to ProgressBar
+            _ => {
+                eprintln!("Invalid log level. Defaulting to \"progress_bar\"");
+                LogLevel::ProgressBar
+            }
+        }
+    }
+}
+
+/// Executes the simulation/equivalence check
+pub struct Simulator {
+    generator_set: GeneratorSetImplementation,
+    log_level: LogLevel,
+    /// Number of gates are we going to conjugate before cleaning
+    /// the generator set
+    conjugations_before_clean: usize,
+    /// Number of threads that the generator set will use
+    threads: usize,
+}
+
+impl Simulator {
     pub fn new(
-        generator_set: &'a mut dyn GeneratorSet,
-        clean_cycles: usize,
-        verbose: bool,
+        generator_set: GeneratorSetImplementation,
+        log_level: LogLevel,
+        conjugations_before_clean: usize,
+        threads: usize,
     ) -> Self {
         Simulator {
             generator_set,
-            clean_cycles,
-            verbose,
+            log_level,
+            conjugations_before_clean,
+            threads,
         }
     }
 
     /// Simulates the provided ciricuit by setting the generators to the generators of the all zero state
     /// and calling the 'sim' function.
     pub fn simulate(&mut self, circuit: &Circuit) {
-        self.generator_set.init_generators(true);
 
-        let progress_bar = ProgressBar::new(circuit.len() as u64);
+        let mut generator_set = get_generator_set_implementation(self.generator_set, circuit.n_qubits(), self.threads);
 
-        let progress_style_str =
-            "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
-        progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
+        let progress_bar;
+        if let LogLevel::ProgressBar = self.log_level { 
+            let progress_bar = ProgressBar::new(circuit.len() as u64);
+            let progress_style_str =
+                "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
+            progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
+        } {
+            let progress_bar: Option<&ProgressBar> = None;
+        }
 
-        self.conjugate_circuit_gates(circuit, false, &progress_bar);
 
-        progress_bar.finish();
+        self.conjugate_circuit_gates(generator_set, circuit, false, progress_bar);
+
+        if let LogLevel::ProgressBar = self.log_level { 
+            progress_bar.unwrap().finish();
+        }
 
         if circuit.measurements().is_empty() {
             return;
@@ -52,7 +90,7 @@ impl<'a> Simulator<'a> {
 
         println!("Sampling measurements...");
 
-        let mut measurement_sampler = self.generator_set.get_measurement_sampler();
+        let mut measurement_sampler = generator_set.get_measurement_sampler();
 
         for qubit in circuit.measurements().iter() {
             let (measurement, p0) = measurement_sampler.sample(*qubit);
@@ -122,8 +160,8 @@ impl<'a> Simulator<'a> {
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> bool {
-        self.generator_set
-            .init_generators(check_zero_state_generators);
+
+        let mut generator_set = get_generator_set_implementation(self.generator_set, circuit_1.n_qubits(), self.threads);
 
         let z_x_char = if check_zero_state_generators {
             'Z'
@@ -145,15 +183,15 @@ impl<'a> Simulator<'a> {
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
         // First we simulate the first circuit with the all zero/plus state generators
-        self.conjugate_circuit_gates(circuit_1, false, &progress_bar);
+        self.conjugate_circuit_gates(generator_set, circuit_1, false, None);
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
-        self.conjugate_circuit_gates(circuit_2, true, &progress_bar);
+        self.conjugate_circuit_gates(generator_set,circuit_2, true, None);
 
         progress_bar.finish();
 
-        self.generator_set
+        generator_set
             .is_x_or_z_generators(check_zero_state_generators)
     }
 
@@ -208,44 +246,49 @@ impl<'a> Simulator<'a> {
     }
 
     /// Sequentially conjugates the generator set saved in self with each gate in the provided circuit.
-    fn conjugate_circuit_gates(&mut self, circuit: &Circuit, inverse: bool, progress_bar: &ProgressBar) {
-        if self.verbose {
+    fn conjugate_circuit_gates(
+        &mut self,
+        mut generator_set: Box<dyn GeneratorSet>,
+        circuit: &Circuit,
+        inverse: bool,
+        progress_bar: Option<&ProgressBar>,
+    ) {
+        if let LogLevel::Debug = self.log_level { 
             println!("Initial generator set:");
-            println!("{}", self.generator_set);
+            println!("{}", generator_set);
         }
 
-        let circ_iter = if inverse {
-            circuit.rev()
-        } else {
-            circuit.iter()
-        };
 
-        for (i, gate) in circ_iter.enumerate() {
-            let progress_bar_msg = format!("{} pauli string(s)", self.generator_set.size());
-            progress_bar.set_message(progress_bar_msg);
+        for (i, gate) in circuit.iter(inverse).enumerate() {
 
-            if self.clean_cycles != 0 && i != 0 && i % self.clean_cycles == 0 {
-                self.generator_set.clean();
+            if self.conjugations_before_clean != 0 && i != 0 && i % self.conjugations_before_clean == 0 {
+                generator_set.clean();
             }
 
-            self.generator_set.conjugate(gate, inverse);
+            generator_set.conjugate(gate, inverse);
 
-            progress_bar.inc(1);
+            if progress_bar.is_some() {
+                let progress_bar_msg = format!("{} pauli string(s)", generator_set.size());
+                progress_bar.unwrap().set_message(progress_bar_msg);
+                progress_bar.unwrap().inc(1);
+            }
 
-            if self.verbose {
+            if let LogLevel::Debug = self.log_level { 
                 println!("\nApplied [{}]. Generator set:", gate);
-                println!("{}", self.generator_set);
+                println!("{}", generator_set);
             }
         }
 
-        self.generator_set.clean();
+        generator_set.clean();
 
-        let progress_bar_msg = format!("{} pauli string(s)", self.generator_set.size());
-        progress_bar.set_message(progress_bar_msg);
+        if progress_bar.is_some() {
+            let progress_bar_msg = format!("{} pauli string(s)", generator_set.size());
+            progress_bar.unwrap().set_message(progress_bar_msg);
+        }
 
-        if self.verbose {
+        if let LogLevel::Debug = self.log_level { 
             println!("\nFinal generator set:");
-            println!("{}", self.generator_set);
+            println!("{}", generator_set);
         }
     }
 }

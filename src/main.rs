@@ -38,27 +38,30 @@ struct Args {
     ///            simulated in parallel.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
     /// See TODO for a more detailed explaination.
-    #[arg(short, long, default_value_t = String::from("rbitvec"), verbatim_doc_comment)]
-    data_structure: String,
+    #[arg(short='d', long, default_value_t = String::from("rbitvec"), verbatim_doc_comment)]
+    generator_set: String,
 
     /// Provide after how many gates the simulator should "clean" the
     /// data structure, e.g., remove redundently stored Pauli strings, zero
     /// coefficient Pauli strings, etc...
     #[arg(short, long, default_value_t = 10, verbatim_doc_comment)]
-    clean: usize,
+    conjugations_before_clean: usize,
 
     /// Provide number of threads to use
     #[arg(short, long, default_value_t = 1, verbatim_doc_comment)]
     threads: usize,
 
-    /// Optional flag to run the simulation in verbose mode.
+    /// Determine what whill be printed to the console during the simulation.
+    /// - debug:  Print the generator set after each conjugation.
+    /// - pbar:   Print a progress bar.
+    /// - json:   Output statistics in JSON format.
     #[arg(short, long, default_value_t = false, verbatim_doc_comment)]
-    verbose: bool,
+    log_level: bool,
 
     /// Ensures that we simulate all generators simultaneously when
     /// running an equivalence check, as opposed to the default behavior
     /// of simulating them one by one.
-    #[arg(short = 'g', long, default_value_t = false, verbatim_doc_comment)]
+    #[arg(long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
 }
 
@@ -73,7 +76,6 @@ fn circuit_from_file(file: String) -> Circuit {
 }
 
 fn main() {
-
     let args = Args::parse();
 
     let circuit = circuit_from_file(args.circuit_file);
@@ -83,11 +85,7 @@ fn main() {
         "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits())),
         "rbitvec" => Box::new(RowWiseBitVec::new(circuit.n_qubits(), args.threads)),
         "ppools" => Box::new(PauliPools::new(circuit.n_qubits(), args.threads)),
-        "ptrees" => Box::new(PauliTrees::new(
-            circuit.n_qubits(),
-            None,
-            None,
-        )),
+        "ptrees" => Box::new(PauliTrees::new(circuit.n_qubits(), None, None)),
         _ => {
             eprintln!(
                 "{}",

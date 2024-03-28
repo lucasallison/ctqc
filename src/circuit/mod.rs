@@ -225,19 +225,19 @@ impl Circuit {
         self.name.clone()
     }
 
-    pub fn iter(&self) -> CircuitIterator {
-        CircuitIterator {
-            circuit: self,
-            gate_index: 0,
-            reverse: false,
-        }
-    }
-
-    pub fn rev(&self) -> CircuitIterator {
-        CircuitIterator {
-            circuit: self,
-            gate_index: self.gates.len() - 1,
-            reverse: true,
+    pub fn iter(&self, reversed: bool) -> CircuitIterator {
+        if reversed {
+            CircuitIterator {
+                circuit: self,
+                gate_index: 0,
+                reverse: false,
+            }
+        } else {
+            CircuitIterator {
+                circuit: self,
+                gate_index: self.gates.len() - 1,
+                reverse: true,
+            }
         }
     }
 
@@ -246,8 +246,6 @@ impl Circuit {
     }
 }
 
-// We could make the gates vector public and use its iterator directly,
-// but this way we can prevent any other code from modifying the gates.
 pub struct CircuitIterator<'a> {
     circuit: &'a Circuit,
     gate_index: usize,

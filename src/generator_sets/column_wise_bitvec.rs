@@ -5,13 +5,13 @@ use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
 
 use super::measurement_sampler::MeasurementSampler;
+use super::pauli_map::PauliMap;
 use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
-use super::pauli_map::PauliMap;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
-use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::utils as Utils;
+use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -59,13 +59,12 @@ impl ColumnWiseBitVec {
     // Copy the ith Pauli string and add its gates to to the end of the column bit vectors
     fn extend_from_within(&mut self, pstr_ind: usize) {
         for col in self.columns.iter_mut() {
-            let b1 = col[2*pstr_ind];
-            let b2 = col[2*pstr_ind+1];
+            let b1 = col[2 * pstr_ind];
+            let b2 = col[2 * pstr_ind + 1];
             col.push(b1);
             col.push(b2);
         }
     }
-
 
     /// Clear all information. This only clears the vectors and does not reset the
     /// struct to its initial state.
@@ -127,7 +126,6 @@ impl ColumnWiseBitVec {
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
-
         for pstr_ind in 0..self.size() {
             self.apply_h_s_conjugations(pstr_ind, rz.qubit_1);
             let target_pgate = self.get_pauli_gate(pstr_ind, rz.qubit_1);
@@ -145,7 +143,7 @@ impl ColumnWiseBitVec {
 
             self.generator_info
                 .push(self.generator_info[pstr_ind].clone());
-            
+
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
@@ -180,7 +178,7 @@ impl ColumnWiseBitVec {
 
         for col in self.columns.iter_mut() {
             col.clear();
-        }   
+        }
 
         map
     }
