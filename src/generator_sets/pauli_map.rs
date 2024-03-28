@@ -24,11 +24,7 @@ pub struct PauliMap {
 }
 
 impl PauliMap {
-    pub fn new(n_qubits: usize, n_threads: usize) -> PauliMap {
-        if n_threads > 1 {
-            eprintln!("WARNING: PauliMap does not support parallelism. Ignoring n_threads.");
-        }
-
+    pub fn new(n_qubits: usize) -> PauliMap {
         PauliMap {
             pauli_strings_src: Self::empty_map(n_qubits),
             pauli_strings_dst: Self::empty_map(n_qubits),
@@ -208,7 +204,9 @@ impl PauliMap {
         }
     }
 
-    pub fn from_map(map: HashMap<BitVec, CoefficientList, FxBuildHasher>, n_qubits: usize) -> Self {
+    /// Creates a PauliMap from a map of Pauli strings. It does not clean the input map, it stores it as 
+    /// provided.
+    pub fn from_map(map: HashMap<BitVec, CoefficientList, FxBuildHasher>, n_qubits: usize) -> PauliMap {
         let dst_map_size = map.len();
         PauliMap {
             pauli_strings_src: map,

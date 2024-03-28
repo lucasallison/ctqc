@@ -62,13 +62,9 @@ pub struct PauliTrees {
 impl PauliTrees {
     pub fn new(
         n_qubits: usize,
-        n_threads: usize,
         n_node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
-        if n_threads > 1 {
-            eprintln!("WARNING: PauliTrees does not support parallelism. Ignoring n_threads.");
-        }
 
         let mut p = PauliTrees {
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
@@ -791,7 +787,6 @@ impl PauliTrees {
 
         let mut resized_ptrees = PauliTrees::new(
             self.n_qubits,
-            1,
             Some(new_n_node_body_bits),
             Some(self.pgates_per_leaf),
         );
@@ -1006,7 +1001,7 @@ mod tests {
     fn get_pstr_as_str() {
         let set_bits = [false, false, true, false, true, true, false, true];
         let n_qubits = 18;
-        let mut pauli_trees = PauliTrees::new(n_qubits, 1, None, None);
+        let mut pauli_trees = PauliTrees::new(n_qubits,  None, None);
         let mut pstr = bitvec![0; 2 * n_qubits];
 
         for (i, b) in set_bits.iter().enumerate() {
@@ -1033,7 +1028,7 @@ mod tests {
     #[test]
     fn alter_pstr() {
         let n_qubits = 18;
-        let mut pauli_trees = PauliTrees::new(n_qubits, 1, None, None);
+        let mut pauli_trees = PauliTrees::new(n_qubits,  None, None);
         let pstr = bitvec![0; 2 * n_qubits];
 
         let c_list = CoefficientList::new(0);

@@ -479,10 +479,10 @@ impl GeneratorSet for RowWiseBitVec {
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default(self.n_qubits);
 
-        let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generators);
+        let pgate = PauliUtils::generator_non_identity_gate(zero_state_generators);
 
         for generator_index in 0..self.n_qubits {
-            self.set_pauli_gate(p_gate, generator_index, generator_index);
+            self.set_pauli_gate(pgate, generator_index, generator_index);
             self.generator_info
                 .push(CoefficientList::new(generator_index));
         }
@@ -491,8 +491,8 @@ impl GeneratorSet for RowWiseBitVec {
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
         self.set_default(1);
 
-        let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
-        self.set_pauli_gate(p_gate, 0, i);
+        let pgate = PauliUtils::generator_non_identity_gate(zero_state_generator);
+        self.set_pauli_gate(pgate, 0, i);
 
         self.generator_info.push(CoefficientList::new(i));
     }

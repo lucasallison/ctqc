@@ -24,6 +24,7 @@ impl fmt::Display for PauliGate {
 }
 
 #[derive(Debug, Eq, Hash, Clone)]
+/// A wrapper around a bit vector representing a Pauli string.
 pub struct PauliString {
     pstr: BitVec,
 }

@@ -78,7 +78,7 @@ impl PauliPools {
 impl GeneratorSet for PauliPools {
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
-        let mut gm = PauliMap::new(self.n_qubits, 1);
+        let mut gm = PauliMap::new(self.n_qubits);
         gm.init_generators(zero_state_generators);
         let generators = gm.take_pstr_map();
 
@@ -86,7 +86,7 @@ impl GeneratorSet for PauliPools {
     }
 
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool) {
-        let mut gm = PauliMap::new(self.n_qubits, 1);
+        let mut gm = PauliMap::new(self.n_qubits);
         gm.init_single_generator(i, zero_state_generator);
         let generators = gm.take_pstr_map();
 

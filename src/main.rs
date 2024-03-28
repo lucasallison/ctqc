@@ -81,13 +81,12 @@ fn main() {
     let circuit = circuit_from_file(args.circuit_file);
 
     let mut generator_set: Box<dyn GeneratorSet> = match args.data_structure.as_str() {
-        "map" => Box::new(PauliMap::new(circuit.n_qubits(), args.threads)),
-        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits(), args.threads)),
+        "map" => Box::new(PauliMap::new(circuit.n_qubits())),
+        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits())),
         "rbitvec" => Box::new(RowWiseBitVec::new(circuit.n_qubits(), args.threads)),
         "ppools" => Box::new(PauliPools::new(circuit.n_qubits(), args.threads)),
         "ptrees" => Box::new(PauliTrees::new(
             circuit.n_qubits(),
-            args.threads,
             None,
             None,
         )),
