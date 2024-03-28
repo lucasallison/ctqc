@@ -42,7 +42,7 @@ impl<'a> Simulator<'a> {
             "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
-        self.sim(circuit, false, &progress_bar);
+        self.conjugate_circuit_gates(circuit, false, &progress_bar);
 
         progress_bar.finish();
 
@@ -145,11 +145,11 @@ impl<'a> Simulator<'a> {
         progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
         // First we simulate the first circuit with the all zero/plus state generators
-        self.sim(circuit_1, false, &progress_bar);
+        self.conjugate_circuit_gates(circuit_1, false, &progress_bar);
 
         // Then we simulate the inverse second circuit with the generators produced by the simulation
         // of the first circuit
-        self.sim(circuit_2, true, &progress_bar);
+        self.conjugate_circuit_gates(circuit_2, true, &progress_bar);
 
         progress_bar.finish();
 
@@ -189,11 +189,11 @@ impl<'a> Simulator<'a> {
             self.generator_set
                 .init_single_generator(i, check_zero_state_generators);
 
-            // First simulate U
-            self.sim(circuit_1, false, &progress_bar);
+            // Conjugate gates of V
+            self.conjugate_circuit_gates(circuit_1, false, &progress_bar);
 
-            // Then simulate V^†
-            self.sim(circuit_2, true, &progress_bar);
+            // Conjugate gates of V^†
+            self.conjugate_circuit_gates(circuit_2, true, &progress_bar);
 
             if !self
                 .generator_set
@@ -207,13 +207,8 @@ impl<'a> Simulator<'a> {
         true
     }
 
-    /// Performs a simulation based on the data currently stored in the 'sim_data' struct. These values should
-    /// be initialized meaningfully by other functions, e.g. simulate or equivalence_check
-    /// 'inverse' specifies whether to run the inverse of the circuit
-    ///
-    /// The simulation works by sequentially conjugating all the generators stored in the 'gen_cmpts' field of 'sim_data'
-    /// with the gates in the circuit.
-    fn sim(&mut self, circuit: &Circuit, inverse: bool, progress_bar: &ProgressBar) {
+    /// Sequentially conjugates the generator set saved in self with each gate in the provided circuit.
+    fn conjugate_circuit_gates(&mut self, circuit: &Circuit, inverse: bool, progress_bar: &ProgressBar) {
         if self.verbose {
             println!("Initial generator set:");
             println!("{}", self.generator_set);
