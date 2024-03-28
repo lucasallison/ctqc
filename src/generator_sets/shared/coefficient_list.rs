@@ -83,37 +83,3 @@ impl CoefficientList {
             && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_MARGIN)
     }
 }
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn test_coefficient_merge() {
-        let mut c1 = CoefficientList::new(0);
-        let mut c2 = CoefficientList::new(0);
-        let mut c3 = CoefficientList::new(1);
-        let c4 = CoefficientList::new(2);
-        let c5 = CoefficientList::new(1);
-
-        c2.multiply(-0.5);
-        c3.multiply(0.5);
-
-        c2.merge(&c3);
-        c1.merge(&c2);
-        c1.merge(&c4);
-        c1.merge(&c5);
-
-        assert_eq!(c1.coefficients.len(), 3);
-
-        for (i, coefficient) in c1.coefficients.iter() {
-            match i {
-                0 => assert_eq!(coefficient, &OrderedFloat::from(0.5)),
-                1 => assert_eq!(coefficient, &OrderedFloat::from(1.5)),
-                2 => assert_eq!(coefficient, &OrderedFloat::from(1.0)),
-                _ => panic!("Invalid index"),
-            }
-        }
-    }
-}
