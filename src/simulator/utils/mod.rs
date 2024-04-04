@@ -8,8 +8,8 @@ lazy_static! {
 
 pub fn z_x_print_char(check_zero_state_generators: bool) -> char {
     if check_zero_state_generators {
-        return 'Z'
+        return 'Z';
     } else {
-        return 'X'
+        return 'X';
     };
 }

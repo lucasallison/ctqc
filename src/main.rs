@@ -9,12 +9,6 @@ mod simulator;
 use simulator::Simulator;
 
 mod generator_sets;
-use generator_sets::column_wise_bitvec::ColumnWiseBitVec;
-use generator_sets::pauli_map::PauliMap;
-use generator_sets::pauli_pools::PauliPools;
-use generator_sets::pauli_trees::PauliTrees;
-use generator_sets::row_wise_bitvec::RowWiseBitVec;
-use generator_sets::GeneratorSet;
 
 /// Quantum circuit simulator based on the sabilizer formalism.
 #[derive(Parser, Debug)]
@@ -58,7 +52,7 @@ struct Args {
     /// Ensures that we simulate all generators simultaneously when
     /// running an equivalence check, as opposed to the default behavior
     /// of simulating them one by one.
-    #[arg(long, default_value_t = false, verbatim_doc_comment)]
+    #[arg(short = 'a', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
 }
 
@@ -80,8 +74,7 @@ fn main() {
         args.conjugations_before_clean,
         args.threads,
         args.progress_bar,
-        );
-
+    );
 
     let circuit = circuit_from_file(args.circuit_file);
 

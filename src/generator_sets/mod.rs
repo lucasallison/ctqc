@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::circuit::Gate;
 
-mod measurement_sampler;
+pub mod measurement_sampler;
 use measurement_sampler::MeasurementSampler;
 
 mod pauli_string;
@@ -67,10 +67,10 @@ impl GeneratorSetImplementation {
             "ptrees" => GeneratorSetImplementation::PauliTrees,
             "cbitvec" => GeneratorSetImplementation::ColumnWiseBitVec,
             "rbitvec" => GeneratorSetImplementation::RowWiseBitVec,
-            _ => { 
+            _ => {
                 eprintln!("\"{}\" is not a valid generator set implementation. Defaulting to row-wise bitvector", data_structure);
                 GeneratorSetImplementation::RowWiseBitVec
-            },
+            }
         }
     }
 }
@@ -82,9 +82,17 @@ pub fn get_generator_set(
 ) -> Box<dyn GeneratorSet> {
     match generator_set {
         GeneratorSetImplementation::PauliMap => return Box::new(PauliMap::new(n_qubits)),
-        GeneratorSetImplementation::ColumnWiseBitVec => return Box::new(ColumnWiseBitVec::new(n_qubits)),
-        GeneratorSetImplementation::RowWiseBitVec => return Box::new(RowWiseBitVec::new(n_qubits, n_threads)),
-        GeneratorSetImplementation::PauliPools => return Box::new(PauliPools::new(n_qubits, n_threads)),
-        GeneratorSetImplementation::PauliTrees => return Box::new(PauliTrees::new(n_qubits, None, None)),
+        GeneratorSetImplementation::ColumnWiseBitVec => {
+            return Box::new(ColumnWiseBitVec::new(n_qubits))
+        }
+        GeneratorSetImplementation::RowWiseBitVec => {
+            return Box::new(RowWiseBitVec::new(n_qubits, n_threads))
+        }
+        GeneratorSetImplementation::PauliPools => {
+            return Box::new(PauliPools::new(n_qubits, n_threads))
+        }
+        GeneratorSetImplementation::PauliTrees => {
+            return Box::new(PauliTrees::new(n_qubits, None, None))
+        }
     };
 }

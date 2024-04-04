@@ -9,7 +9,7 @@ pub struct OptionalProgressBar {
 impl OptionalProgressBar {
     pub fn new(is_some: bool, len: u64) -> OptionalProgressBar {
         if is_some {
-            let pb  = ProgressBar::new(len);
+            let pb = ProgressBar::new(len);
             let pb_style =
                 "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
             pb.set_style(ProgressStyle::with_template(&pb_style).unwrap());
@@ -18,16 +18,15 @@ impl OptionalProgressBar {
                 progress_bar: Some(pb),
             };
         } else {
-            return OptionalProgressBar {
-                progress_bar: None,
-            }
-        } 
+            return OptionalProgressBar { progress_bar: None };
+        }
     }
-    
-    pub fn set_style(&self, style: &str) {
+
+    pub fn prepend_to_style(&self, style: &str) {
         if let Some(pb) = self.progress_bar.as_ref() {
-            
-            pb.set_style(ProgressStyle::with_template(style).unwrap());
+            let pb_style = style.to_owned() + 
+                "[{elapsed_precise}] {bar:40.green/red} {pos:>4}/{len} gates ({percent}%) -- {msg}";
+            pb.set_style(ProgressStyle::with_template(&pb_style).unwrap());
         }
     }
 
