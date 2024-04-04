@@ -51,12 +51,9 @@ struct Args {
     #[arg(short, long, default_value_t = 1, verbatim_doc_comment)]
     threads: usize,
 
-    /// Determine what whill be printed to the console during the simulation.
-    /// - debug:  Print the generator set after each conjugation.
-    /// - pbar:   Print a progress bar.
-    /// - json:   Output statistics in JSON format.
+    /// Print a progress bar to the terminal
     #[arg(short, long, default_value_t = false, verbatim_doc_comment)]
-    log_level: bool,
+    progress_bar: bool,
 
     /// Ensures that we simulate all generators simultaneously when
     /// running an equivalence check, as opposed to the default behavior
@@ -78,30 +75,19 @@ fn circuit_from_file(file: String) -> Circuit {
 fn main() {
     let args = Args::parse();
 
+    let mut simulator = Simulator::new(
+        args.generator_set,
+        args.conjugations_before_clean,
+        args.threads,
+        args.progress_bar,
+        );
+
+
     let circuit = circuit_from_file(args.circuit_file);
-
-    let mut generator_set: Box<dyn GeneratorSet> = match args.data_structure.as_str() {
-        "map" => Box::new(PauliMap::new(circuit.n_qubits())),
-        "cbitvec" => Box::new(ColumnWiseBitVec::new(circuit.n_qubits())),
-        "rbitvec" => Box::new(RowWiseBitVec::new(circuit.n_qubits(), args.threads)),
-        "ppools" => Box::new(PauliPools::new(circuit.n_qubits(), args.threads)),
-        "ptrees" => Box::new(PauliTrees::new(circuit.n_qubits(), None, None)),
-        _ => {
-            eprintln!(
-                "{}",
-                MainError::InvalidGeneratorSet {
-                    data_structure: args.data_structure
-                }
-            );
-            std::process::exit(2);
-        }
-    };
-
-    let mut simulator = Simulator::new(generator_set.as_mut(), args.clean, args.verbose);
 
     // No second file provided, run the simulation
     if args.equiv_circuit_file == "None" {
-        simulator.simulate(&circuit)
+        simulator.simulate(&circuit);
 
     // Second file provided, run an equivalence check
     } else {
@@ -118,14 +104,8 @@ fn main() {
 
 #[derive(Debug, Snafu)]
 enum MainError {
-    #[snafu(display("Invalid data structure type: {}. Use the help (-h) flag to see the available data structures", data_structure))]
-    InvalidGeneratorSet { data_structure: String },
-
     #[snafu(display("Failed to parse {}: {} ", file, err))]
     InvalidFileFormat { file: String, err: Box<dyn Error> },
-
-    #[snafu(display("Simulation failed: {} ", err))]
-    SimulationFailed { err: Box<dyn Error> },
 
     #[snafu(display("Equivalence check failed: {} ", err))]
     EquivalenceCheckFailed { err: Box<dyn Error> },

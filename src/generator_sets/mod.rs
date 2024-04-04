@@ -75,8 +75,8 @@ impl GeneratorSetImplementation {
     }
 }
 
-pub fn get_generator_set_implementation(
-    generator_set: GeneratorSetImplementation,
+pub fn get_generator_set(
+    generator_set: &GeneratorSetImplementation,
     n_qubits: usize,
     n_threads: usize,
 ) -> Box<dyn GeneratorSet> {
