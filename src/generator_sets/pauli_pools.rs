@@ -1,3 +1,4 @@
+use log::warn;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -25,9 +26,8 @@ pub struct PauliPools {
 impl PauliPools {
     // Creates and returns an empty RowWiseBitVec
     pub fn new(n_qubits: usize, n_threads: usize) -> PauliPools {
-        println!("Creating PauliPools with {} threads.", n_threads);
         if n_threads < 2 {
-            eprintln!("WARNING! n_threads < 2, using 2 threads instead.");
+            warn!("WARNING! n_threads < 2, using 2 threads instead.");
         }
 
         let n_threads = if n_threads < 2 { 2 } else { n_threads };

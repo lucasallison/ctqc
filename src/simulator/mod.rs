@@ -1,7 +1,5 @@
 use log::debug;
 use serde_json::json;
-use snafu::prelude::*;
-use std::error::Error;
 use std::time::Instant;
 
 use crate::circuit::Circuit;
@@ -47,8 +45,10 @@ impl Simulator {
 
         let mut generator_set =
             get_generator_set(&self.generator_set, circuit.n_qubits(), self.threads);
+        generator_set.init_generators(true);
 
-        let progress_bar = OptionalProgressBar::new(self.progress_bar, circuit.len() as u64);
+        let progress_bar = OptionalProgressBar::new(self.progress_bar, circuit.len() as u64, false);
+        progress_bar.prepend_to_style("Conjugating circuit -- ");
 
         self.conjugate_circuit_gates(&mut generator_set, circuit, false, &progress_bar);
 
@@ -61,20 +61,35 @@ impl Simulator {
         );
     }
 
+    /// Obtains the sampled measurements and returns the results as a JSON string.
     fn sim_res_json(
         &self,
         circuit: &Circuit,
         start: Instant,
         sampler: &mut MeasurementSampler,
     ) -> String {
+        let progress_bar =
+            OptionalProgressBar::new(self.progress_bar, circuit.measurements().len() as u64, true);
+        progress_bar.prepend_to_style("Sampling Measurements -- ");
+
         let mut measurement_samples = Vec::with_capacity(circuit.n_qubits());
         for qubit in circuit.measurements().iter() {
-            let qubit_str = format!("qubit {}", qubit);
+            progress_bar.set_message(format!("{} pauli string(s)", sampler.size()));
+
             let (measurement, p0) = sampler.sample(*qubit);
-            measurement_samples.push((qubit_str, measurement, p0));
+            let sample = json!({
+                "qubit": qubit,
+                "measurement": measurement as i32,
+                "p0": p0
+            });
+            measurement_samples.push(sample);
+
+            progress_bar.inc(1);
         }
 
-        json!({
+        progress_bar.finish();
+
+        let res = json!({
             "simulation_type": "simulation",
             "circuit": circuit.name(),
             "runtime": {
@@ -83,8 +98,8 @@ impl Simulator {
                 "minutes": start.elapsed().as_secs() / 60
             },
             "measurements": measurement_samples
-        })
-        .to_string()
+        });
+        serde_json::to_string_pretty(&res).unwrap()
     }
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
@@ -96,13 +111,10 @@ impl Simulator {
         circuit_1: &Circuit,
         circuit_2: &Circuit,
         all_generators_at_once: bool,
-    ) -> Result<(), Box<dyn Error>> {
+    ) {
         if circuit_1.n_qubits() != circuit_2.n_qubits() {
-            return Err(SimulationError::DifferentSizedCiruicuits {
-                n_qubits_c1: circuit_1.n_qubits(),
-                n_qubits_c2: circuit_2.n_qubits(),
-            }
-            .into());
+            eprintln!("Cannot check equivalence between circuits with different number of qubits: {} and {}", circuit_1.n_qubits(), circuit_2.n_qubits());
+            std::process::exit(1);
         }
 
         let now = Instant::now();
@@ -112,9 +124,11 @@ impl Simulator {
         } else {
             self.equiv_per_generator(circuit_1, circuit_2, true)
         };
+
+        // We already know they are not equivalent, return
         if !equiv {
             println!("{}", self.equiv_res_json(equiv, circuit_1, circuit_2, now));
-            return Ok(());
+            return;
         }
 
         let equiv = if all_generators_at_once {
@@ -124,9 +138,9 @@ impl Simulator {
         };
 
         println!("{}", self.equiv_res_json(equiv, circuit_1, circuit_2, now));
-        Ok(())
     }
 
+    /// Returns the result of the equivalence check as a JSON string.
     fn equiv_res_json(
         &self,
         equiv: bool,
@@ -134,7 +148,7 @@ impl Simulator {
         circuit_2: &Circuit,
         start: Instant,
     ) -> String {
-        json!({
+        let res = json!({
             "simulation_type": "equivalence",
             "circuits": [circuit_1.name(), circuit_2.name()],
             "equivalent": equiv,
@@ -143,8 +157,8 @@ impl Simulator {
                 "seconds": start.elapsed().as_secs(),
                 "minutes": start.elapsed().as_secs() / 60
             }
-        })
-        .to_string()
+        });
+        serde_json::to_string_pretty(&res).unwrap()
     }
 
     fn progress_bar_for_equiv_check(
@@ -152,8 +166,7 @@ impl Simulator {
         n_gates: usize,
         check_zero_state_generators: bool,
     ) -> OptionalProgressBar {
-        let progress_bar =
-            OptionalProgressBar::new(self.progress_bar, n_gates as u64);
+        let progress_bar = OptionalProgressBar::new(self.progress_bar, n_gates as u64, false);
 
         let pg_prepend = format!(
             "Simulating V^{}(U{}U^{})V -- ",
@@ -176,9 +189,12 @@ impl Simulator {
     ) -> bool {
         let mut generator_set =
             get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads);
-        
-        let progress_bar =
-            self.progress_bar_for_equiv_check(circuit_1.len()+circuit_2.len(), check_zero_state_generators);
+        generator_set.init_generators(check_zero_state_generators);
+
+        let progress_bar = self.progress_bar_for_equiv_check(
+            circuit_1.len() + circuit_2.len(),
+            check_zero_state_generators,
+        );
 
         // First we simulate the first circuit with the all zero/plus state generators
         self.conjugate_circuit_gates(&mut generator_set, circuit_1, false, &progress_bar);
@@ -204,8 +220,10 @@ impl Simulator {
         let mut generator_set =
             get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads);
 
-        let progress_bar =
-            self.progress_bar_for_equiv_check(circuit_1.n_qubits()*(circuit_1.len()+circuit_2.len()), check_zero_state_generators);
+        let progress_bar = self.progress_bar_for_equiv_check(
+            circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()),
+            check_zero_state_generators,
+        );
 
         for i in 0..circuit_1.n_qubits() {
             generator_set.init_single_generator(i, check_zero_state_generators);
@@ -261,17 +279,4 @@ impl Simulator {
         debug!("\nFinal generator set:");
         debug!("{}", generator_set);
     }
-}
-
-#[derive(Debug, Snafu)]
-enum SimulationError {
-    #[snafu(display(
-        "Cannot check equivalence between circuits with different number of qubits: {} and {}",
-        n_qubits_c1,
-        n_qubits_c2
-    ))]
-    DifferentSizedCiruicuits {
-        n_qubits_c1: usize,
-        n_qubits_c2: usize,
-    },
 }

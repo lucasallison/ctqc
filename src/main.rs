@@ -1,6 +1,5 @@
 use clap::Parser;
-use snafu::prelude::*;
-use std::error::Error;
+use env_logger;
 
 mod circuit;
 use circuit::Circuit;
@@ -52,23 +51,15 @@ struct Args {
     /// Ensures that we simulate all generators simultaneously when
     /// running an equivalence check, as opposed to the default behavior
     /// of simulating them one by one.
-    #[arg(short = 'a', long, default_value_t = false, verbatim_doc_comment)]
+    #[arg(short='a', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
 }
 
-fn circuit_from_file(file: String) -> Circuit {
-    match Circuit::from_file(&file) {
-        Ok(circuit) => return circuit,
-        Err(e) => {
-            eprintln!("{}", MainError::InvalidFileFormat { file: file, err: e });
-            std::process::exit(1);
-        }
-    };
-}
-
 fn main() {
+    env_logger::init();
     let args = Args::parse();
 
+    // Initialize the simulator
     let mut simulator = Simulator::new(
         args.generator_set,
         args.conjugations_before_clean,
@@ -76,30 +67,19 @@ fn main() {
         args.progress_bar,
     );
 
-    let circuit = circuit_from_file(args.circuit_file);
+    // Parse the provided circuit
+    let circuit = Circuit::from_file(&args.circuit_file);
 
-    // No second file provided, run the simulation
-    if args.equiv_circuit_file == "None" {
-        simulator.simulate(&circuit);
-
-    // Second file provided, run an equivalence check
-    } else {
-        let equiv_circuit = circuit_from_file(args.equiv_circuit_file);
-        if let Err(e) =
-            simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators)
-        {
-            eprintln!("{}", MainError::EquivalenceCheckFailed { err: e });
-            std::process::exit(1);
+    // Simulate, or run an equivalence check
+    match args.equiv_circuit_file.as_str() {
+        "None" => {
+            simulator.simulate(&circuit);
+        }
+        _ => {
+            let equiv_circuit = Circuit::from_file(&args.equiv_circuit_file);
+            simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators);
         }
     }
+
     std::process::exit(0);
-}
-
-#[derive(Debug, Snafu)]
-enum MainError {
-    #[snafu(display("Failed to parse {}: {} ", file, err))]
-    InvalidFileFormat { file: String, err: Box<dyn Error> },
-
-    #[snafu(display("Equivalence check failed: {} ", err))]
-    EquivalenceCheckFailed { err: Box<dyn Error> },
 }

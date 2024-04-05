@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
-use indicatif::ProgressBar;
-use indicatif::ProgressStyle;
 use rand::prelude::*;
 
 use super::pauli_string::utils as PauliUtils;
@@ -58,6 +56,10 @@ impl MeasurementSampler {
 
         ms.size = ms.generator_info.len();
         ms
+    }
+
+    pub fn size(&self) -> usize {
+        self.size
     }
 
     /// Measure the ith qubit and return a sampled result: true for |1⟩ and false for |0⟩.
@@ -120,21 +122,13 @@ impl MeasurementSampler {
     /// of the Pauli strings that consist of only identity gates and a single Z gate
     /// at the provided index.
     fn sum_z_stabilizer_coefficients(&self, z_index: usize) -> f64 {
+        if self.pauli_strings.len() == 0 {
+            panic!("Cannot sample measurements without any Pauli strings.");
+        }
+
         let mut sum = 0.0;
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
-
-        let mut n_combos = 1;
-        for pstrs in gen_to_pstr.iter() {
-            n_combos *= pstrs.len();
-        }
-
-        let progress_bar = ProgressBar::new(n_combos as u64);
-
-        let progress_style_str = "[{elapsed_precise}] {bar} -- {msg}";
-        progress_bar.set_message(format!("Sampling qubit {}", z_index));
-
-        progress_bar.set_style(ProgressStyle::with_template(&progress_style_str).unwrap());
 
         // Keep track of the current term of each generator, e.g.,
         // if indexes[0] is 5 we are processing the fifth term of the first generator.
@@ -166,7 +160,6 @@ impl MeasurementSampler {
             }
 
             gen_ind += 1;
-            progress_bar.inc(1);
 
             // We have multiplied `m_pstr` with a term (or no term) of each generator, start backtracking
             if gen_ind == self.n_qubits {
@@ -205,7 +198,6 @@ impl MeasurementSampler {
                     indexes[gen_ind] = 0;
 
                     if gen_ind == 0 {
-                        progress_bar.finish();
                         return sum;
                     }
                     gen_ind -= 1;
@@ -218,8 +210,6 @@ impl MeasurementSampler {
     /// to the provided measurement.
     // TODO reference explaination?
     fn measurement_update(&mut self, i: usize, measurement: bool, p0: f64) {
-        println!("Update");
-
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size,
             FxBuildHasher::default(),

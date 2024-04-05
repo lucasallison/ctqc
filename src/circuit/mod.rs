@@ -125,7 +125,7 @@ pub struct Circuit {
 }
 
 impl Circuit {
-    pub fn from_file(file: &String) -> Result<Circuit, Box<dyn Error>> {
+    pub fn from_file(file: &String) -> Circuit {
         let mut circuit = Circuit {
             name: file.clone(),
             gates: Vec::new(),
@@ -136,16 +136,27 @@ impl Circuit {
         let contents = match fs::read_to_string(file) {
             Ok(contents) => contents,
             Err(e) => {
-                return Err(Box::new(e));
+                eprintln!("Failed to reading {}: {}", file, e);
+                std::process::exit(1);
             }
         };
 
+        match circuit.add_gates_from_str(&contents) {
+            Ok(_) => return circuit,
+            Err(e) => {
+                eprintln!("Failed to parse {}: {}", file, e);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    fn add_gates_from_str(&mut self, gates: &str) -> Result<(), Box<dyn Error>> {
         let mut gate_type: String;
         let mut qubit_1: usize;
         let mut qubit_2: Option<usize>;
         let mut angle: Option<f64>;
 
-        for line in contents.lines() {
+        for line in gates.lines() {
             qubit_2 = None;
             angle = None;
 
@@ -178,7 +189,7 @@ impl Circuit {
                     .parse::<usize>()?;
             } else if M_RE.is_match(line) {
                 let gate_qubit = line.split(" ").collect::<Vec<&str>>();
-                circuit.measurements.push(gate_qubit[1].parse::<usize>()?);
+                self.measurements.push(gate_qubit[1].parse::<usize>()?);
                 continue;
             } else {
                 return Err(Box::new(ParseError::InvalidLine {
@@ -186,10 +197,9 @@ impl Circuit {
                 }));
             }
 
-            circuit.add_gate(&gate_type, qubit_1, qubit_2, angle)?;
+            self.add_gate(&gate_type, qubit_1, qubit_2, angle)?;
         }
-
-        Ok(circuit)
+        Ok(())
     }
 
     /// If a valid gate is provided, it is appended to the circuit.
@@ -278,7 +288,7 @@ impl<'a> Iterator for CircuitIterator<'a> {
 #[derive(Debug, Snafu)]
 pub enum ParseError {
     #[snafu(display(
-        "Invalid line in file: {}. Expected: '<gate> <qubit_1> Option(<qubit_2>)'",
+        "Invalid line: {}. Expected: '<gate> <qubit_1> (Optional: <qubit_2>)'",
         line
     ))]
     InvalidLine { line: String },
