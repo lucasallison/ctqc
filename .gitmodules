@@ -1,0 +1,3 @@
+[submodule "src/benchmarks/QASMBench"]
+	path = src/benchmarks/QASMBench
+	url = git@github.com:pnnl/QASMBench.git
