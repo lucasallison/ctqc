@@ -3,12 +3,21 @@ import re
 from pathlib import Path
 from typing import Tuple
 
-def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, optimization_level: int=0, ignore_transpiled_files: bool=True, verbose: bool=True):
+TRANSPILATION_SEED = 1
+
+def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, optimization_level: int=0, ignore_transpiled_files: bool=True) -> None:
 
     if not os.path.isdir(qasm_dir):
         raise ValueError(f"{qasm_dir} is not a directory.")
 
     os.makedirs(output_dir)
+
+    successfully_transpiled_files = list()
+    unsuccessfully_transpiled_files = list()
+
+    def write_log_file(output_dir, msg):
+        with open(os.path.join(output_dir, "logs.txt"), 'a') as f:
+            f.write(msg)
 
     qasm_file_paths = Path(qasm_dir).rglob('*.qasm')
     for qasm_file_path in qasm_file_paths:
@@ -19,14 +28,15 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, optimization_level: int=0, 
         if ignore_transpiled_files and re.search("transpiled", qasm_file):
             continue
 
-        if verbose:
-            print("Transpiling", qasm_file_path)
+        print("Transpiling: ", qasm_file_path)
 
         try:
-            (qasm_transpiled, ctqc_tranpiled) = qasm2_to_ctqc(qasm_file, optimization_level)
-        except:
-            if verbose:
-                print(f"Failed to transpile {qasm_file_path}, ignoring this file.")
+            (qasm_transpiled, ctqc_tranpiled) = qasm_to_ctqc(qasm_file, optimization_level)
+        except Exception as e:
+            msg = f"* Failed to transpile {qasm_file_path}: {e}, ignoring this file."
+            print(msg)
+            unsuccessfully_transpiled_files.append(qasm_file_path)
+            write_log_file(output_dir, msg+"\n")
             continue
 
         f_name, _ = os.path.splitext(os.path.basename(qasm_file_path))
@@ -42,10 +52,21 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, optimization_level: int=0, 
         transpiled_qasm_file = os.path.join(transpiled_qasm_dir, os.path.basename(qasm_file))
         with open(transpiled_qasm_file, "w") as f:
             f.write(qasm_transpiled)
+        
+        successfully_transpiled_files.append(qasm_file_path)
 
-def qasm2_to_ctqc(qasm_file: str, optimization_level: int=0) -> Tuple[str, str]:
+    write_log_file(output_dir, "\nSuccesfully transpiled:\n")
+    for file in successfully_transpiled_files:
+        write_log_file(output_dir, f"- {file}\n")
+
+    write_log_file(output_dir, "\nUnsuccesfully transpiled:\n")
+    for file in unsuccessfully_transpiled_files:
+        write_log_file(output_dir, f"- {file}\n")
+
+
+def qasm_to_ctqc(qasm_file: str, optimization_level: int=0) -> Tuple[str, str]:
     """
-    Converts a QASM file to a CTQC format file.
+    Converts a QASM file to a CTQC file.
 
     This function takes a QASM file, transpiles it to a circuit with basis gates 'h', 's', 'cx', and 'rz', and then converts it to a CTQC format file. 
     The function returns the transpiled QASM and CTQC strings.
@@ -69,49 +90,82 @@ def qasm2_to_ctqc(qasm_file: str, optimization_level: int=0) -> Tuple[str, str]:
 
     from qiskit import QuantumCircuit
     from qiskit.compiler import transpile
-    from qiskit import QuantumCircuit
+    from qiskit import qasm3
 
     qc = QuantumCircuit.from_qasm_file(qasm_file)
 
     try:
-        result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=1) 
+        result = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=TRANSPILATION_SEED) 
     except:
         raise RuntimeError("Transpilation failed.")
 
-    qasm_transpiled = result.qasm(formatted=False)
-    ctqc_transpiled = ""
-    q_registers = 0
 
+    qasm_transpiled = qasm3.dumps(result)
+    # print(qasm_transpiled)
+
+    ctqc_transpiled = ""
+
+    # Convert qasm qubits to regular numbers
+    qreg_highest_offset = 0
+    qreg_offset = dict()
+
+    def convert_qubit(qreg, qubit, qreg_offset):
+        return str(qreg_offset[qreg] + qubit)
+
+    # We ignore intial comments, OPENQASM, etc
     transpilation_started = False
+
     for line in qasm_transpiled.splitlines():
         line = line.rstrip()
 
-        if re.match(r"h .*\[\d*\];", line):
-            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
-            ctqc_transpiled += "H " + str(qubit) + "\n"
+        if re.match(r"h \w+\[\d+\];", line):
+            match = re.match(r"h (\w+)\[(\d+)\];", line)
+            qreg = match.group(1)
+            qubit = int(match.group(2))
+            ctqc_transpiled += "H " + convert_qubit(qreg, qubit, qreg_offset) + "\n"
 
-        elif re.match(r"s .*\[\d*\];", line):
-            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
-            ctqc_transpiled += ("S " + str(qubit) + "\n")
+        elif re.match(r"s \w+\[\d+\];", line):
+            match = re.match(r"s (\w+)\[(\d+)\];", line)
+            qreg = match.group(1)
+            qubit = int(match.group(2))
+            ctqc_transpiled += "S " + convert_qubit(qreg, qubit, qreg_offset) + "\n"
 
-        elif re.match(r"cx .*\[\d*\],.*\[\d*\];", line):
-            qubit_1 = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(',')[0]).group()).group())
-            qubit_2 = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(',')[1]).group()).group())
-            ctqc_transpiled += "CNOT " + str(qubit_1) + " " + str(qubit_2) + "\n"
+        elif re.match(r"cx \w+\[\d+\], \w+\[\d+\];", line):
+            match = re.match(r"cx (\w+)\[(\d+)\], (\w+)\[(\d+)\];", line)
+            qreg1 = match.group(1)
+            qubit1 = int(match.group(2))
+            qreg2 = match.group(3)
+            qubit2 = int(match.group(4))
+            ctqc_transpiled += "CNOT " + convert_qubit(qreg1, qubit1, qreg_offset) + " " + convert_qubit(qreg2, qubit2, qreg_offset) + "\n"
 
-        elif re.match(r"rz(.*) .*\[\d*\];", line):
-            angle = re.search(r'\((.*?)\)', line).group(1)
-            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line.split(' ')[1]).group()).group())
-            ctqc_transpiled += "Rz(" + angle + ") " + str(qubit) + "\n"
+        elif re.match(r"rz(.*) \w+\[\d+\];", line):
+            match = re.match(r"rz\((.*)\) (\w+)\[(\d+)\];", line)
+            angle = match.group(1)
+            qreg = match.group(2)
+            qubit = int(match.group(3))
+            ctqc_transpiled += "Rz(" + angle + ") " + convert_qubit(qreg, qubit, qreg_offset) + "\n"
 
-        elif re.match(r"measure .*\[\d*\]", line):
-            qubit = int(re.search(r'\d+', re.search(r'\[\d+\]', line).group()).group())
-            ctqc_transpiled += "M " + str(qubit) + "\n"
+        elif re.match(r".*measure \w+\[\d+\];", line):
+            match = re.match(r".*measure (\w+)\[(\d+)\];", line)
+            qreg = match.group(1)
+            qubit = int(match.group(2))
+            ctqc_transpiled += "M " + convert_qubit(qreg, qubit, qreg_offset) + "\n"
         
-        elif re.match(r"qreq .*\[\d*\]", line):
-            q_registers += 1
-            if q_registers > 1:
-                raise RuntimeError("Can only transpile circuits with one quantum register.")
+        elif re.match(r"^qubit\[\d+\] \w+;", line):
+            match = re.match(r"^qubit\[(\d+)\] (\w+);", line)
+            n_qubits = int(match.group(1))
+            qreg = match.group(2)
+
+            qreg_offset[qreg] = qreg_highest_offset
+            qreg_highest_offset += n_qubits
+
+        # Ignore barriers
+        elif re.match(r"barrier.*", line):
+            continue
+    
+        # Ignore classical registers
+        elif re.match(r"bit.*", line):
+            continue
 
         else: 
             if transpilation_started: 
@@ -120,7 +174,7 @@ def qasm2_to_ctqc(qasm_file: str, optimization_level: int=0) -> Tuple[str, str]:
                 continue
         
         transpilation_started = True
-    
+
     return (qasm_transpiled.strip(), ctqc_transpiled.strip())
 
 

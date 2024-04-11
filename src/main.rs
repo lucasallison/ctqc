@@ -51,7 +51,7 @@ struct Args {
     /// Ensures that we simulate all generators simultaneously when
     /// running an equivalence check, as opposed to the default behavior
     /// of simulating them one by one.
-    #[arg(short='a', long, default_value_t = false, verbatim_doc_comment)]
+    #[arg(short = 'a', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
 }
 

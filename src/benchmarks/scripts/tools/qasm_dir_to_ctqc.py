@@ -16,6 +16,6 @@ parser.add_argument('-opt', type=int, default=0, help='Optimization level used i
 args = parser.parse_args()
 
 try:
-    qasm_dir_to_ctqc(args.q, args.o, args.opt, True)
+    qasm_dir_to_ctqc(args.q, args.o, args.opt)
 except Exception as e:
     print(e, file=sys.stderr)
