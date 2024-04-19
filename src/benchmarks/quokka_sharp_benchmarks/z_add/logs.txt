@@ -1,0 +1,27 @@
+Unsuccessfully transpiled:
+
+Successfully transpiled:
+- add/flip/qft_nativegates_ibm_qiskit_opt0_2.qasm.fp.qasm
+- add/flip/qnn_nativegates_ibm_qiskit_opt0_8.qasm.fp.qasm
+- add/flip/qnn_nativegates_ibm_qiskit_opt0_2.qasm.fp.qasm
+- add/flip/qft_nativegates_ibm_qiskit_opt0_8.qasm.fp.qasm
+- add/shift4/qnn_nativegates_ibm_qiskit_opt0_8.qasm.ps4.qasm
+- add/shift4/qnn_nativegates_ibm_qiskit_opt0_2.qasm.ps4.qasm
+- add/shift4/qft_nativegates_ibm_qiskit_opt0_2.qasm.ps4.qasm
+- add/shift4/qft_nativegates_ibm_qiskit_opt0_8.qasm.ps4.qasm
+- add/gm/qnn_nativegates_ibm_qiskit_opt0_2.qasm.gm.qasm
+- add/gm/qft_nativegates_ibm_qiskit_opt0_8.qasm.gm.qasm
+- add/gm/qft_nativegates_ibm_qiskit_opt0_2.qasm.gm.qasm
+- add/gm/qnn_nativegates_ibm_qiskit_opt0_8.qasm.gm.qasm
+- add/opt/qnn_nativegates_ibm_qiskit_opt0_2.qasm.opt.qasm
+- add/opt/qnn_nativegates_ibm_qiskit_opt0_8.qasm.opt.qasm
+- add/opt/qft_nativegates_ibm_qiskit_opt0_8.qasm.opt.qasm
+- add/opt/qft_nativegates_ibm_qiskit_opt0_2.qasm.opt.qasm
+- add/origin/qft_nativegates_ibm_qiskit_opt0_8.qasm
+- add/origin/qft_nativegates_ibm_qiskit_opt0_2.qasm
+- add/origin/qnn_nativegates_ibm_qiskit_opt0_8.qasm
+- add/origin/qnn_nativegates_ibm_qiskit_opt0_2.qasm
+- add/shift7/qft_nativegates_ibm_qiskit_opt0_8.qasm.ps7.qasm
+- add/shift7/qft_nativegates_ibm_qiskit_opt0_2.qasm.ps7.qasm
+- add/shift7/qnn_nativegates_ibm_qiskit_opt0_2.qasm.ps7.qasm
+- add/shift7/qnn_nativegates_ibm_qiskit_opt0_8.qasm.ps7.qasm

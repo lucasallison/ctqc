@@ -1,2 +1,3 @@
 cirq-core==1.3.0
 qiskit==1.0.1
+mqt.qcec==2.5.0

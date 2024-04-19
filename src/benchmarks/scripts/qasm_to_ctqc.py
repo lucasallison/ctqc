@@ -18,16 +18,27 @@ def write_log_file(output_dir, msg):
 
 
 def write_circuit_to_file(circuit: str, file: str):
+    os.makedirs(os.path.dirname(file), exist_ok=True)
     with open(file, "w") as f:
         f.write(circuit)
 
 
-def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, optimization_level: int=0, ignore_list: List=list() ) -> None:
+def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, optimization_level: int=0, ignore_list: List[str]=list()) -> None:
+    """
+    Transpiles QASM files in a directory to CTQC format.
+
+    Args:
+        qasm_dir (str): The directory containing the QASM files.
+        output_dir (str): The directory where the transpiled files will be saved.
+        transpile_qasm (bool, optional): Whether to transpile the QASM files. Defaults to True.
+        optimization_level (int, optional): The optimization level for transpilation. Defaults to 0.
+        ignore_list (List, optional): A list of regular expressions to ignore certain files. Defaults to [].
+    """
 
     if not os.path.isdir(qasm_dir):
-        raise ValueError(f"{qasm_dir} is not a directory.")
+        raise RuntimeError(f"{qasm_dir} is not a directory.")
 
-    # Create ouptut directories
+    # Create ouptut directories if it does not exist
     os.makedirs(output_dir)
 
     ctqc_dir = os.path.join(output_dir, "ctqc")
@@ -44,7 +55,7 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
     for qasm_file_path in qasm_file_paths:
         if any([bool(re.match(regex, str(qasm_file_path))) for regex in ignore_list]):
             continue
-
+            
         try:
             (qasm_circuit, ctqc_circuit) = qasm_to_ctqc(qasm_file_path, optimization_level, transpile_qasm)
         except Exception as e:
@@ -52,13 +63,16 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
             write_log_file(output_dir, f"- {qasm_file_path}: {e}\n")
             continue
 
-        circuit_name, _ = os.path.splitext(os.path.basename(qasm_file_path))
+        sub_dir_path, circuit_file = os.path.split(Path(*qasm_file_path.parts[1:]))
+        circuit_name, _ = os.path.splitext(os.path.basename(circuit_file))
 
-        ctqc_file = os.path.join(ctqc_dir, circuit_name + ".ctqc")
+        ctqc_sub_dir = os.path.join(ctqc_dir, sub_dir_path)
+        ctqc_file = os.path.join(ctqc_sub_dir, circuit_name + ".ctqc")
         write_circuit_to_file(ctqc_circuit, ctqc_file)
 
-        new_qasm_file_path = os.path.join(new_qasm_dir, circuit_name + ".qasm")
-        write_circuit_to_file(qasm_circuit, new_qasm_file_path)
+        new_qasm_sub_dir = os.path.join(new_qasm_dir, sub_dir_path)
+        new_qasm_file = os.path.join(new_qasm_sub_dir, circuit_name + ".qasm")
+        write_circuit_to_file(qasm_circuit, new_qasm_file)
 
         successfully_transpiled_files.append(qasm_file_path)
 
