@@ -64,7 +64,7 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
             continue
 
         sub_dir_path, circuit_file = os.path.split(Path(*qasm_file_path.parts[1:]))
-        circuit_name, _ = os.path.splitext(os.path.basename(circuit_file))
+        circuit_name, _ = os.path.splitext(os.path.basename(circuit_file).split('.')[0])
 
         ctqc_sub_dir = os.path.join(ctqc_dir, sub_dir_path)
         ctqc_file = os.path.join(ctqc_sub_dir, circuit_name + ".ctqc")

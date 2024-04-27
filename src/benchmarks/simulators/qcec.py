@@ -11,7 +11,6 @@ class QCEC(Simulator):
 
     def name(self):
         return 'QCEC'
-        
 
     def equivalent(self, circuit_1: str, circuit_2: str) -> Tuple[bool, float]:
         
