@@ -13,7 +13,17 @@ class Simulator(ABC):
         pass
 
     @abstractmethod
-    def equivalent(self, circuit_1: str, circuit_2) -> Tuple[bool, float]:
+    def file_extension(self) -> str:
+        """
+        Get the file extension of the circuit files that the simulator uses.
+
+        Returns:
+            str: The file extension.
+        """
+        pass
+
+    @abstractmethod
+    def equivalent(self, circuit_1: str, circuit_2) -> Tuple[bool, float, int]:
         """
         Check if two files are equivalent.
 
@@ -22,16 +32,7 @@ class Simulator(ABC):
             file2 (str): Path to the second file.
 
         Returns:
-            tuple: A tuple containing a boolean indicating whether the files are equivalent and the runtime in seconds.
-        """
-        pass
-
-    @abstractmethod
-    def file_extension(self) -> str:
-        """
-        Get the file extension of the circuit files that the simulator uses.
-
-        Returns:
-            str: The file extension.
+            tuple: A tuple containing a boolean indicating whether the circuits are equivalent, 
+            the runtime in seconds and the RSS.
         """
         pass

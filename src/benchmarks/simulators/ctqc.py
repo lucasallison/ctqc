@@ -1,8 +1,4 @@
-import sys
-import os 
-import time
-import subprocess
-import json
+import sys, os, time, subprocess, json, resource
 from typing import Tuple
 from pathlib import Path
 
@@ -24,13 +20,27 @@ class CTQC(Simulator):
     def name(self) -> str:
         return 'CTQC'
 
-    def equivalent(self, circuit_1: str, circuit_2: str) -> Tuple[bool, float]:
+    def file_extension(self) -> str:
+        return 'ctqc'
+
+    def equivalent(self, circuit_1: str, circuit_2: str) -> Tuple[bool, float, int]:
         start_time = time.time()
         res = subprocess.run([self.binary_path, '-f' , circuit_1, '-e', circuit_2], capture_output=True)
         end_time = time.time()
         execution_time = end_time - start_time
+
+        if res.stderr.decode() != '':
+            raise RuntimeError(res.stderr.decode())
+
+        max_rss_bytes = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
         res = json.loads(res.stdout.decode())
-        return res['equivalent'], execution_time
-    
-    def file_extension(self) -> str:
-        return 'ctqc'
+        return (res['equivalent'], execution_time, max_rss_bytes)
+
+
+if __name__ == "__main__":
+
+    circuit_1 = "../quokka_sharp_benchmarks/z_add/ctqc/origin/qft_nativegates_ibm_qiskit_opt0_2.ctqc"
+    circuit_2 = "../quokka_sharp_benchmarks/z_add/ctqc/opt/qft_nativegates_ibm_qiskit_opt0_2.ctqc"
+
+    s = CTQC()
+    print(s.equivalent(circuit_1, circuit_2))

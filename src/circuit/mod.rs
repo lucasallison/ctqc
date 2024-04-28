@@ -136,7 +136,7 @@ impl Circuit {
         let contents = match fs::read_to_string(file) {
             Ok(contents) => contents,
             Err(e) => {
-                eprintln!("Failed to reading {}: {}", file, e);
+                eprintln!("Failed reading {}: {}", file, e);
                 std::process::exit(1);
             }
         };
