@@ -13,7 +13,6 @@ class QCEC(Simulator):
         return 'QCEC'
 
     def equivalent(self, circuit_1: str, circuit_2: str) -> Tuple[bool, float]:
-        
         start_time = time.time()
         result = qcec.verify(circuit_1, circuit_2)
         end_time = time.time()
@@ -22,3 +21,12 @@ class QCEC(Simulator):
     
     def file_extension(self) -> str:
         return 'qasm'
+
+
+if __name__ == "__main__":
+
+    circuit_1 = "/Users/lucas/Development/thesis/ctqc/src/benchmarks/quokka_sharp_benchmarks/z_algorithm/qasm/origin/ae_nativegates_ibm_qiskit_opt0_32.qasm"
+    circuit_2 = "/Users/lucas/Development/thesis/ctqc/src/benchmarks/quokka_sharp_benchmarks/z_algorithm/qasm/opt/ae_nativegates_ibm_qiskit_opt0_32.qasm"
+    s = QCEC()
+    print(s.equivalent(circuit_1, circuit_2))
+    

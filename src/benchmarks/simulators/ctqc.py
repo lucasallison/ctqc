@@ -25,7 +25,6 @@ class CTQC(Simulator):
         return 'CTQC'
 
     def equivalent(self, circuit_1: str, circuit_2: str) -> Tuple[bool, float]:
-        
         start_time = time.time()
         res = subprocess.run([self.binary_path, '-f' , circuit_1, '-e', circuit_2], capture_output=True)
         end_time = time.time()
