@@ -79,7 +79,6 @@ impl CoefficientList {
     pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
         self.coefficients.len() == 1
             && self.coefficients[0].0 == i
-            && self.coefficients[0].1 <= OrderedFloat(1.0)
-            && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_MARGIN)
+            && ((self.coefficients[0].1 < OrderedFloat(1.0 + FP_ERROR_MARGIN) && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_MARGIN)) || (self.coefficients[0].1 > OrderedFloat(-1.0 - FP_ERROR_MARGIN) && self.coefficients[0].1 < OrderedFloat(-1.0 + FP_ERROR_MARGIN)))
     }
 }

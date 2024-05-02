@@ -1,13 +1,13 @@
-Starting benchmark at 2024-05-02 14:38:37.118935
+Starting benchmark at 2024-05-02 17:59:59.742617
 -- qft_nativegates_ibm_qiskit_opt0_2 --
-* QCEC: equivalent = equivalent (0.0068 seconds, 127.2 mbs)
-* CTQC: equivalent = False (0.0025 seconds, 3.3 mbs)
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0066 seconds, 129.8 mbs)
+* CTQC: equivalent = True (0.1798 seconds, 3.3 mbs)
 -- qft_nativegates_ibm_qiskit_opt0_8 --
-* QCEC: equivalent = equivalent_up_to_global_phase (0.0207 seconds, 171.5 mbs)
-* CTQC: equivalent = False (0.0108 seconds, 5.1 mbs)
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0198 seconds, 176.7 mbs)
+* CTQC: equivalent = True (0.1453 seconds, 13.5 mbs)
 -- qnn_nativegates_ibm_qiskit_opt0_2 --
-* QCEC: equivalent = equivalent_up_to_global_phase (0.0104 seconds, 128.2 mbs)
-* CTQC: equivalent = False (0.0032 seconds, 3.4 mbs)
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0091 seconds, 130.0 mbs)
+* CTQC: equivalent = True (0.0056 seconds, 3.5 mbs)
 -- qnn_nativegates_ibm_qiskit_opt0_8 --
-* QCEC: equivalent = equivalent_up_to_global_phase (0.1277 seconds, 237.9 mbs)
+* QCEC: equivalent = no_information (0.1167 seconds, 226.9 mbs)
 * CTQC: Timeout

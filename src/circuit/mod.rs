@@ -236,7 +236,7 @@ impl Circuit {
     }
 
     pub fn iter(&self, reversed: bool) -> CircuitIterator {
-        if reversed {
+        if !reversed {
             CircuitIterator {
                 circuit: self,
                 gate_index: 0,

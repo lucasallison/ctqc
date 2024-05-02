@@ -259,7 +259,6 @@ impl Simulator {
                 && i != 0
                 && i % self.conjugations_before_clean == 0
             {
-                debug!("Cleaning generator set\n");
                 generator_set.clean();
             }
 

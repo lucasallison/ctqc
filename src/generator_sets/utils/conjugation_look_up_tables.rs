@@ -116,10 +116,10 @@ lazy_static! {
                                         q2_p_gate: PauliGate::I,
                                         coefficient: 1.0,
                                         pstr_changed: true});
-        // XY -> -YZ
+        // XY -> YZ
         m.insert((PauliGate::X, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
                                         q2_p_gate: PauliGate::Z,
-                                        coefficient: -1.0,
+                                        coefficient: 1.0,
                                         pstr_changed: true});
         // XZ -> -YY
         m.insert((PauliGate::X, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Y,
@@ -136,16 +136,16 @@ lazy_static! {
                                         q2_p_gate: PauliGate::Z,
                                         coefficient: -1.0,
                                         pstr_changed: true});
-        // YZ -> -XY
+        // YZ -> XY
         m.insert((PauliGate::Y, PauliGate::Z), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::X,
                                         q2_p_gate: PauliGate::Y,
-                                        coefficient: -1.0,
+                                        coefficient: 1.0,
                                         pstr_changed: true});
         // ZX -> ZX
         m.insert((PauliGate::Z, PauliGate::X), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::Z,
                                         q2_p_gate: PauliGate::X,
                                         coefficient: 1.0,
-                                        pstr_changed: true});
+                                        pstr_changed: false});
         // ZY -> IY
         m.insert((PauliGate::Z, PauliGate::Y), CNOTPauliLookUpOutput{q1_p_gate: PauliGate::I,
                                         q2_p_gate: PauliGate::Y,
