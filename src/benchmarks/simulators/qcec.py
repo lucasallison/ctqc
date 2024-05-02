@@ -34,8 +34,8 @@ class QCEC(Simulator):
 
 if __name__ == "__main__":
 
-    circuit_1 = "../quokka_sharp_benchmarks/z_add/qasm/origin/qft_nativegates_ibm_qiskit_opt0_2.qasm"
-    circuit_2 = "../quokka_sharp_benchmarks/z_add/qasm/opt/qft_nativegates_ibm_qiskit_opt0_2.qasm"
+    circuit_1 = "../quokka_sharp_benchmarks/z_add/qasm/origin/ae_nativegates_ibm_qiskit_opt0_64.qasm"
+    circuit_2 = "../quokka_sharp_benchmarks/z_add/qasm/opt/ae_nativegates_ibm_qiskit_opt0_64.qasm"
 
     s = QCEC()
     print(s.equivalent(circuit_1, circuit_2))

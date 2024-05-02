@@ -1,0 +1,19 @@
+\begin{center} 
+\captionof{table}{Collection: z\_add. Circuit types: origin and opt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} 
+\hline 
+\multirow{2}{*}{\bfseries Circuit Name} & 
+\multicolumn{3}{|c|}{\bfseries origin} & 
+\multicolumn{3}{|c|}{\bfseries opt} & 
+\multicolumn{2}{|c|}{\bfseries QCEC} & 
+\multicolumn{2}{|c|}{\bfseries CTQC} \\ 
+\cline{2-11} 
+& n&c&r & n&c&r& t(sec)&mem(mbs) & t(sec)&mem(mbs)  \\ 
+\hline 
+qft & 2 & 9 & 21 & 2 & 15 & 3 & 0.00682 & 127.25 & 0.00248 & 3.265625 \\ 
+qft & 8 & 84 & 156 & 8 & 292 & 42 & 0.0207 & 171.5 & 0.01082 & 5.0625 \\ 
+qnn & 2 & 29 & 110 & 2 & 38 & 12 & 0.01037 & 128.21875 & 0.00324 & 3.421875 \\ 
+qnn & 8 & 215 & 488 & 8 & 844 & 96 & 0.12772 & 237.921875 & - & - \\ 
+\hline 
+\end{tabular} 
+\end{center} 

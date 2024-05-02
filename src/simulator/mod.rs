@@ -251,8 +251,7 @@ impl Simulator {
         inverse: bool,
         progress_bar: &OptionalProgressBar,
     ) {
-        debug!("Initial generator set:");
-        debug!("{}", generator_set);
+        debug!("Initial generator set:\n{}", generator_set);
 
         for (i, gate) in circuit.iter(inverse).enumerate() {
             // Clean the generator set every `self.conjugations_before_clean` gates, if the value is not 0
@@ -260,6 +259,7 @@ impl Simulator {
                 && i != 0
                 && i % self.conjugations_before_clean == 0
             {
+                debug!("Cleaning generator set\n");
                 generator_set.clean();
             }
 
@@ -268,15 +268,14 @@ impl Simulator {
             progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
             progress_bar.inc(1);
 
-            debug!("\nApplied [{}]. Generator set:", gate);
-            debug!("{}", generator_set);
+            debug!("\nApplied [{}]. Generator set:\n{}", gate, generator_set);
         }
 
         generator_set.clean();
 
         progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
 
-        debug!("\nFinal generator set:");
-        debug!("{}", generator_set);
+        debug!("\nFinal generator set:\n{}", generator_set);
+
     }
 }

@@ -3,6 +3,9 @@ name = "ctqc"
 version = "1.0.0"
 edition = "2021"
 
+[profile.dev]
+debug = true
+
 [profile.release]
 lto = true
 codegen-units = 1

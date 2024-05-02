@@ -106,7 +106,15 @@ def qasm_to_ctqc(qasm_file: str, optimization_level: int=0, transpile_qasm: bool
         The function only supports circuits with one quantum register.
     """
 
-    qc = QuantumCircuit.from_qasm_file(qasm_file)
+    # Try to load qasm 2.0, otherwise use qasm 3.0
+    try: 
+        qc = QuantumCircuit.from_qasm_file(qasm_file)
+    except:
+        with open(qasm_file, 'r') as f:
+            circuit = f.read()
+        qc = qasm3.loads(circuit)
+        if transpile_qasm:
+            raise RuntimeError("Can only transpile QASM 2.0 circuits")
 
     qasm_circuit = None
     if transpile_qasm: 
