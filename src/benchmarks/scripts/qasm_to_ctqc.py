@@ -1,7 +1,4 @@
-import os
-import sys
-import re
-import argparse
+import os, sys, re, argparse, datetime
 from pathlib import Path
 from typing import Tuple, List
 
@@ -50,6 +47,7 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
     successfully_transpiled_files = list()
     qasm_file_paths = Path(qasm_dir).rglob('*.qasm')
 
+    write_log_file(output_dir, f"Date: {datetime.datetime.now()}. Optimization level: {optimization_level}.")
     write_log_file(output_dir, "Unsuccessfully transpiled:\n")
 
     for qasm_file_path in qasm_file_paths:

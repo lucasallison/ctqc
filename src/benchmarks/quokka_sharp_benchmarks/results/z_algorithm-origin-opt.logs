@@ -1,6 +1,5 @@
-Starting benchmark at 2024-05-02 18:05:31.927570
+Starting benchmark at 2024-05-03 11:42:23.793808
 -- ae_nativegates_ibm_qiskit_opt0_16 --
-* QCEC: equivalent = equivalent_up_to_global_phase (0.117 seconds, 222.9 mbs)
-* CTQC: Timeout
+* QCEC: equivalent = equivalent_up_to_global_phase (0.1151 seconds, 222.4 mbs)
+* CTQC: equivalent = False (0.0115 seconds, 4.0 mbs)
 -- ae_nativegates_ibm_qiskit_opt0_32 --
-* QCEC: Timeout
