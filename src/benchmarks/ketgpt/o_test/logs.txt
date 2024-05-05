@@ -1,9 +1,0 @@
-Date: 2024-05-03 12:04:56.620352.
-Optimization level: 2.
-Timeout: 120 seconds.
-Ignore list: ae_indep_qiskit_69.qasm, ae_indep_qiskit_86.qasm seconds.
-
-Unsuccessfully transpiled:
-- test/ae_indep_qiskit_86.qasm: file matches a pattern in the ignore list.
-
-Successfully transpiled:

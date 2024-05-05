@@ -1,4 +1,4 @@
-import os, sys, re, argparse, datetime
+import os, sys, re, argparse, datetime, signal
 from pathlib import Path
 from typing import Tuple, List
 
@@ -53,6 +53,8 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
     for qasm_file_path in qasm_file_paths:
         if any([bool(re.match(regex, str(qasm_file_path))) for regex in ignore_list]):
             continue
+        
+        print(f"Transpiling {qasm_file_path}...")
             
         try:
             (qasm_circuit, ctqc_circuit) = qasm_to_ctqc(qasm_file_path, optimization_level, transpile_qasm)

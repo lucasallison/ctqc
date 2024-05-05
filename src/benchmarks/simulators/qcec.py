@@ -25,7 +25,7 @@ class QCEC(Simulator):
         try:
             res = ast.literal_eval(res.stdout.decode())
         except Exception as e:
-            raise RuntimeError(f"Failed parsing the result to dict: \n {res.stdout.decode()} \n {e}")
+            raise RuntimeError(f"Failed parsing the result to dict: {res.stdout.decode()} \n {e}")
 
         max_rss_bytes = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
 

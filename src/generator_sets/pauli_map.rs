@@ -194,9 +194,9 @@ impl PauliMap {
         zero_state_generator: bool,
         n_qubits: usize,
     ) -> bool {
-        let p_gate = PauliUtils::generator_non_identity_gate(zero_state_generator);
+        let pgate = PauliUtils::generator_non_identity_gate(zero_state_generator);
         let mut pstr = PauliString::new(n_qubits);
-        pstr.set_pauli_gate(i, p_gate);
+        pstr.set_pauli_gate(i, pgate);
 
         match map.get(pstr.as_bitslice()) {
             Some(coef_list) => return coef_list.is_valid_ith_generator_coef_list(i),
@@ -261,36 +261,60 @@ impl GeneratorSet for PauliMap {
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.apply_all_h_s_conjugations();
 
-        if !(self.size() == self.n_qubits) {
-            return false;
-        }
+        let mut target_generators = HashMap::with_capacity_and_hasher(
+            self.n_qubits,
+            FxBuildHasher::default(),
+        );
 
         for i in 0..self.n_qubits {
-            if !Self::contains_ith_x_or_z_generator(
-                &self.pauli_strings_src,
-                i,
-                check_zero_state,
-                self.n_qubits,
-            ) {
-                return false;
+            let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
+            let mut target_generator = PauliString::new(self.n_qubits);
+            target_generator.set_pauli_gate(i, pgate);
+
+            target_generators.insert( BitVec::from_bitslice(target_generator.as_bitslice()) , i);
+        }
+
+        for (pstr, coef_list) in &self.pauli_strings_src {
+            
+            if target_generators.contains_key(pstr) {
+                let i = target_generators.get(pstr).unwrap();
+                if !coef_list.is_valid_ith_generator_coef_list(*i) {
+                    return false;
+                }
+            } else {
+                if !coef_list.empty_up_to_error_margin() {
+                    return false;
+                }
             }
         }
+
         true
     }
 
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
-        if !(self.size() == 1) {
-            return false;
+        let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
+        let mut target_generator = PauliString::new(self.n_qubits);
+        target_generator.set_pauli_gate(i, pgate);
+
+        for (pstr, coef_list) in &self.pauli_strings_src {
+
+            if pstr == target_generator.as_bitslice() && !coef_list.is_valid_ith_generator_coef_list(i) {
+                return false;
+            }
+
+            if pstr != target_generator.as_bitslice() && coef_list.empty_up_to_error_margin() {
+                continue;
+            }
+
+            if pstr != target_generator.as_bitslice() && !coef_list.empty_up_to_error_margin() {
+                return false;
+            }
+
         }
 
-        Self::contains_ith_x_or_z_generator(
-            &self.pauli_strings_src,
-            i,
-            check_zero_state,
-            self.n_qubits,
-        )
+        true
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {

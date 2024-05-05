@@ -1,5 +1,123 @@
-Starting benchmark at 2024-05-03 11:42:23.793808
+Starting benchmark at 2024-05-05 16:12:32.186329
 -- ae_nativegates_ibm_qiskit_opt0_16 --
-* QCEC: equivalent = equivalent_up_to_global_phase (0.1151 seconds, 222.4 mbs)
-* CTQC: equivalent = False (0.0115 seconds, 4.0 mbs)
+* QCEC: equivalent = equivalent_up_to_global_phase (0.253 seconds, 226.8 mbs)
+* CTQC: Timeout
 -- ae_nativegates_ibm_qiskit_opt0_32 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- ae_nativegates_ibm_qiskit_opt0_64 --
+* QCEC: Exception! Failed parsing the result to dict:  
+ invalid syntax (<unknown>, line 0)
+* CTQC: Timeout
+-- dj_nativegates_ibm_qiskit_opt0_16 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.012 seconds, 200.5 mbs)
+* CTQC: Timeout
+-- dj_nativegates_ibm_qiskit_opt0_32 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0262 seconds, 261.4 mbs)
+* CTQC: Timeout
+-- dj_nativegates_ibm_qiskit_opt0_64 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0305 seconds, 376.0 mbs)
+* CTQC: Timeout
+-- ghz_nativegates_ibm_qiskit_opt0_16 --
+* QCEC: equivalent = equivalent (0.0069 seconds, 200.4 mbs)
+* CTQC: equivalent = True (0.0036 seconds, 3.3 mbs)
+-- ghz_nativegates_ibm_qiskit_opt0_32 --
+* QCEC: equivalent = equivalent (0.0135 seconds, 256.6 mbs)
+* CTQC: equivalent = True (0.0115 seconds, 3.3 mbs)
+-- ghz_nativegates_ibm_qiskit_opt0_64 --
+* QCEC: equivalent = equivalent (0.0204 seconds, 368.6 mbs)
+* CTQC: equivalent = True (0.017 seconds, 3.7 mbs)
+-- graphstate_nativegates_ibm_qiskit_opt0_16 --
+* QCEC: equivalent = equivalent (0.0121 seconds, 200.4 mbs)
+* CTQC: equivalent = True (0.0905 seconds, 14.2 mbs)
+-- graphstate_nativegates_ibm_qiskit_opt0_32 --
+* QCEC: equivalent = equivalent (0.0155 seconds, 258.6 mbs)
+* CTQC: equivalent = True (0.6007 seconds, 30.1 mbs)
+-- graphstate_nativegates_ibm_qiskit_opt0_64 --
+* QCEC: equivalent = equivalent (0.0399 seconds, 380.1 mbs)
+* CTQC: Timeout
+-- groundstate_large_nativegates_ibm_qiskit_opt0_14 --
+* QCEC: equivalent = equivalent (0.3728 seconds, 329.4 mbs)
+* CTQC: Timeout
+-- groundstate_medium_nativegates_ibm_qiskit_opt0_12 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.1489 seconds, 240.6 mbs)
+* CTQC: Timeout
+-- groundstate_small_nativegates_ibm_qiskit_opt0_4 --
+* QCEC: equivalent = equivalent (0.0097 seconds, 159.0 mbs)
+* CTQC: Timeout
+-- grover-noancilla_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0301 seconds, 173.2 mbs)
+* CTQC: Timeout
+-- grover-noancilla_nativegates_ibm_qiskit_opt0_6 --
+* QCEC: equivalent = no_information (0.6143 seconds, 248.4 mbs)
+* CTQC: Timeout
+-- grover-noancilla_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- grover-v-chain_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0471 seconds, 182.0 mbs)
+* CTQC: Timeout
+-- grover-v-chain_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.3987 seconds, 250.6 mbs)
+* CTQC: Timeout
+-- grover-v-chain_nativegates_ibm_qiskit_opt0_9 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- portfolioqaoa_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: equivalent = no_information (0.0785 seconds, 185.6 mbs)
+* CTQC: Timeout
+-- portfolioqaoa_nativegates_ibm_qiskit_opt0_6 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.056 seconds, 209.6 mbs)
+* CTQC: Timeout
+-- portfolioqaoa_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = no_information (0.2017 seconds, 210.5 mbs)
+* CTQC: Timeout
+-- portfoliovqe_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: equivalent = equivalent (0.0866 seconds, 167.5 mbs)
+* CTQC: Timeout
+-- portfoliovqe_nativegates_ibm_qiskit_opt0_6 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0951 seconds, 181.0 mbs)
+* CTQC: Timeout
+-- portfoliovqe_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = no_information (0.1454 seconds, 226.0 mbs)
+* CTQC: Timeout
+-- pricingcall_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0387 seconds, 162.8 mbs)
+* CTQC: equivalent = True (1.3333 seconds, 26.8 mbs)
+-- pricingcall_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = no_information (0.0521 seconds, 196.0 mbs)
+* CTQC: Timeout
+-- pricingcall_nativegates_ibm_qiskit_opt0_9 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- pricingput_nativegates_ibm_qiskit_opt0_5 --
+* QCEC: Timeout
+* CTQC: equivalent = True (1.3877 seconds, 32.9 mbs)
+-- pricingput_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0372 seconds, 185.5 mbs)
+* CTQC: Timeout
+-- pricingput_nativegates_ibm_qiskit_opt0_9 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- qaoa_nativegates_ibm_qiskit_opt0_11 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.068 seconds, 185.5 mbs)
+* CTQC: Timeout
+-- qaoa_nativegates_ibm_qiskit_opt0_7 --
+* QCEC: equivalent = equivalent_up_to_global_phase (0.0484 seconds, 171.3 mbs)
+* CTQC: equivalent = True (0.8882 seconds, 28.3 mbs)
+-- qaoa_nativegates_ibm_qiskit_opt0_9 --
+* QCEC: equivalent = no_information (0.3054 seconds, 253.8 mbs)
+* CTQC: Timeout
+-- qft_nativegates_ibm_qiskit_opt0_16 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- qft_nativegates_ibm_qiskit_opt0_32 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- qft_nativegates_ibm_qiskit_opt0_64 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- qftentangled_nativegates_ibm_qiskit_opt0_16 --
+* QCEC: Timeout
+* CTQC: Timeout
+-- qftentangled_nativegates_ibm_qiskit_opt0_32 --

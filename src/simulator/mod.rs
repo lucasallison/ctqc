@@ -235,6 +235,7 @@ impl Simulator {
             self.conjugate_circuit_gates(&mut generator_set, circuit_2, true, &progress_bar);
 
             if !generator_set.is_single_x_or_z_generator(check_zero_state_generators, i) {
+                println!("Final generator set: {generator_set}");
                 return false;
             }
         }
@@ -275,6 +276,5 @@ impl Simulator {
         progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
 
         debug!("\nFinal generator set:\n{}", generator_set);
-
     }
 }

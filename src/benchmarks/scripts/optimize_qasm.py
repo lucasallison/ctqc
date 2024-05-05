@@ -45,7 +45,7 @@ def transpile_and_optimize(qasm_dir: str, output_dir: str, optimization_level: i
     write_log_file(output_dir, f"Date: {datetime.datetime.now()}.\n")
     write_log_file(output_dir, f"Optimization level: {optimization_level}.\n")
     write_log_file(output_dir, f"Timeout: {timeout} seconds.\n")
-    write_log_file(output_dir, f"Ignore list: {', '.join(ignore_list) if len(ignore_list) > 0 else '-'} seconds.\n")
+    write_log_file(output_dir, f"Ignore list: {', '.join(ignore_list) if len(ignore_list) > 0 else '-'}.\n")
     write_log_file(output_dir, "\nUnsuccessfully transpiled:\n")
     for qasm_file_path in qasm_file_paths:
 

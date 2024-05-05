@@ -3,9 +3,9 @@ import random, os
 GATES = ['h', 's', 'cx', 't']
 
 file_name = "circ/c"
-max_qubits = 5
+max_qubits = 2
 max_addressible_qubit = max_qubits - 1
-circuit_length = 600
+circuit_length = 1000
 
 t_gate_percentage = 25
 remaining_percentages = 100 - t_gate_percentage
@@ -15,6 +15,7 @@ weights = [clifford_percentage + (100 - 3*clifford_percentage - t_gate_percentag
            clifford_percentage, 
            clifford_percentage, 
            t_gate_percentage]
+
 
 # ctqc = Clifford + T quantum circuit
 f = open(file_name + ".qasm", "w")

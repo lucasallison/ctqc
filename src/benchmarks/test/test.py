@@ -1,6 +1,6 @@
 import subprocess, json
 
-MAX_ATTEMPTS = 10
+MAX_ATTEMPTS = 100
 
 for i in range(MAX_ATTEMPTS):
     print(f"Attempt {i}/{MAX_ATTEMPTS}")
