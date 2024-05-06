@@ -1,4 +1,4 @@
-import argparse, sys, os, datetime
+import argparse, sys, os, datetime, psutil
 from multiprocessing import Process, Queue
 from pathlib import Path
 
@@ -46,6 +46,11 @@ def run_equiv_check(simulator: Simulator, circuit_1: str, circuit_2: str, res: d
     except Exception as e:
         res.put(e)
 
+def kill_process_tree(pid):
+    parent = psutil.Process(pid)
+    for child in parent.children(recursive=True):
+        child.kill()
+    parent.kill()
 
 def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, circ_type_2: str, simulators: list[Simulator], timeout: int):
 
@@ -89,6 +94,14 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
     circuit_names.sort()
     for circuit_name in circuit_names:
 
+        src_circuit = os.path.join(base_dir, collection, 'qasm', circ_type_1, circuit_name + '.qasm')
+        dst_circuit = os.path.join(base_dir, collection, 'qasm', circ_type_2, circuit_name + '.qasm')
+
+        
+        if not (os.path.exists(src_circuit) and os.path.exists(dst_circuit)):
+            log(f'* File missing: {circuit_name}')
+            continue
+
         # table += circuit_name.replace("_", "\\_") + " & "
         table += circuit_name.split('_')[0] + " & "
         table += " & ".join(get_circuit_stats(base_dir,
@@ -115,7 +128,7 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
             p.join(timeout)
 
             if p.is_alive():
-                p.kill()
+                kill_process_tree(p.pid)
                 table += "- & -"
                 log(f"* {simulator.name()}: Timeout", log_file)
             else:
@@ -155,8 +168,8 @@ if __name__ == "__main__":
     # - circuit: specific circuit file qft_nativegates_ibm_qiskit_opt0_2.qasm
 
     BENCHMARK_BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-    # COLLECTIONS = ['z_add']
-    COLLECTIONS = ['z_algorithm']
+    COLLECTIONS = ['transp_algorithm']
+    # CIRCUIT_DIR_PAIRS = [('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7'), ('origin', 'opt')]
     CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
     SIMULATORS = [QCEC(), CTQC()]
 

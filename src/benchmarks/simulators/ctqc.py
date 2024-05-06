@@ -33,7 +33,10 @@ class CTQC(Simulator):
             raise RuntimeError(res.stderr.decode())
 
         max_rss_bytes = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
-        res = json.loads(res.stdout.decode())
+        try:
+            res = json.loads(res.stdout.decode())
+        except Exception as e:
+            raise RuntimeError(f'Failed parsing output to json: {res.stdout.decode()} \n {e}')
         return (res['equivalent'], execution_time, max_rss_bytes)
 
 
