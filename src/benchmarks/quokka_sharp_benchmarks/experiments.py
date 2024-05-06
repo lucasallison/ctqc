@@ -136,6 +136,9 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
                 if isinstance(res, Exception):
                     table += "E & E"
                     log(f"* {simulator.name()}: Exception! {res}", log_file)
+                elif res['equiv'] == 'no_information':
+                    table += "U & U"
+                    log(f"* {simulator.name()}: Undetermined.")
                 else:
                     table += f"{round(res['time'], 5)} & {res['mem']/ (1024 * 1024)}"
                     log(f"* {simulator.name()}: equivalent = {res['equiv']} ({round(res['time'], 4)} seconds, {round(res['mem'] / (1024 * 1024), 1)} mbs)", log_file)
@@ -168,9 +171,9 @@ if __name__ == "__main__":
     # - circuit: specific circuit file qft_nativegates_ibm_qiskit_opt0_2.qasm
 
     BENCHMARK_BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-    COLLECTIONS = ['transp_algorithm']
-    # CIRCUIT_DIR_PAIRS = [('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7'), ('origin', 'opt')]
-    CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
+    COLLECTIONS = ['tp_algorithm']
+    CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
+    # CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
     SIMULATORS = [QCEC(), CTQC()]
 
     for collection in COLLECTIONS:
