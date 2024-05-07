@@ -187,23 +187,6 @@ impl PauliMap {
         }
     }
 
-    /// Returns true if the Pauli string with the given index contains an X or Z gate
-    pub fn contains_ith_x_or_z_generator(
-        map: &HashMap<BitVec, CoefficientList, FxBuildHasher>,
-        i: usize,
-        zero_state_generator: bool,
-        n_qubits: usize,
-    ) -> bool {
-        let pgate = PauliUtils::generator_non_identity_gate(zero_state_generator);
-        let mut pstr = PauliString::new(n_qubits);
-        pstr.set_pauli_gate(i, pgate);
-
-        match map.get(pstr.as_bitslice()) {
-            Some(coef_list) => return coef_list.is_valid_ith_generator_coef_list(i),
-            None => return false,
-        }
-    }
-
     /// Creates a PauliMap from a map of Pauli strings. It does not clean the input map, it stores it as
     /// provided.
     pub fn from_map(

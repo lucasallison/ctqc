@@ -1,7 +1,6 @@
-use clap::error;
 use ordered_float::OrderedFloat;
 
-use super::FP_ERROR_MARGIN;
+use super::{FP_ERROR_REMOVE_MARGIN, FP_ERROR_CHECK_MARGIN};
 
 /// A set that can be associated to a Pauli string. The list
 /// keeps track of the generators that the Pauli string belongs to (i.e.,
@@ -67,7 +66,7 @@ impl CoefficientList {
     /// While checking this it removes any zero coefficient.
     pub fn is_empty(&mut self) -> bool {
         self.coefficients.retain(|(_, f)| {
-            *f > OrderedFloat(0.0 + FP_ERROR_MARGIN) || *f < OrderedFloat(0.0 - FP_ERROR_MARGIN)
+            *f > OrderedFloat(0.0 + FP_ERROR_REMOVE_MARGIN) || *f < OrderedFloat(0.0 - FP_ERROR_REMOVE_MARGIN)
         });
 
         self.coefficients.is_empty()
@@ -80,17 +79,16 @@ impl CoefficientList {
     pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
         self.coefficients.len() == 1
             && self.coefficients[0].0 == i
-            && self.coefficients[0].1 < OrderedFloat(1.0 + FP_ERROR_MARGIN)
-            && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_MARGIN)
+            && self.coefficients[0].1 < OrderedFloat(1.0 + FP_ERROR_CHECK_MARGIN * 100.0)
+            && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_CHECK_MARGIN * 100.0)
     }
 
     /// Returns true if the Coeffients list is empty up to the error margin.
     /// The error margin is defined as FP_ERROR_MARGIN * 100.0, i.e., if a coefficient
     /// is within this margin of 0.0 it is considered to be zero.
     pub fn empty_up_to_error_margin(&self) -> bool {
-        let error_margin = FP_ERROR_MARGIN * 100.0;
         for (_, f) in self.coefficients.iter() {
-            if !(*f < OrderedFloat(0.0 + error_margin) && *f > OrderedFloat(0.0 - error_margin)) {
+            if !(*f < OrderedFloat(0.0 + FP_ERROR_CHECK_MARGIN) && *f > OrderedFloat(0.0 - FP_ERROR_CHECK_MARGIN)) {
                 return false
             }
         }
