@@ -244,21 +244,18 @@ impl GeneratorSet for PauliMap {
     fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.apply_all_h_s_conjugations();
 
-        let mut target_generators = HashMap::with_capacity_and_hasher(
-            self.n_qubits,
-            FxBuildHasher::default(),
-        );
+        let mut target_generators =
+            HashMap::with_capacity_and_hasher(self.n_qubits, FxBuildHasher::default());
 
         for i in 0..self.n_qubits {
             let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
             let mut target_generator = PauliString::new(self.n_qubits);
             target_generator.set_pauli_gate(i, pgate);
 
-            target_generators.insert( BitVec::from_bitslice(target_generator.as_bitslice()) , i);
+            target_generators.insert(BitVec::from_bitslice(target_generator.as_bitslice()), i);
         }
 
         for (pstr, coef_list) in &self.pauli_strings_src {
-            
             if target_generators.contains_key(pstr) {
                 let i = target_generators.get(pstr).unwrap();
                 if !coef_list.is_valid_ith_generator_coef_list(*i) {
@@ -282,8 +279,9 @@ impl GeneratorSet for PauliMap {
         target_generator.set_pauli_gate(i, pgate);
 
         for (pstr, coef_list) in &self.pauli_strings_src {
-
-            if pstr == target_generator.as_bitslice() && !coef_list.is_valid_ith_generator_coef_list(i) {
+            if pstr == target_generator.as_bitslice()
+                && !coef_list.is_valid_ith_generator_coef_list(i)
+            {
                 return false;
             }
 
@@ -294,7 +292,6 @@ impl GeneratorSet for PauliMap {
             if pstr != target_generator.as_bitslice() && !coef_list.empty_up_to_error_margin() {
                 return false;
             }
-
         }
 
         true

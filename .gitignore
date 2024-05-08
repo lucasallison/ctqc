@@ -17,8 +17,6 @@ Cargo.lock
 
 *.venv
 
-*.ctqc
-
 *.DS_Store
 
 .gitconfig
