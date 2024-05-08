@@ -40,8 +40,9 @@ struct Args {
     #[arg(short, long, default_value_t = 10, verbatim_doc_comment)]
     conjugations_before_clean: usize,
 
-    /// Provide number of threads to use
-    #[arg(short, long, default_value_t = 1, verbatim_doc_comment)]
+    /// Provide number of threads to use. When 0 is provided 
+    /// the number of threads equal the number of CPU cores.
+    #[arg(short, long, default_value_t = 0, verbatim_doc_comment)]
     threads: usize,
 
     /// Print a progress bar to the terminal
@@ -58,6 +59,10 @@ struct Args {
 fn main() {
     env_logger::init();
     let args = Args::parse();
+
+    if args.threads > 0 {
+      rayon::ThreadPoolBuilder::new().num_threads(args.threads).build_global().unwrap();
+    }
 
     // Initialize the simulator
     let mut simulator = Simulator::new(
