@@ -48,8 +48,7 @@ impl Simulator {
             get_generator_set(&self.generator_set, circuit.n_qubits(), self.threads);
         generator_set.init_generators(true);
 
-        let progress_bar = OptionalProgressBar::new(self.progress_bar, circuit.len() as u64, false);
-        progress_bar.prepend_to_style("Conjugating circuit -- ");
+        let progress_bar = OptionalProgressBar::new(self.progress_bar, circuit.len() as u64, &Self::pb_style("Conjugating gates", "gates"));
 
         Self::conjugate_circuit_gates(
             &mut generator_set,
@@ -75,9 +74,9 @@ impl Simulator {
         start: Instant,
         sampler: &mut MeasurementSampler,
     ) -> String {
+
         let progress_bar =
-            OptionalProgressBar::new(self.progress_bar, circuit.measurements().len() as u64, true);
-        progress_bar.prepend_to_style("Sampling Measurements -- ");
+            OptionalProgressBar::new(self.progress_bar, circuit.measurements().len() as u64, &Self::pb_style("Sampling Measurements", "qubits"));
 
         let mut measurement_samples = Vec::with_capacity(circuit.n_qubits());
         for qubit in circuit.measurements().iter() {
@@ -175,19 +174,14 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> OptionalProgressBar {
 
-        let pb_style_postfix = "[{elapsed_precise}] {bar:40.green/red} {pos}/{len} ".to_owned() + progress_items
-            + " ({percent}%) -- {msg}";
-
-        let pb_style_prefix= format!(
-            "Simulating V^{}(U{}U^{})V -- ",
+        let prefix = format!(
+            "Simulating V^{}(U{}U^{})V",
             *DAG_CHAR,
             z_x_print_char(check_zero_state_generators),
             *DAG_CHAR
         );
 
-        let pb_style = pb_style_prefix + &pb_style_postfix;
-
-        let progress_bar = OptionalProgressBar::new(self.progress_bar, n_progress_items as u64, &pb_style);
+        let progress_bar = OptionalProgressBar::new(self.progress_bar, n_progress_items as u64, &Self::pb_style(&prefix, progress_items));
 
         progress_bar
     }
@@ -206,7 +200,7 @@ impl Simulator {
 
         let progress_bar = self.progress_bar_for_equiv_check(
             circuit_1.len() + circuit_2.len(),
-            ""
+            "gates",
             check_zero_state_generators,
         );
 
@@ -244,17 +238,20 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> bool {
 
+        // let pb = self.progress_bar_for_equiv_check(
+        //     circuit_1.n_qubits(),
+        //     "generators",
+        //     check_zero_state_generators,
+        // );
 
-        (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
+        let progress_bar = self.progress_bar_for_equiv_check(circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()), "gates", check_zero_state_generators);
 
+        let res = (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
 
-          let progress_bar = self.progress_bar_for_equiv_check(
-              circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()),
-              check_zero_state_generators,
-          );
+            // let progress_bar = OptionalProgressBar::new(false, 0, ""); 
 
             let mut generator_set =
-                get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads);
+                get_generator_set(&self.generator_set, circuit_1.n_qubits(), 1);
 
             generator_set.init_single_generator(i, check_zero_state_generators);
 
@@ -276,11 +273,16 @@ impl Simulator {
                 self.conjugations_before_clean,
             );
 
-            progress_bar.finish();
+            // pb.inc(1);
 
             // We want to check if any of the simulations does NOT yield the generator we started with
             generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
-        })
+        });
+
+        // pb.finish();
+        progress_bar.finish();
+
+        res
 
         // let progress_bar = self.progress_bar_for_equiv_check(
         //     circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()),
@@ -336,5 +338,9 @@ impl Simulator {
         progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
 
         debug!("\nFinal generator set:\n{}", generator_set);
+    }
+
+    fn pb_style(prefix: &str, progress_items: &str) -> String {
+      prefix.to_owned() + " -- [{elapsed_precise}] {bar:40.green/red} {pos}/{len} " + progress_items + " ({percent}%) -- {msg}"
     }
 }
