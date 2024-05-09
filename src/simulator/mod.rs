@@ -100,6 +100,7 @@ impl Simulator {
             "circuit": circuit.name(),
             "runtime": {
                 "nano_seconds": start.elapsed().as_nanos(),
+                "mili_seconds": start.elapsed().as_millis(),
                 "seconds": start.elapsed().as_secs(),
                 "minutes": start.elapsed().as_secs() / 60
             },
