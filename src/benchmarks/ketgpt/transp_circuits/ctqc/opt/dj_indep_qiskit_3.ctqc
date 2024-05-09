@@ -1,0 +1,14 @@
+Rz(-pi) 0
+H 0
+Rz(-pi) 1
+H 1
+H 2
+Rz(-pi) 2
+CNOT 0 2
+H 0
+Rz(-pi) 0
+CNOT 1 2
+H 1
+Rz(-pi) 1
+M 0
+M 1

@@ -1,0 +1,17 @@
+Rz(-pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(pi/2) 0
+Rz(-3*pi/2) 1
+Rz(-pi/2) 1
+H 1
+Rz(-pi/2) 1
+Rz(-pi/2) 1
+CNOT 0 1
+Rz(-3*pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(-pi/2) 0
+M 0

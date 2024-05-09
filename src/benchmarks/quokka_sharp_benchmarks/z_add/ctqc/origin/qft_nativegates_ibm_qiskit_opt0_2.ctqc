@@ -1,0 +1,30 @@
+Rz(pi/2) 1
+Rz(pi/2) 1
+Rz(-pi/2) 1
+H 1
+Rz(-pi/2) 1
+Rz(3*pi/2) 1
+Rz(-pi/2) 1
+H 1
+Rz(-pi/2) 1
+Rz(5*pi/2) 1
+Rz(pi/2) 1
+Rz(pi/4) 1
+CNOT 1 0
+Rz(-pi/4) 0
+CNOT 1 0
+Rz(pi/4) 0
+Rz(pi/2) 0
+Rz(pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(3*pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(5*pi/2) 0
+Rz(pi/2) 0
+CNOT 0 1
+CNOT 1 0
+CNOT 0 1

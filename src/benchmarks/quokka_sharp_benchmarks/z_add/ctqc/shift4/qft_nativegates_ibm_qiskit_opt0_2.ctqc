@@ -1,0 +1,18 @@
+CNOT 0 1
+CNOT 1 0
+CNOT 0 1
+H 1
+H 1
+H 1
+CNOT 0 1
+H 0
+Rz(7*pi/4) 0
+H 0
+H 1
+H 1
+CNOT 0 1
+H 0
+Rz(0.7854981633974483) 0
+H 1
+Rz(pi/4) 1
+H 1

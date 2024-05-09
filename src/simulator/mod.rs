@@ -160,6 +160,7 @@ impl Simulator {
             "equivalent": equiv,
             "runtime": {
                 "nano_seconds": start.elapsed().as_nanos(),
+                "mili_seconds": start.elapsed().as_millis(),
                 "seconds": start.elapsed().as_secs(),
                 "minutes": start.elapsed().as_secs() / 60
             }
@@ -238,17 +239,9 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> bool {
 
-        // let pb = self.progress_bar_for_equiv_check(
-        //     circuit_1.n_qubits(),
-        //     "generators",
-        //     check_zero_state_generators,
-        // );
-
         let progress_bar = self.progress_bar_for_equiv_check(circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()), "gates", check_zero_state_generators);
 
         let res = (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
-
-            // let progress_bar = OptionalProgressBar::new(false, 0, ""); 
 
             let mut generator_set =
                 get_generator_set(&self.generator_set, circuit_1.n_qubits(), 1);
@@ -273,40 +266,13 @@ impl Simulator {
                 self.conjugations_before_clean,
             );
 
-            // pb.inc(1);
-
             // We want to check if any of the simulations does NOT yield the generator we started with
             generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
         });
 
-        // pb.finish();
         progress_bar.finish();
 
         res
-
-        // let progress_bar = self.progress_bar_for_equiv_check(
-        //     circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()),
-        //     check_zero_state_generators,
-        // );
-
-        // let mut generator_set = get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads);
-
-        // for i in 0..circuit_1.n_qubits() {
-        //     generator_set.init_single_generator(i, check_zero_state_generators);
-
-        //     // Conjugate gates of U
-        //     Self::conjugate_circuit_gates(&mut generator_set, circuit_1, false, &progress_bar, self.conjugations_before_clean);
-
-        //     // Conjugate gates of V^†
-        //     Self::conjugate_circuit_gates(&mut generator_set, circuit_2, true, &progress_bar, self.conjugations_before_clean);
-
-        //     if !generator_set.is_single_x_or_z_generator(check_zero_state_generators, i) {
-        //         return false;
-        //     }
-        // }
-
-        // progress_bar.finish();
-        // true
     }
 
     /// Sequentially conjugates the generator set with each gate in the provided circuit.

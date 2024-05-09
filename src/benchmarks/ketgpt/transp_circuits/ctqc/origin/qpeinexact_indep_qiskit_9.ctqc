@@ -1,0 +1,220 @@
+H 0
+H 1
+H 2
+H 3
+H 4
+H 5
+H 6
+H 7
+H 8
+S 8
+S 8
+H 8
+Rz(1.3437671701878218) 8
+CNOT 8 0
+Rz(-1.3437671701878218) 0
+CNOT 8 0
+Rz(1.3437671701878218) 0
+Rz(-0.4540583132141498) 8
+CNOT 8 1
+Rz(0.4540583132141498) 1
+CNOT 8 1
+Rz(-0.4540583132141498) 1
+Rz(-0.9081166264282996) 8
+CNOT 8 2
+Rz(0.9081166264282996) 2
+CNOT 8 2
+Rz(-0.9081166264282996) 2
+Rz(1.325359400733194) 8
+CNOT 8 3
+Rz(-1.325359400733194) 3
+CNOT 8 3
+Rz(1.325359400733194) 3
+Rz(-0.4908738521234052) 8
+CNOT 8 4
+Rz(0.4908738521234052) 4
+CNOT 8 4
+Rz(-0.4908738521234052) 4
+CNOT 3 4
+CNOT 4 3
+CNOT 3 4
+Rz(-pi/16) 3
+Rz(-pi/32) 4
+Rz(-5*pi/16) 8
+CNOT 8 5
+Rz(5*pi/16) 5
+CNOT 8 5
+Rz(-5*pi/16) 5
+CNOT 2 5
+CNOT 5 2
+CNOT 2 5
+Rz(-pi/8) 2
+Rz(-pi/64) 5
+Rz(3*pi/8) 8
+CNOT 8 6
+Rz(-3*pi/8) 6
+CNOT 8 6
+Rz(3*pi/8) 6
+CNOT 1 6
+CNOT 6 1
+CNOT 1 6
+Rz(-pi/4) 1
+Rz(-pi/128) 6
+Rz(-pi/4) 8
+CNOT 8 7
+Rz(pi/4) 7
+CNOT 8 7
+Rz(-pi/4) 7
+CNOT 0 7
+CNOT 7 0
+CNOT 0 7
+H 0
+CNOT 1 0
+Rz(pi/4) 0
+CNOT 1 0
+Rz(-pi/4) 0
+H 1
+CNOT 2 0
+Rz(pi/8) 0
+CNOT 2 0
+Rz(-pi/8) 0
+Rz(-pi/4) 2
+CNOT 2 1
+Rz(pi/4) 1
+CNOT 2 1
+Rz(-pi/4) 1
+H 2
+CNOT 3 0
+Rz(pi/16) 0
+CNOT 3 0
+Rz(-pi/16) 0
+Rz(-pi/8) 3
+CNOT 3 1
+Rz(pi/8) 1
+CNOT 3 1
+Rz(-pi/8) 1
+Rz(-pi/4) 3
+CNOT 3 2
+Rz(pi/4) 2
+CNOT 3 2
+Rz(-pi/4) 2
+H 3
+CNOT 4 0
+Rz(pi/32) 0
+CNOT 4 0
+Rz(-pi/32) 0
+Rz(-pi/16) 4
+CNOT 4 1
+Rz(pi/16) 1
+CNOT 4 1
+Rz(-pi/16) 1
+Rz(-pi/8) 4
+CNOT 4 2
+Rz(pi/8) 2
+CNOT 4 2
+Rz(-pi/8) 2
+Rz(-pi/4) 4
+CNOT 4 3
+Rz(pi/4) 3
+CNOT 4 3
+Rz(-pi/4) 3
+H 4
+CNOT 5 0
+Rz(pi/64) 0
+CNOT 5 0
+Rz(-pi/64) 0
+Rz(-pi/32) 5
+CNOT 5 1
+Rz(pi/32) 1
+CNOT 5 1
+Rz(-pi/32) 1
+Rz(-pi/16) 5
+CNOT 5 2
+Rz(pi/16) 2
+CNOT 5 2
+Rz(-pi/16) 2
+Rz(-pi/8) 5
+CNOT 5 3
+Rz(pi/8) 3
+CNOT 5 3
+Rz(-pi/8) 3
+Rz(-pi/4) 5
+CNOT 5 4
+Rz(pi/4) 4
+CNOT 5 4
+Rz(-pi/4) 4
+H 5
+CNOT 6 0
+Rz(pi/128) 0
+CNOT 6 0
+Rz(-pi/128) 0
+Rz(-pi/64) 6
+CNOT 6 1
+Rz(pi/64) 1
+CNOT 6 1
+Rz(-pi/64) 1
+Rz(-pi/32) 6
+CNOT 6 2
+Rz(pi/32) 2
+CNOT 6 2
+Rz(-pi/32) 2
+Rz(-pi/16) 6
+CNOT 6 3
+Rz(pi/16) 3
+CNOT 6 3
+Rz(-pi/16) 3
+Rz(-pi/8) 6
+CNOT 6 4
+Rz(pi/8) 4
+CNOT 6 4
+Rz(-pi/8) 4
+Rz(-pi/4) 6
+CNOT 6 5
+Rz(pi/4) 5
+CNOT 6 5
+Rz(-pi/4) 5
+H 6
+Rz(-pi/256) 7
+CNOT 7 0
+Rz(pi/256) 0
+CNOT 7 0
+Rz(-pi/256) 0
+Rz(-pi/128) 7
+CNOT 7 1
+Rz(pi/128) 1
+CNOT 7 1
+Rz(-pi/128) 1
+Rz(-pi/64) 7
+CNOT 7 2
+Rz(pi/64) 2
+CNOT 7 2
+Rz(-pi/64) 2
+Rz(-pi/32) 7
+CNOT 7 3
+Rz(pi/32) 3
+CNOT 7 3
+Rz(-pi/32) 3
+Rz(-pi/16) 7
+CNOT 7 4
+Rz(pi/16) 4
+CNOT 7 4
+Rz(-pi/16) 4
+Rz(-pi/8) 7
+CNOT 7 5
+Rz(pi/8) 5
+CNOT 7 5
+Rz(-pi/8) 5
+Rz(-pi/4) 7
+CNOT 7 6
+Rz(pi/4) 6
+CNOT 7 6
+Rz(-pi/4) 6
+H 7
+M 0
+M 1
+M 2
+M 3
+M 4
+M 5
+M 6
+M 7

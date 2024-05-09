@@ -1,0 +1,188 @@
+Rz(-pi) 0
+H 0
+Rz(-pi) 1
+H 1
+H 2
+Rz(-pi) 3
+H 3
+H 4
+Rz(-pi) 5
+H 5
+Rz(-pi) 6
+H 6
+H 7
+Rz(-pi) 8
+H 8
+Rz(-pi) 9
+H 9
+H 10
+Rz(-pi) 11
+H 11
+Rz(-pi) 12
+H 12
+H 13
+H 14
+Rz(-pi) 15
+H 15
+H 16
+H 17
+H 18
+H 19
+H 20
+Rz(-pi) 21
+H 21
+H 22
+H 23
+Rz(-pi) 24
+H 24
+Rz(-pi) 25
+H 25
+H 26
+H 27
+Rz(-pi) 28
+H 28
+H 29
+H 30
+Rz(-pi) 31
+H 31
+H 32
+H 33
+H 34
+Rz(-pi) 35
+H 35
+Rz(-pi) 36
+H 36
+H 37
+H 38
+Rz(-pi) 38
+CNOT 0 38
+H 0
+Rz(-pi) 0
+CNOT 1 38
+H 1
+Rz(-pi) 1
+CNOT 2 38
+H 2
+CNOT 3 38
+H 3
+Rz(-pi) 3
+CNOT 4 38
+H 4
+CNOT 5 38
+H 5
+Rz(-pi) 5
+CNOT 6 38
+H 6
+Rz(-pi) 6
+CNOT 7 38
+H 7
+CNOT 8 38
+H 8
+Rz(-pi) 8
+CNOT 9 38
+H 9
+Rz(-pi) 9
+CNOT 10 38
+H 10
+CNOT 11 38
+H 11
+Rz(-pi) 11
+CNOT 12 38
+H 12
+Rz(-pi) 12
+CNOT 13 38
+H 13
+CNOT 14 38
+H 14
+CNOT 15 38
+H 15
+Rz(-pi) 15
+CNOT 16 38
+H 16
+CNOT 17 38
+H 17
+CNOT 18 38
+H 18
+CNOT 19 38
+H 19
+CNOT 20 38
+H 20
+CNOT 21 38
+H 21
+Rz(-pi) 21
+CNOT 22 38
+H 22
+CNOT 23 38
+H 23
+CNOT 24 38
+H 24
+Rz(-pi) 24
+CNOT 25 38
+H 25
+Rz(-pi) 25
+CNOT 26 38
+H 26
+CNOT 27 38
+H 27
+CNOT 28 38
+H 28
+Rz(-pi) 28
+CNOT 29 38
+H 29
+CNOT 30 38
+H 30
+CNOT 31 38
+H 31
+Rz(-pi) 31
+CNOT 32 38
+H 32
+CNOT 33 38
+H 33
+CNOT 34 38
+H 34
+CNOT 35 38
+H 35
+Rz(-pi) 35
+CNOT 36 38
+H 36
+Rz(-pi) 36
+CNOT 37 38
+H 37
+M 0
+M 1
+M 2
+M 3
+M 4
+M 5
+M 6
+M 7
+M 8
+M 9
+M 10
+M 11
+M 12
+M 13
+M 14
+M 15
+M 16
+M 17
+M 18
+M 19
+M 20
+M 21
+M 22
+M 23
+M 24
+M 25
+M 26
+M 27
+M 28
+M 29
+M 30
+M 31
+M 32
+M 33
+M 34
+M 35
+M 36
+M 37
