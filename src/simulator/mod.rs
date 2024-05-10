@@ -206,26 +206,26 @@ impl Simulator {
             check_zero_state_generators,
         );
 
-        Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
+        // Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
 
-        // // First we simulate the first circuit with the all zero/plus state generators
-        // Self::conjugate_circuit_gates(
-        //     &mut generator_set,
-        //     circuit_1,
-        //     false,
-        //     &progress_bar,
-        //     self.conjugations_before_clean,
-        // );
+        // First we simulate the first circuit with the all zero/plus state generators
+        Self::conjugate_circuit_gates(
+            &mut generator_set,
+            circuit_1,
+            false,
+            &progress_bar,
+            self.conjugations_before_clean,
+        );
 
-        // // Then we simulate the inverse second circuit with the generators produced by the simulation
-        // // of the first circuit
-        // Self::conjugate_circuit_gates(
-        //     &mut generator_set,
-        //     circuit_2,
-        //     true,
-        //     &progress_bar,
-        //     self.conjugations_before_clean,
-        // );
+        // Then we simulate the inverse second circuit with the generators produced by the simulation
+        // of the first circuit
+        Self::conjugate_circuit_gates(
+            &mut generator_set,
+            circuit_2,
+            true,
+            &progress_bar,
+            self.conjugations_before_clean,
+        );
 
         progress_bar.finish();
 
@@ -252,25 +252,25 @@ impl Simulator {
             generator_set.init_single_generator(i, check_zero_state_generators);
 
 
-            Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
+            // Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
 
-            // // Conjugate gates of U
-            // Self::conjugate_circuit_gates(
-            //     &mut generator_set,
-            //     circuit_1,
-            //     false,
-            //     &progress_bar,
-            //     self.conjugations_before_clean,
-            // );
+            // Conjugate gates of U
+            Self::conjugate_circuit_gates(
+                &mut generator_set,
+                circuit_1,
+                false,
+                &progress_bar,
+                self.conjugations_before_clean,
+            );
 
-            // // Conjugate gates of V^†
-            // Self::conjugate_circuit_gates(
-            //     &mut generator_set,
-            //     circuit_2,
-            //     true,
-            //     &progress_bar,
-            //     self.conjugations_before_clean,
-            // );
+            // Conjugate gates of V^†
+            Self::conjugate_circuit_gates(
+                &mut generator_set,
+                circuit_2,
+                true,
+                &progress_bar,
+                self.conjugations_before_clean,
+            );
 
             // We want to check if any of the simulations does NOT yield the generator we started with
             generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)

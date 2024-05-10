@@ -1,216 +1,27 @@
-H 2
-H 3
-Rz(pi/2) 4
-H 4
-Rz(3*pi) 4
-H 6
-Rz(pi) 7
-H 7
-CNOT 7 6
-H 7
-CNOT 6 7
-Rz(-pi/4) 7
-H 8
-Rz(pi/4) 8
-H 8
-H 9
-CNOT 9 8
-H 8
-Rz(pi/4) 8
-Rz(pi/4) 9
-CNOT 3 10
-H 10
-CNOT 10 1
-H 11
-H 12
-Rz(pi) 12
-H 12
-Rz(pi) 12
-Rz(pi) 13
-H 13
-CNOT 13 7
-Rz(pi/4) 7
-CNOT 6 7
-Rz(pi/4) 6
-Rz(-pi/4) 7
-CNOT 13 7
-Rz(pi/4) 7
-H 7
-CNOT 13 6
-Rz(-pi/4) 6
-Rz(pi/4) 13
-CNOT 13 6
-CNOT 7 6
-Rz(pi/4) 7
-H 14
-Rz(pi) 14
-H 14
-Rz(pi/2) 14
-H 14
-Rz(pi) 15
-H 15
-Rz(0) 15
-Rz(-pi/2) 15
-H 15
-Rz(pi/2) 15
-H 15
-Rz(5*pi/2) 15
-Rz(3*pi/2) 16
-CNOT 8 16
-H 17
-Rz(3*pi/4) 17
-CNOT 17 0
-Rz(-pi/4) 0
-H 18
-Rz(pi) 18
-H 18
-Rz(pi) 18
-H 18
-Rz(0) 18
-Rz(-pi/2) 18
-H 18
-Rz(pi/2) 18
-H 18
-Rz(7*pi/2) 18
-H 20
-Rz(pi/2) 21
-CNOT 10 21
-Rz(-pi/4) 10
-H 10
-Rz(pi/2) 10
-H 10
-Rz(3*pi) 10
-CNOT 10 0
-Rz(pi/4) 0
-CNOT 17 0
-Rz(-pi/4) 0
-CNOT 10 0
-Rz(pi/4) 0
-H 0
-CNOT 10 17
-Rz(-pi/4) 17
-CNOT 10 17
-H 21
-Rz(pi/2) 22
-H 22
-Rz(9*pi/4) 22
-CNOT 22 1
-Rz(-pi/4) 1
-H 23
-CNOT 23 5
-H 5
-CNOT 5 13
-Rz(pi/2) 5
-H 5
-Rz(pi/2) 5
-H 5
-Rz(5*pi/2) 5
-H 5
-H 13
-CNOT 17 13
-Rz(-pi/4) 13
-CNOT 0 13
-Rz(pi/4) 13
-CNOT 17 13
-Rz(-pi/4) 13
-CNOT 0 13
-Rz(pi/4) 13
-H 13
-Rz(pi/4) 17
-CNOT 0 17
-Rz(pi/4) 0
-Rz(-pi/4) 17
-CNOT 0 17
-H 17
-Rz(pi) 17
-H 17
-H 24
-CNOT 2 24
-CNOT 6 2
-CNOT 24 19
-Rz(-pi/4) 19
-CNOT 23 19
-Rz(pi/4) 19
-CNOT 24 19
-Rz(-pi/4) 19
-CNOT 23 19
-Rz(pi/4) 19
-H 19
-Rz(pi/4) 24
-CNOT 23 24
-Rz(pi/4) 23
-Rz(-pi/4) 24
-CNOT 23 24
-H 23
-CNOT 3 23
-CNOT 3 1
-Rz(pi/4) 1
-CNOT 22 1
-Rz(-pi/4) 1
-CNOT 3 1
-Rz(pi/4) 1
+Rz(3*pi/4) 0
+S 1
 H 1
-Rz(pi) 1
-CNOT 3 22
-Rz(pi/4) 3
-Rz(-pi/4) 22
-CNOT 3 22
+Rz(pi/4) 2
 H 3
-Rz(pi) 22
-H 22
-Rz(pi) 22
-H 22
-CNOT 22 12
-H 12
-CNOT 12 13
-H 12
-CNOT 13 12
-Rz(-pi/4) 12
-CNOT 1 12
-Rz(pi/4) 12
-CNOT 13 12
-Rz(-pi/4) 12
-CNOT 1 12
-Rz(pi/4) 12
-H 12
-Rz(pi/4) 13
-CNOT 1 13
-Rz(-pi/4) 13
-CNOT 1 13
-CNOT 12 13
-CNOT 12 3
-Rz(-pi/4) 3
-CNOT 10 3
 Rz(pi/4) 3
-CNOT 12 3
-Rz(-pi/4) 3
-CNOT 10 3
-Rz(pi/4) 3
+Rz(pi/4) 6
+H 6
+CNOT 3 6
 H 3
-Rz(pi/4) 12
-CNOT 10 12
-Rz(-pi/4) 12
-CNOT 10 12
-CNOT 22 20
-H 22
-CNOT 20 22
-Rz(-pi/4) 22
-CNOT 1 22
-Rz(pi/4) 22
-CNOT 20 22
-Rz(pi/4) 20
-Rz(-pi/4) 22
-CNOT 1 22
-CNOT 1 20
-Rz(-pi/4) 20
-CNOT 1 20
-Rz(pi/4) 22
-H 22
-CNOT 22 20
-H 23
-Rz(0) 23
-Rz(-pi/2) 23
-H 23
-Rz(pi/2) 23
-H 23
-Rz(5*pi/2) 23
+H 6
+Rz(pi/4) 6
+Rz(pi/2) 7
+CNOT 7 3
+CNOT 3 4
+H 4
+CNOT 5 9
+CNOT 1 5
+CNOT 0 5
+CNOT 2 1
+Rz(3*pi/4) 1
+H 1
+CNOT 5 7
+Rz(pi/4) 5
+CNOT 6 7
+H 6
+S 7

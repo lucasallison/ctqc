@@ -13,6 +13,17 @@ class Simulator(ABC):
         pass
 
     @abstractmethod
+    def file_type(self) -> str:
+        """
+        Get the file type of the circuit files (qasm2, qasm3, ctqc)
+
+        Returns:
+            str: The file type
+        """
+        pass
+
+
+    @abstractmethod
     def file_extension(self) -> str:
         """
         Get the file extension of the circuit files that the simulator uses.

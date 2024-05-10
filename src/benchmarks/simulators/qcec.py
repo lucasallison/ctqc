@@ -13,6 +13,9 @@ class QCEC(Simulator):
     def name(self):
         return 'QCEC'
     
+    def file_type(self) -> str:
+        return 'qasm3'
+
     def file_extension(self) -> str:
         return 'qasm'
 

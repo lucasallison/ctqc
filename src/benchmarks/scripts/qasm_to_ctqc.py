@@ -4,7 +4,7 @@ from typing import Tuple, List
 
 from qiskit import QuantumCircuit
 from qiskit.compiler import transpile
-from qiskit import qasm3
+from qiskit import qasm3, qasm2
 
 
 TRANSPILATION_SEED = 1
@@ -41,7 +41,10 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
     ctqc_dir = os.path.join(output_dir, "ctqc")
     Path(ctqc_dir).mkdir(parents=True, exist_ok=True)
 
-    new_qasm_dir = os.path.join(output_dir, "qasm")
+    new_qasm_dir = os.path.join(output_dir, "qasm3")
+    Path(new_qasm_dir).mkdir(parents=True, exist_ok=True)
+
+    new_qasm2_dir = os.path.join(output_dir, "qasm2")
     Path(new_qasm_dir).mkdir(parents=True, exist_ok=True)
 
     successfully_transpiled_files = list()
@@ -57,7 +60,7 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
         print(f"Transpiling {qasm_file_path}...")
             
         try:
-            (qasm_circuit, ctqc_circuit) = qasm_to_ctqc(qasm_file_path, optimization_level, transpile_qasm)
+            (qasm_circuit, qasm2_circuit, ctqc_circuit) = qasm_to_ctqc(qasm_file_path, optimization_level, transpile_qasm)
         except Exception as e:
             print(f"* Failed to transpile {qasm_file_path}: {e}, ignoring this file.")
             write_log_file(output_dir, f"- {qasm_file_path}: {e}\n")
@@ -73,6 +76,10 @@ def qasm_dir_to_ctqc(qasm_dir: str, output_dir: str, transpile_qasm: bool=True, 
         new_qasm_sub_dir = os.path.join(new_qasm_dir, sub_dir_path)
         new_qasm_file = os.path.join(new_qasm_sub_dir, circuit_name + ".qasm")
         write_circuit_to_file(qasm_circuit, new_qasm_file)
+
+        new_qasm2_sub_dir = os.path.join(new_qasm2_dir, sub_dir_path)
+        new_qasm2_file = os.path.join(new_qasm2_sub_dir, circuit_name + ".qasm")
+        write_circuit_to_file(qasm2_circuit, new_qasm2_file)
 
         successfully_transpiled_files.append(qasm_file_path)
 
@@ -117,14 +124,18 @@ def qasm_to_ctqc(qasm_file: str, optimization_level: int=0, transpile_qasm: bool
             raise RuntimeError("Can only transpile QASM 2.0 circuits")
 
     qasm_circuit = None
+    qasm2_circuit = None
     if transpile_qasm: 
         try:
             print("Transpiling: ", qasm_file)
-            qasm_circuit = qasm3.dumps(transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=TRANSPILATION_SEED)) 
+            transpiled_circuit = transpile(qc, basis_gates=['h', 's', 'cx', 'rz'], optimization_level=optimization_level, seed_transpiler=TRANSPILATION_SEED)
+            qasm_circuit = qasm3.dumps(transpiled_circuit) 
+            qasm2_circuit = qasm2.dumps(transpiled_circuit) 
         except Exception as e:
             raise RuntimeError("Transpilation failed: ", e)
     else:
         qasm_circuit = qasm3.dumps(qc)
+        qasm2_circuit = qasm2.dump(transpiled_circuit) 
 
     ctqc_transpiled = ""
 
@@ -198,7 +209,8 @@ def qasm_to_ctqc(qasm_file: str, optimization_level: int=0, transpile_qasm: bool
         
         transpilation_started = True
 
-    return (qasm_circuit.strip(), ctqc_transpiled.strip())
+    # qasm3, qasm2, ctqc
+    return (qasm_circuit.strip(), qasm2_circuit, ctqc_transpiled.strip())
 
 
 if __name__ == "__main__":

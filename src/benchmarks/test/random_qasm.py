@@ -3,9 +3,9 @@ import random, os
 GATES = ['h', 's', 'cx', 't']
 
 file_name = "circ/c"
-max_qubits = 20
+max_qubits = 10
 max_addressible_qubit = max_qubits - 1
-circuit_length = 100
+circuit_length = 30
 
 t_gate_percentage = 25
 remaining_percentages = 100 - t_gate_percentage

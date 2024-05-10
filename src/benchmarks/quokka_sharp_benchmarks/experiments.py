@@ -6,6 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from simulators.interface import Simulator
 from simulators.ctqc import CTQC
 from simulators.qcec import QCEC
+from simulators.quokka_sharp import QuokkaSharp
 
 def log(msg: str, file: str=None):
     print(msg)
@@ -90,14 +91,17 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
     table += "\\hline \n"
 
     circuit_names = [os.path.basename(path).split('.')[0] for path in list(
-        Path((os.path.join(base_dir, collection, 'qasm', circ_type_1))).rglob('*'))]
+        Path((os.path.join(base_dir, collection, 'ctqc', circ_type_1))).rglob('*'))]
     circuit_names.sort()
+    if len(circuit_names) == 0:
+        print('No circuits found, please provide another collection')
+        exit(0)
+
     for circuit_name in circuit_names:
 
-        src_circuit = os.path.join(base_dir, collection, 'qasm', circ_type_1, circuit_name + '.qasm')
-        dst_circuit = os.path.join(base_dir, collection, 'qasm', circ_type_2, circuit_name + '.qasm')
+        src_circuit = os.path.join(base_dir, collection, 'ctqc', circ_type_1, circuit_name + '.ctqc')
+        dst_circuit = os.path.join(base_dir, collection, 'ctqc', circ_type_2, circuit_name + '.ctqc')
 
-        
         if not (os.path.exists(src_circuit) and os.path.exists(dst_circuit)):
             log(f'* File missing: {circuit_name}')
             continue
@@ -116,9 +120,9 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
 
             table += " & "
 
-            circ_path_t1 = os.path.join(base_dir, collection, simulator.file_extension(
+            circ_path_t1 = os.path.join(base_dir, collection, simulator.file_type(
             ), circ_type_1, circuit_name + '.' + simulator.file_extension())
-            circ_path_t2 = os.path.join(base_dir, collection, simulator.file_extension(
+            circ_path_t2 = os.path.join(base_dir, collection, simulator.file_type(
             ), circ_type_2, circuit_name + '.' + simulator.file_extension())
 
             res = Queue()
@@ -171,10 +175,11 @@ if __name__ == "__main__":
     # - circuit: specific circuit file qft_nativegates_ibm_qiskit_opt0_2.qasm
 
     BENCHMARK_BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-    COLLECTIONS = ['tp_algorithm']
-    CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
-    # CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
-    SIMULATORS = [QCEC(), CTQC()]
+    COLLECTIONS = ['transp_algorithm']
+    # COLLECTIONS = ['z_add']
+    # CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
+    CIRCUIT_DIR_PAIRS = [('origin', 'flip')]
+    SIMULATORS = [QCEC(), CTQC(), QuokkaSharp()]
 
     for collection in COLLECTIONS:
         for pair in CIRCUIT_DIR_PAIRS:
