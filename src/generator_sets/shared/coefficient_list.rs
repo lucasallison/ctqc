@@ -78,10 +78,23 @@ impl CoefficientList {
     /// 1. The coefficient list only contains the coefficient of the ith generator
     /// 2. The coefficient is 1.0.
     pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
-        self.coefficients.len() == 1
-            && self.coefficients[0].0 == i
-            && self.coefficients[0].1 < OrderedFloat(1.0 + FP_ERROR_CHECK_MARGIN * 100.0)
-            && self.coefficients[0].1 > OrderedFloat(1.0 - FP_ERROR_CHECK_MARGIN * 100.0)
+        for (gen_index, f) in self.coefficients.iter() {
+            // If this is a coefficient for a different generator, check if it is zero
+            if *gen_index != i && !(*f < OrderedFloat(0.0 + FP_ERROR_CHECK_MARGIN)
+                && *f > OrderedFloat(0.0 - FP_ERROR_CHECK_MARGIN))
+            {
+                return false;
+            }
+
+            // If it is the coefficient for the ith generator, check if it is 1.0
+            if *gen_index == i && !(*f < OrderedFloat(1.0 + FP_ERROR_CHECK_MARGIN)
+                && *f > OrderedFloat(1.0 - FP_ERROR_CHECK_MARGIN))
+            {
+                return false;
+            }
+
+        }
+        true
     }
 
     /// Returns true if the Coeffients list is empty up to the error margin.

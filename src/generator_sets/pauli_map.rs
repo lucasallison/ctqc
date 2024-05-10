@@ -169,8 +169,10 @@ impl PauliMap {
     pub fn insert_pstr_bitvec_into_map(
         map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
         pstr: BitVec,
-        coef_list: CoefficientList,
+        mut coef_list: CoefficientList,
     ) {
+
+
         match map.entry(pstr) {
             Entry::Occupied(mut e) => {
                 let existing_coef_list = e.get_mut();
@@ -182,7 +184,9 @@ impl PauliMap {
                 }
             }
             Entry::Vacant(e) => {
-                e.insert(coef_list);
+                if !coef_list.is_empty() {
+                    e.insert(coef_list);
+                }
             }
         }
     }

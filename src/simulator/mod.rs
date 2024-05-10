@@ -206,24 +206,26 @@ impl Simulator {
             check_zero_state_generators,
         );
 
-        // First we simulate the first circuit with the all zero/plus state generators
-        Self::conjugate_circuit_gates(
-            &mut generator_set,
-            circuit_1,
-            false,
-            &progress_bar,
-            self.conjugations_before_clean,
-        );
+        Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
 
-        // Then we simulate the inverse second circuit with the generators produced by the simulation
-        // of the first circuit
-        Self::conjugate_circuit_gates(
-            &mut generator_set,
-            circuit_2,
-            true,
-            &progress_bar,
-            self.conjugations_before_clean,
-        );
+        // // First we simulate the first circuit with the all zero/plus state generators
+        // Self::conjugate_circuit_gates(
+        //     &mut generator_set,
+        //     circuit_1,
+        //     false,
+        //     &progress_bar,
+        //     self.conjugations_before_clean,
+        // );
+
+        // // Then we simulate the inverse second circuit with the generators produced by the simulation
+        // // of the first circuit
+        // Self::conjugate_circuit_gates(
+        //     &mut generator_set,
+        //     circuit_2,
+        //     true,
+        //     &progress_bar,
+        //     self.conjugations_before_clean,
+        // );
 
         progress_bar.finish();
 
@@ -249,23 +251,26 @@ impl Simulator {
 
             generator_set.init_single_generator(i, check_zero_state_generators);
 
-            // Conjugate gates of U
-            Self::conjugate_circuit_gates(
-                &mut generator_set,
-                circuit_1,
-                false,
-                &progress_bar,
-                self.conjugations_before_clean,
-            );
 
-            // Conjugate gates of V^†
-            Self::conjugate_circuit_gates(
-                &mut generator_set,
-                circuit_2,
-                true,
-                &progress_bar,
-                self.conjugations_before_clean,
-            );
+            Self::alternate_conjugations(&mut generator_set, circuit_1, circuit_2, &progress_bar, self.conjugations_before_clean);
+
+            // // Conjugate gates of U
+            // Self::conjugate_circuit_gates(
+            //     &mut generator_set,
+            //     circuit_1,
+            //     false,
+            //     &progress_bar,
+            //     self.conjugations_before_clean,
+            // );
+
+            // // Conjugate gates of V^†
+            // Self::conjugate_circuit_gates(
+            //     &mut generator_set,
+            //     circuit_2,
+            //     true,
+            //     &progress_bar,
+            //     self.conjugations_before_clean,
+            // );
 
             // We want to check if any of the simulations does NOT yield the generator we started with
             generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
@@ -307,7 +312,77 @@ impl Simulator {
         debug!("\nFinal generator set:\n{}", generator_set);
     }
 
+    /// Sequentially conjugates the generator set with each gate in the provided circuit.
+    fn alternate_conjugations(
+        generator_set: &mut Box<dyn GeneratorSet>,
+        circuit_1: &Circuit,
+        circuit_2: &Circuit,
+        progress_bar: &OptionalProgressBar,
+        conjugations_before_clean: usize,
+    ) {
+        debug!("Initial generator set:\n{}", generator_set);
+
+        let mut circ_1_iter = circuit_1.iter(false).peekable();
+        let mut circ_2_iter = circuit_2.iter(true).peekable();
+
+        let mut i = 0;
+        while circ_1_iter.peek().is_some() && circ_2_iter.peek().is_some() {
+            let (gate_1, gate_2) = (circ_1_iter.next().unwrap(), circ_2_iter.next().unwrap());
+
+            if conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
+                generator_set.clean();
+            }
+
+            generator_set.conjugate(gate_1, false);
+            generator_set.conjugate(gate_2, true);
+
+            progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
+            progress_bar.inc(1);
+
+            debug!("\nApplied [{}]. Generator set:\n{}", gate_1, generator_set);
+            debug!("\nApplied [{}]. Generator set:\n{}", gate_2, generator_set);
+            i += 1;
+        }
+
+        // TODO refactor
+        for gate in circ_1_iter {
+            if conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
+                generator_set.clean();
+            }
+
+            generator_set.conjugate(gate, false);
+
+            progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
+            progress_bar.inc(1);
+
+            debug!("\nApplied [{}]. Generator set:\n{}", gate, generator_set);
+            i += 1;
+        }
+
+        for gate in circ_2_iter {
+            if conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
+                generator_set.clean();
+            }
+
+            generator_set.conjugate(gate, false);
+
+            progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
+            progress_bar.inc(1);
+
+            debug!("\nApplied [{}]. Generator set:\n{}", gate, generator_set);
+            i += 1;
+        }
+
+        generator_set.clean();
+
+        progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
+
+        debug!("\nFinal generator set B:\n{}", generator_set);
+    }
+
     fn pb_style(prefix: &str, progress_items: &str) -> String {
       prefix.to_owned() + " -- [{elapsed_precise}] {bar:40.green/red} {pos}/{len} " + progress_items + " ({percent}%) -- {msg}"
     }
+
+    
 }
