@@ -135,7 +135,7 @@ def qasm_to_ctqc(qasm_file: str, optimization_level: int=0, transpile_qasm: bool
             raise RuntimeError("Transpilation failed: ", e)
     else:
         qasm_circuit = qasm3.dumps(qc)
-        qasm2_circuit = qasm2.dump(transpiled_circuit) 
+        qasm2_circuit = qasm2.dumps(qc) 
 
     ctqc_transpiled = ""
 

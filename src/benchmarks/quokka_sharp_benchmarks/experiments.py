@@ -7,6 +7,7 @@ from simulators.interface import Simulator
 from simulators.ctqc import CTQC
 from simulators.qcec import QCEC
 from simulators.quokka_sharp import QuokkaSharp
+from simulators.qiskit import Qiskit
 
 def log(msg: str, file: str=None):
     print(msg)
@@ -56,12 +57,14 @@ def kill_process_tree(pid):
 def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, circ_type_2: str, simulators: list[Simulator], timeout: int):
 
     # Create results directory if it does not exist
-    os.makedirs("results", exist_ok=True)
+    datetime.datetime.now().isoformat(sep=" ", timespec="seconds")
+    results_dir = os.path.join("results", '_'.join(datetime.datetime.now().isoformat(sep=" ", timespec="seconds").split()))
+    os.makedirs(results_dir, exist_ok=True)
 
     # Create log/tables files and remove old ones
     outfiles_name = collection + "-" + circ_type_1 + "-" + circ_type_2
-    log_file = os.path.join("results",  outfiles_name + ".logs")
-    table_file = os.path.join("results", outfiles_name + ".textable")
+    log_file = os.path.join(results_dir,  outfiles_name + ".logs")
+    table_file = os.path.join(results_dir, outfiles_name + ".textable")
     if os.path.exists(log_file):
         os.remove(log_file)
     if os.path.exists(table_file):
@@ -178,8 +181,9 @@ if __name__ == "__main__":
     COLLECTIONS = ['transp_algorithm']
     # COLLECTIONS = ['z_add']
     # CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
-    CIRCUIT_DIR_PAIRS = [('origin', 'flip')]
-    SIMULATORS = [QCEC(), CTQC(), QuokkaSharp()]
+    CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
+    # SIMULATORS = [QCEC(), CTQC(), QuokkaSharp(), Qiskit()]
+    SIMULATORS = [CTQC(), QuokkaSharp(), Qiskit()]
 
     for collection in COLLECTIONS:
         for pair in CIRCUIT_DIR_PAIRS:
