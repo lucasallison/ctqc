@@ -1,4 +1,4 @@
-import argparse, sys, os, datetime, psutil
+import argparse, sys, os, datetime, psutil, subprocess, re
 from multiprocessing import Process, Queue
 from pathlib import Path
 
@@ -8,6 +8,15 @@ from simulators.ctqc import CTQC
 from simulators.qcec import QCEC
 from simulators.quokka_sharp import QuokkaSharp
 from simulators.qiskit import Qiskit
+
+
+# ---- Natural sorting
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+# --------------------
 
 def log(msg: str, file: str=None):
     print(msg)
@@ -101,7 +110,7 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
 
     circuit_names = [os.path.basename(path).split('.')[0] for path in list(
         Path((os.path.join(base_dir, collection, 'ctqc', circ_type_1))).rglob('*'))]
-    circuit_names.sort()
+    circuit_names.sort(key=natural_keys)
     if len(circuit_names) == 0:
         print('No circuits found, please provide another collection')
         exit(0)
@@ -188,12 +197,19 @@ if __name__ == "__main__":
     # - circuit: specific circuit file qft_nativegates_ibm_qiskit_opt0_2.qasm
 
     BENCHMARK_BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-    # COLLECTIONS = ['min_transp_algorithm']
-    COLLECTIONS = ['z_add']
+    COLLECTIONS = ['min_transp_algorithm']
+    # COLLECTIONS = ['z_add']
     # CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
-    CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
+    # CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
+    CIRCUIT_DIR_PAIRS = [('origin', 'shift7')]
     # SIMULATORS = [QCEC(), CTQC(), QuokkaSharp(), Qiskit()]
-    SIMULATORS = [CTQC(), QCEC(), QuokkaSharp(), Qiskit()]
+    SIMULATORS = [CTQC()]
+
+    
+    print("Compiling CTQC...  ")
+    result = subprocess.run(["cargo", "build", "--release"], stdout=subprocess.PIPE) 
+    print(result.stdout.decode('utf-8'))
+
 
     for collection in COLLECTIONS:
         for pair in CIRCUIT_DIR_PAIRS:

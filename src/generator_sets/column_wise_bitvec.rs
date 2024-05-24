@@ -94,7 +94,8 @@ impl ColumnWiseBitVec {
 
         self.set_pauli_gate(actual_p_gate, pstr_ind, gate_ind);
         self.generator_info[pstr_ind].multiply(
-            &self.h_s_conjugations_map
+            &self
+                .h_s_conjugations_map
                 .get_coefficient_multiplier(gate_ind, current_p_gate),
         );
     }
@@ -280,7 +281,8 @@ impl fmt::Display for ColumnWiseBitVec {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(gate_ind, current_p_gate).as_f64();
+                    .get_coefficient_multiplier(gate_ind, current_p_gate)
+                    .as_f64();
 
                 s.push_str(&format!("{}", actual_p_gate));
             }

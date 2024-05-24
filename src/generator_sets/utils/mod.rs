@@ -17,7 +17,6 @@ pub fn rz_conj_coef_multipliers(
     target_pgate: &PauliGate,
     conjugate_dagger: bool,
 ) -> (FloatingPointOPC, FloatingPointOPC) {
-
     let mut x_mult = FloatingPointOPC::new(rz.angle.unwrap());
     let mut y_mult = FloatingPointOPC::new(rz.angle.unwrap());
 
@@ -27,28 +26,28 @@ pub fn rz_conj_coef_multipliers(
             // x_mult -> cos(angle), y_mult -> sin(angle)
             x_mult.cos();
             y_mult.sin();
-            return (x_mult, y_mult)
-        },
+            return (x_mult, y_mult);
+        }
         (PauliGate::Y, false) => {
             // x_mult -> -1.0 * sin(angle), y_mult -> cos(angle)
             x_mult.sin();
             x_mult.mul(&FloatingPointOPC::new(-1.0));
             y_mult.cos();
-            return (x_mult, y_mult)
-        },
+            return (x_mult, y_mult);
+        }
         (PauliGate::X, true) => {
             // x_mult -> cos(angle), y_mult -> -1.0 * sin(angle)
             x_mult.cos();
             y_mult.sin();
             y_mult.mul(&FloatingPointOPC::new(-1.0));
-            return (x_mult, y_mult)
-        },
+            return (x_mult, y_mult);
+        }
         (PauliGate::Y, true) => {
             // x_mult -> sin(angle), y_mult -> cos(angle)
             x_mult.sin();
             y_mult.cos();
-            return (x_mult, y_mult)
-        },
+            return (x_mult, y_mult);
+        }
         _ => {
             panic!(
                 "`rz_conj_coef_multipliers` can only be used to determine the \

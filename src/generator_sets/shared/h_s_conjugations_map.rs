@@ -72,7 +72,7 @@ impl HSConjugationsMap {
             };
 
             e.0 = look_up_output.p_gate;
-            e.1 = look_up_output.coefficient.as_f64();
+            e.1 *= look_up_output.coefficient.as_f64();
         }
     }
 

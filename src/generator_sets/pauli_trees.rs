@@ -632,9 +632,11 @@ impl PauliTrees {
                 .h_s_conjugations_map
                 .get_actual_p_gate(gate_ind, current_pgate);
 
-            coef_multiplier.mul(&self
-                .h_s_conjugations_map
-                .get_coefficient_multiplier(gate_ind, current_pgate));
+            coef_multiplier.mul(
+                &self
+                    .h_s_conjugations_map
+                    .get_coefficient_multiplier(gate_ind, current_pgate),
+            );
 
             PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, actual_pgate, gate_ind);
         }
@@ -838,8 +840,7 @@ impl PauliTrees {
             complete_coef_mult.mul(&q1_coef_mul);
             complete_coef_mult.mul(&q2_coef_mul);
 
-            self.generator_info[pstr_index]
-                .multiply(&complete_coef_mult);
+            self.generator_info[pstr_index].multiply(&complete_coef_mult);
 
             self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate);
             self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate);
@@ -982,7 +983,8 @@ impl std::fmt::Display for PauliTrees {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(i, current_pgate).as_f64();
+                    .get_coefficient_multiplier(i, current_pgate)
+                    .as_f64();
 
                 s.push_str(&format!("{}", actual_pgate));
             }

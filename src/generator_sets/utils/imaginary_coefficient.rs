@@ -7,7 +7,10 @@ pub struct ImaginaryCoef {
 
 impl ImaginaryCoef {
     pub fn new(real: f64, i: bool) -> ImaginaryCoef {
-        ImaginaryCoef { real: FloatingPointOPC::new(real), i }
+        ImaginaryCoef {
+            real: FloatingPointOPC::new(real),
+            i,
+        }
     }
 
     pub fn multiply(&mut self, other: &ImaginaryCoef) {
@@ -25,7 +28,7 @@ impl ImaginaryCoef {
     pub fn divide(&mut self, other: &ImaginaryCoef) {
         let mut divisor = other.real.clone();
         if other.i {
-            divisor.mul(&FloatingPointOPC::new(-1.0)); 
+            divisor.mul(&FloatingPointOPC::new(-1.0));
         }
         self.multiply(other);
         self.real.div(&divisor);

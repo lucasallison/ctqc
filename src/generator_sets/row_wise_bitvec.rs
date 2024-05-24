@@ -138,7 +138,8 @@ impl RowWiseBitVec {
 
         self.set_pauli_gate(actual_p_gate, i, j);
         self.generator_info[i].multiply(
-            &self.h_s_conjugations_map
+            &self
+                .h_s_conjugations_map
                 .get_coefficient_multiplier(j, current_p_gate),
         );
     }
@@ -566,7 +567,8 @@ impl fmt::Display for RowWiseBitVec {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(qubit_index, current_p_gate).as_f64();
+                    .get_coefficient_multiplier(qubit_index, current_p_gate)
+                    .as_f64();
 
                 s.push_str(&format!("{}", actual_p_gate));
             }

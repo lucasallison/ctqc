@@ -74,7 +74,8 @@ impl PauliMap {
 
         PauliUtils::set_pauli_gate_in_bitslice(pstr, actual_p_gate, q_index);
         coef_list.multiply(
-            &self.h_s_conjugations_map
+            &self
+                .h_s_conjugations_map
                 .get_coefficient_multiplier(q_index, current_p_gate),
         );
     }
@@ -171,8 +172,6 @@ impl PauliMap {
         pstr: BitVec,
         coef_list: CoefficientList,
     ) {
-
-
         match map.entry(pstr) {
             Entry::Occupied(mut e) => {
                 let existing_coef_list = e.get_mut();
@@ -278,6 +277,8 @@ impl GeneratorSet for PauliMap {
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
+        // println!("Checking generator {} in set \n{}.", i, self);
+
         let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
         let mut target_generator = PauliString::new(self.n_qubits);
         target_generator.set_pauli_gate(i, pgate);
@@ -289,11 +290,11 @@ impl GeneratorSet for PauliMap {
                 return false;
             }
 
-            if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
+            if pstr != target_generator.as_bitslice() && coef_list.weak_is_empty() {
                 continue;
             }
 
-            if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
+            if pstr != target_generator.as_bitslice() && !coef_list.weak_is_empty() {
                 return false;
             }
         }
@@ -342,7 +343,8 @@ impl fmt::Display for PauliMap {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(qubit_index, current_p_gate).as_f64();
+                    .get_coefficient_multiplier(qubit_index, current_p_gate)
+                    .as_f64();
             }
 
             write!(f, "{}: (", PauliString::from_bitvec(actual_pstr))?;

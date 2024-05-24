@@ -231,7 +231,8 @@ impl MeasurementSampler {
                     // X -> 1/(4(1-p0)) * 2X = 1/(2(1-p0)) * X
 
                     if measurement {
-                        coef_list.multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * (1.0 - p0)), 4));
+                        coef_list
+                            .multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * (1.0 - p0)), 4));
                     } else {
                         coef_list.multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * p0), 3));
                     }
@@ -270,7 +271,10 @@ impl MeasurementSampler {
                     }
 
                     coef_list.multiply(&FloatingPointOPC::new_with_ops(base_mult, 3));
-                    new_coef_list.multiply(&FloatingPointOPC::new_with_ops(base_mult * new_pstr_mult, 5));
+                    new_coef_list.multiply(&FloatingPointOPC::new_with_ops(
+                        base_mult * new_pstr_mult,
+                        5,
+                    ));
 
                     PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
                     PauliMap::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)

@@ -9,17 +9,13 @@ impl OptionalProgressBar {
     pub fn new(is_some: bool, len: u64, style: &str) -> OptionalProgressBar {
         if is_some {
             let pb = ProgressBar::new(len);
-            pb.set_style(
-                ProgressStyle::with_template(style).unwrap(),
-            );
+            pb.set_style(ProgressStyle::with_template(style).unwrap());
 
             return OptionalProgressBar {
                 progress_bar: Some(pb),
             };
         } else {
-            return OptionalProgressBar {
-                progress_bar: None,
-            };
+            return OptionalProgressBar { progress_bar: None };
         }
     }
 
