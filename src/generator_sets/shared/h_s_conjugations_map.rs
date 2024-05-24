@@ -1,3 +1,4 @@
+use super::floating_point_opc::FloatingPointOPC;
 use crate::circuit::{Gate, GateType};
 use crate::generator_sets::pauli_string::PauliGate;
 use crate::generator_sets::utils::conjugation_look_up_tables::{
@@ -71,7 +72,7 @@ impl HSConjugationsMap {
             };
 
             e.0 = look_up_output.p_gate;
-            e.1 *= look_up_output.coefficient;
+            e.1 = look_up_output.coefficient.as_f64();
         }
     }
 
@@ -86,12 +87,12 @@ impl HSConjugationsMap {
     }
 
     /// Return the coefficient multiplier that should be applied to the Pauli string
-    pub fn get_coefficient_multiplier(&self, i: usize, p_gate: PauliGate) -> f64 {
+    pub fn get_coefficient_multiplier(&self, i: usize, p_gate: PauliGate) -> FloatingPointOPC {
         match p_gate {
-            PauliGate::X => return self.map[i][0].1,
-            PauliGate::Y => return self.map[i][1].1,
-            PauliGate::Z => return self.map[i][2].1,
-            PauliGate::I => 1.0,
+            PauliGate::X => return FloatingPointOPC::new(self.map[i][0].1),
+            PauliGate::Y => return FloatingPointOPC::new(self.map[i][1].1),
+            PauliGate::Z => return FloatingPointOPC::new(self.map[i][2].1),
+            PauliGate::I => return FloatingPointOPC::new(1.0),
         }
     }
 }

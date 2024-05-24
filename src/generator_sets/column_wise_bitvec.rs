@@ -94,7 +94,7 @@ impl ColumnWiseBitVec {
 
         self.set_pauli_gate(actual_p_gate, pstr_ind, gate_ind);
         self.generator_info[pstr_ind].multiply(
-            self.h_s_conjugations_map
+            &self.h_s_conjugations_map
                 .get_coefficient_multiplier(gate_ind, current_p_gate),
         );
     }
@@ -113,7 +113,7 @@ impl ColumnWiseBitVec {
                 .get(&(q1_target_p_gate, q2_target_p_gate))
                 .unwrap();
 
-            self.generator_info[pstr_index].multiply(look_up_output.coefficient);
+            self.generator_info[pstr_index].multiply(&look_up_output.coefficient);
 
             self.set_pauli_gate(look_up_output.q1_p_gate, pstr_index, cnot.qubit_1);
             self.set_pauli_gate(look_up_output.q2_p_gate, pstr_index, qubit_2);
@@ -147,8 +147,8 @@ impl ColumnWiseBitVec {
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
-            self.generator_info[pstr_ind].multiply(x_mult);
-            self.generator_info.last_mut().unwrap().multiply(y_mult);
+            self.generator_info[pstr_ind].multiply(&x_mult);
+            self.generator_info.last_mut().unwrap().multiply(&y_mult);
         }
 
         self.h_s_conjugations_map.reset(rz.qubit_1);
@@ -187,7 +187,7 @@ impl ColumnWiseBitVec {
     fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.clear();
 
-        for (pstr, mut coef_list) in map.drain() {
+        for (pstr, coef_list) in map.drain() {
             if coef_list.is_empty() {
                 continue;
             }
@@ -280,14 +280,14 @@ impl fmt::Display for ColumnWiseBitVec {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(gate_ind, current_p_gate);
+                    .get_coefficient_multiplier(gate_ind, current_p_gate).as_f64();
 
                 s.push_str(&format!("{}", actual_p_gate));
             }
 
             s.push_str(" (");
             for c in self.generator_info[pstr_ind].coefficients.iter() {
-                s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
+                s.push_str(&format!("{}: {}, ", c.0, c.1.as_f64() * coef_multiplier));
             }
             s.push_str(")\n");
         }

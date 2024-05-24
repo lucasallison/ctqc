@@ -1,14 +1,13 @@
-use ordered_float::OrderedFloat;
-
-use super::{FP_ERROR_CHECK_MARGIN, FP_ERROR_REMOVE_MARGIN};
+use super::floating_point_opc::FloatingPointOPC;
 
 /// A set that can be associated to a Pauli string. The list
 /// keeps track of the generators that the Pauli string belongs to (i.e.,
 /// the Pauli string is part of the sum of Pauli strings that make up the generator)
-/// its coefficient.
-#[derive(Clone, Hash, PartialEq, Eq)]
+/// and its coefficient.
+#[derive(Clone)]
 pub struct CoefficientList {
-    pub coefficients: Vec<(usize, OrderedFloat<f64>)>,
+    // Generator index, coefficient, number of floating point operations to determine fp error margin
+    pub coefficients: Vec<(usize, FloatingPointOPC)>,
 }
 
 impl CoefficientList {
@@ -16,14 +15,15 @@ impl CoefficientList {
     /// set to 1.0 associated to the provided generator index.
     pub fn new(generator_index: usize) -> CoefficientList {
         CoefficientList {
-            coefficients: vec![(generator_index, OrderedFloat::from(1.0))],
+            coefficients: vec![(generator_index, FloatingPointOPC::new(1.0))],
         }
     }
 
     /// Multiply all coefficients with the provided value
-    pub fn multiply(&mut self, value: f64) {
+    /// fp_ops are the number of floating point operations performed on provided f64.
+    pub fn multiply(&mut self, fp: &FloatingPointOPC) {
         for (_, coefficient) in self.coefficients.iter_mut() {
-            *coefficient *= value;
+            coefficient.mul(fp);
         }
     }
 
@@ -36,7 +36,7 @@ impl CoefficientList {
         let mut it_other = other.coefficients.iter().peekable();
 
         while it_self.peek() != None && it_other.peek() != None {
-            let (self_index, self_coefficient) = it_self.peek().unwrap();
+            let (self_index, mut self_coefficient) = it_self.peek().unwrap();
             let (other_index, other_coefficient) = it_other.peek().unwrap();
 
             if self_index < other_index {
@@ -44,7 +44,8 @@ impl CoefficientList {
             } else if self_index > other_index {
                 merged_coefficients.push(it_other.next().unwrap().clone());
             } else {
-                merged_coefficients.push((*self_index, *self_coefficient + *other_coefficient));
+                self_coefficient.add(other_coefficient);
+                merged_coefficients.push((*self_index, self_coefficient));
                 it_self.next();
                 it_other.next();
             }
@@ -61,16 +62,14 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty, that is there
-    /// is at least one non zero coefficient.
-    /// While checking this it removes any zero coefficient.
-    pub fn is_empty(&mut self) -> bool {
-        self.coefficients.retain(|(_, f)| {
-            *f > OrderedFloat(0.0 + FP_ERROR_REMOVE_MARGIN)
-                || *f < OrderedFloat(0.0 - FP_ERROR_REMOVE_MARGIN)
-        });
-
-        self.coefficients.is_empty()
+    /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
+    pub fn is_empty(&self) -> bool {
+        for (_, f) in self.coefficients.iter() {
+            if !(*f == FloatingPointOPC::new(0.0)) {
+                return false;
+            }
+        }
+        true
     }
 
     /// Returns if the coefficient list would be valid for the ith generator.
@@ -80,33 +79,15 @@ impl CoefficientList {
     pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
         for (gen_index, f) in self.coefficients.iter() {
             // If this is a coefficient for a different generator, check if it is zero
-            if *gen_index != i && !(*f < OrderedFloat(0.0 + FP_ERROR_CHECK_MARGIN)
-                && *f > OrderedFloat(0.0 - FP_ERROR_CHECK_MARGIN))
-            {
+            if *gen_index != i && !(*f == FloatingPointOPC::new(0.0)) {
                 return false;
             }
 
             // If it is the coefficient for the ith generator, check if it is 1.0
-            if *gen_index == i && !(*f < OrderedFloat(1.0 + FP_ERROR_CHECK_MARGIN)
-                && *f > OrderedFloat(1.0 - FP_ERROR_CHECK_MARGIN))
-            {
+            if *gen_index == i && !(*f == FloatingPointOPC::new(1.0)) {
                 return false;
             }
 
-        }
-        true
-    }
-
-    /// Returns true if the Coeffients list is empty up to the error margin.
-    /// The error margin is defined as FP_ERROR_MARGIN * 100.0, i.e., if a coefficient
-    /// is within this margin of 0.0 it is considered to be zero.
-    pub fn empty_up_to_error_margin(&self) -> bool {
-        for (_, f) in self.coefficients.iter() {
-            if !(*f < OrderedFloat(0.0 + FP_ERROR_CHECK_MARGIN)
-                && *f > OrderedFloat(0.0 - FP_ERROR_CHECK_MARGIN))
-            {
-                return false;
-            }
         }
         true
     }

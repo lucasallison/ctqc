@@ -138,7 +138,7 @@ impl RowWiseBitVec {
 
         self.set_pauli_gate(actual_p_gate, i, j);
         self.generator_info[i].multiply(
-            self.h_s_conjugations_map
+            &self.h_s_conjugations_map
                 .get_coefficient_multiplier(j, current_p_gate),
         );
     }
@@ -213,7 +213,7 @@ impl RowWiseBitVec {
         Self::set_pauli_gate_in_uos_bitslice(pstr, actual_p_gate, qubit);
 
         coefficients
-            .multiply(h_s_conjugations_map.get_coefficient_multiplier(qubit, current_p_gate));
+            .multiply(&h_s_conjugations_map.get_coefficient_multiplier(qubit, current_p_gate));
     }
 
     // -------------------------- Pauli Pools Helper Functions ------------------------- //
@@ -252,7 +252,7 @@ impl RowWiseBitVec {
             .get(&(q1_target_p_gate, q2_target_p_gate))
             .unwrap();
 
-        coef_list.multiply(look_up_output.coefficient);
+        coef_list.multiply(&look_up_output.coefficient);
 
         Self::set_pauli_gate_in_uos_bitslice(pstr, look_up_output.q1_p_gate, cnot.qubit_1);
         Self::set_pauli_gate_in_uos_bitslice(pstr, look_up_output.q2_p_gate, qubit_2);
@@ -353,8 +353,8 @@ impl RowWiseBitVec {
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
-            self.generator_info[pstr_index].multiply(x_mult);
-            self.generator_info.last_mut().unwrap().multiply(y_mult);
+            self.generator_info[pstr_index].multiply(&x_mult);
+            self.generator_info.last_mut().unwrap().multiply(&y_mult);
         }
     }
 
@@ -416,8 +416,8 @@ impl RowWiseBitVec {
                 let (x_mult, y_mult) =
                     Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
-                gen_info_chunk[pstr_offset].multiply(x_mult);
-                new_gen_info.last_mut().unwrap().multiply(y_mult);
+                gen_info_chunk[pstr_offset].multiply(&x_mult);
+                new_gen_info.last_mut().unwrap().multiply(&y_mult);
 
                 new_pstrs.extend_from_bitslice(&new_pstr);
             }
@@ -463,7 +463,7 @@ impl RowWiseBitVec {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
-        for (pstr, mut coefficients) in map.drain() {
+        for (pstr, coefficients) in map.drain() {
             if coefficients.is_empty() {
                 continue;
             }
@@ -566,7 +566,7 @@ impl fmt::Display for RowWiseBitVec {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(qubit_index, current_p_gate);
+                    .get_coefficient_multiplier(qubit_index, current_p_gate).as_f64();
 
                 s.push_str(&format!("{}", actual_p_gate));
             }
@@ -574,7 +574,7 @@ impl fmt::Display for RowWiseBitVec {
             s.push_str(" (");
 
             for c in self.generator_info[pstr_index].coefficients.iter() {
-                s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
+                s.push_str(&format!("{}: {}, ", c.0, c.1.as_f64() * coef_multiplier));
             }
             s.push_str(")\n");
         }

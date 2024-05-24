@@ -11,7 +11,7 @@ class Qiskit(Simulator):
         self.qiskit_verify_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils", "qiskit_verify.py")
 
     def name(self):
-        return 'QCEC'
+        return 'Qiskit'
     
     def file_type(self) -> str:
         return 'qasm2'

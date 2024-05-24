@@ -7,6 +7,7 @@ use rand::prelude::*;
 use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
+use super::shared::floating_point_opc::FloatingPointOPC;
 use super::utils::imaginary_coefficient::ImaginaryCoef;
 
 use crate::generator_sets::pauli_map::PauliMap;
@@ -46,7 +47,7 @@ impl MeasurementSampler {
             size: 0,
         };
 
-        for (pstr, mut coefficients) in map.drain() {
+        for (pstr, coefficients) in map.drain() {
             if coefficients.is_empty() {
                 continue;
             }
@@ -89,13 +90,13 @@ impl MeasurementSampler {
     /// contains another vector of tuples. The tuples represent the Pauli strings
     /// that comprise the sum of the stabilizer generator with the corresponding
     /// index. Each tuple contains the index of the Pauli string and the coefficient.
-    fn create_gen_to_pstr_map(&self) -> Vec<Vec<(usize, f64)>> {
+    fn create_gen_to_pstr_map(&self) -> Vec<Vec<(usize, FloatingPointOPC)>> {
         // TODO adjust capacity in a smart way?
         let mut gen_to_pstr = vec![Vec::with_capacity(1); self.n_qubits];
 
         for pstr_index in 0..self.size {
             for c in self.generator_info[pstr_index].coefficients.iter() {
-                gen_to_pstr[c.0].push((pstr_index, c.1.into_inner()));
+                gen_to_pstr[c.0].push((pstr_index, c.1));
             }
         }
 
@@ -126,7 +127,7 @@ impl MeasurementSampler {
             panic!("Cannot sample measurements without any Pauli strings.");
         }
 
-        let mut sum = 0.0;
+        let mut sum = FloatingPointOPC::new(0.0);
 
         let gen_to_pstr = self.create_gen_to_pstr_map();
 
@@ -155,7 +156,7 @@ impl MeasurementSampler {
 
                 let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
 
-                m_coef.mutliply_with_f64(coef);
+                m_coef.mutliply_with_fp(&coef);
                 m_coef.multiply(&multiply_coef_res);
             }
 
@@ -167,7 +168,7 @@ impl MeasurementSampler {
                 // If the result is a Pauli string with a single Z gate at the z_index
                 // update the sum
                 if !m_coef.i && PauliUtils::is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
-                    sum += m_coef.real;
+                    sum.add(&m_coef.real);
                 }
 
                 // Backtrack
@@ -180,7 +181,7 @@ impl MeasurementSampler {
 
                         let multiply_coef_res = self.multiply_pstrs(&mut m_pstr, pstr);
 
-                        m_coef.divide_by_f64(coef);
+                        m_coef.divide_by_fp(&coef);
                         m_coef.divide(&multiply_coef_res);
                     }
 
@@ -198,7 +199,7 @@ impl MeasurementSampler {
                     indexes[gen_ind] = 0;
 
                     if gen_ind == 0 {
-                        return sum;
+                        return sum.as_f64();
                     }
                     gen_ind -= 1;
                 }
@@ -230,9 +231,9 @@ impl MeasurementSampler {
                     // X -> 1/(4(1-p0)) * 2X = 1/(2(1-p0)) * X
 
                     if measurement {
-                        coef_list.multiply(1.0 / (2.0 * (1.0 - p0)));
+                        coef_list.multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * (1.0 - p0)), 4));
                     } else {
-                        coef_list.multiply(1.0 / (2.0 * p0));
+                        coef_list.multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * p0), 3));
                     }
 
                     PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
@@ -268,8 +269,8 @@ impl MeasurementSampler {
                         base_mult *= 1.0 / (p0);
                     }
 
-                    coef_list.multiply(base_mult);
-                    new_coef_list.multiply(base_mult * new_pstr_mult);
+                    coef_list.multiply(&FloatingPointOPC::new_with_ops(base_mult, 3));
+                    new_coef_list.multiply(&FloatingPointOPC::new_with_ops(base_mult * new_pstr_mult, 5));
 
                     PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
                     PauliMap::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
@@ -286,7 +287,7 @@ impl MeasurementSampler {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
-        for (pstr, mut coefficients) in map.drain() {
+        for (pstr, coefficients) in map.drain() {
             if coefficients.is_empty() {
                 continue;
             }

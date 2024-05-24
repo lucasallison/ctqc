@@ -9,6 +9,7 @@ use super::pauli_map::PauliMap;
 use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
+use super::shared::floating_point_opc::FloatingPointOPC;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -623,7 +624,7 @@ impl PauliTrees {
         let mut pstr = self.pstr_as_bitvec(pstr_ind);
         let mut coef_list = self.generator_info[pstr_ind].clone();
 
-        let mut coef_multiplier = 1.0;
+        let mut coef_multiplier = FloatingPointOPC::new(1.0);
         for gate_ind in 0..self.n_qubits {
             let current_pgate = PauliUtils::get_pauli_gate_from_bitslice(&pstr, gate_ind);
 
@@ -631,13 +632,13 @@ impl PauliTrees {
                 .h_s_conjugations_map
                 .get_actual_p_gate(gate_ind, current_pgate);
 
-            coef_multiplier *= self
+            coef_multiplier.mul(&self
                 .h_s_conjugations_map
-                .get_coefficient_multiplier(gate_ind, current_pgate);
+                .get_coefficient_multiplier(gate_ind, current_pgate));
 
             PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, actual_pgate, gate_ind);
         }
-        coef_list.multiply(coef_multiplier);
+        coef_list.multiply(&coef_multiplier);
         (pstr, coef_list)
     }
 
@@ -805,7 +806,7 @@ impl PauliTrees {
         &self,
         pstr_index: usize,
         gate_index: usize,
-    ) -> (PauliGate, f64) {
+    ) -> (PauliGate, FloatingPointOPC) {
         let curr_pgate = self.get_pgate(pstr_index, gate_index);
 
         let actual_pgate = self
@@ -831,8 +832,14 @@ impl PauliTrees {
                 .get(&(q1_actual_pgate, q2_actual_pgate))
                 .unwrap();
 
+            // Account for the current conjuagtion of the CNOT
+            let mut complete_coef_mult = look_up_output.coefficient;
+            // And for the previous H/S conjugations
+            complete_coef_mult.mul(&q1_coef_mul);
+            complete_coef_mult.mul(&q2_coef_mul);
+
             self.generator_info[pstr_index]
-                .multiply(look_up_output.coefficient * q1_coef_mul * q2_coef_mul);
+                .multiply(&complete_coef_mult);
 
             self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate);
             self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate);
@@ -848,7 +855,7 @@ impl PauliTrees {
                 self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
             // Apply the H/S conjugations
-            self.generator_info[pstr_index].multiply(coef_mul);
+            self.generator_info[pstr_index].multiply(&coef_mul);
             self.set_pgate(pstr_index, rz.qubit_1, actual_pgate);
 
             if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
@@ -877,8 +884,8 @@ impl PauliTrees {
                 (y_mult, x_mult)
             };
 
-            self.generator_info[pstr_index].multiply(first_mult);
-            self.generator_info.last_mut().unwrap().multiply(last_mult);
+            self.generator_info[pstr_index].multiply(&first_mult);
+            self.generator_info.last_mut().unwrap().multiply(&last_mult);
         }
         self.h_s_conjugations_map.reset(rz.qubit_1);
     }
@@ -975,7 +982,7 @@ impl std::fmt::Display for PauliTrees {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(i, current_pgate);
+                    .get_coefficient_multiplier(i, current_pgate).as_f64();
 
                 s.push_str(&format!("{}", actual_pgate));
             }
@@ -983,7 +990,7 @@ impl std::fmt::Display for PauliTrees {
             s.push_str(" (");
 
             for c in self.generator_info[pstr_index].coefficients.iter() {
-                s.push_str(&format!("{}: {}, ", c.0, c.1 * coef_multiplier));
+                s.push_str(&format!("{}: {}, ", c.0, c.1.as_f64() * coef_multiplier));
             }
             s.push_str(")\n");
         }

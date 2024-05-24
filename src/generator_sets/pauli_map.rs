@@ -74,7 +74,7 @@ impl PauliMap {
 
         PauliUtils::set_pauli_gate_in_bitslice(pstr, actual_p_gate, q_index);
         coef_list.multiply(
-            self.h_s_conjugations_map
+            &self.h_s_conjugations_map
                 .get_coefficient_multiplier(q_index, current_p_gate),
         );
     }
@@ -95,7 +95,7 @@ impl PauliMap {
                 .get(&(q1_target_p_gate, q2_target_p_gate))
                 .unwrap();
 
-            coef_list.multiply(look_up_output.coefficient);
+            coef_list.multiply(&look_up_output.coefficient);
 
             PauliUtils::set_pauli_gate_in_bitslice(
                 &mut pstr,
@@ -139,8 +139,8 @@ impl PauliMap {
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
-            coef_list.multiply(x_mult);
-            new_coef_list.multiply(y_mult);
+            coef_list.multiply(&x_mult);
+            new_coef_list.multiply(&y_mult);
 
             Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
             Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, new_pstr, new_coef_list);
@@ -169,7 +169,7 @@ impl PauliMap {
     pub fn insert_pstr_bitvec_into_map(
         map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
         pstr: BitVec,
-        mut coef_list: CoefficientList,
+        coef_list: CoefficientList,
     ) {
 
 
@@ -266,7 +266,7 @@ impl GeneratorSet for PauliMap {
                     return false;
                 }
             } else {
-                if !coef_list.empty_up_to_error_margin() {
+                if !coef_list.is_empty() {
                     return false;
                 }
             }
@@ -289,11 +289,11 @@ impl GeneratorSet for PauliMap {
                 return false;
             }
 
-            if pstr != target_generator.as_bitslice() && coef_list.empty_up_to_error_margin() {
+            if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
                 continue;
             }
 
-            if pstr != target_generator.as_bitslice() && !coef_list.empty_up_to_error_margin() {
+            if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
                 return false;
             }
         }
@@ -342,13 +342,13 @@ impl fmt::Display for PauliMap {
 
                 coef_multiplier *= self
                     .h_s_conjugations_map
-                    .get_coefficient_multiplier(qubit_index, current_p_gate);
+                    .get_coefficient_multiplier(qubit_index, current_p_gate).as_f64();
             }
 
             write!(f, "{}: (", PauliString::from_bitvec(actual_pstr))?;
 
             for c in coef_list.coefficients.iter() {
-                write!(f, "{}: {}, ", c.0, c.1 * coef_multiplier)?;
+                write!(f, "{}: {}, ", c.0, c.1.as_f64() * coef_multiplier)?;
             }
             write!(f, ")\n")?;
         }

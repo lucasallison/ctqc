@@ -71,23 +71,29 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
         os.remove(table_file)
     log(f"Starting benchmark at {datetime.datetime.now()}", log_file)
 
-    table = "\\begin{center} \n"
-    table += "\\captionof{table}{Collection: " + collection.replace("_", "\\_") + ". Circuit types: " + circ_type_1.replace("_", "\\_") + " and " + circ_type_2.replace("_", "\\_") + "}\n"
-    # 1 row for circuit name
-    # 6 rows for characteristics; qubits, clifford gates, rz gates for both circuits
+    table = "\\begin{table}[htb] \n\n"
+    table += "\\centering \n"
+    table += "\\caption{Collection: " + collection.replace("_", "\\_") + ". Circuit types: " + circ_type_1.replace("_", "\\_") + " and " + circ_type_2.replace("_", "\\_") + "}\n"
+    table += "\\vspace{2mm} \n\n"
+    table += "\\resizebox{\\textwidth}{!}{ \n"
+    # 1 col for circuit name
+    # 1 col for number of qubits
+    # 4 col for characteristics; clifford gates, rz gates for both circuits
     # For echt simulator 2 rows: time and memory
-    table += f"\\begin{{tabular}}{{{'|'+ (7 + 2*len(simulators)) * 'c|'}}} \n"
+    n_cols = 6 + 2*len(simulators)
+    table += f"\\begin{{tabular}}{{{'|'+ n_cols * 'c|'}}} \n"
     table += "\\hline \n"
     table += "\\multirow{2}{*}{\\bfseries Circuit Name} & \n"
-    table += "\\multicolumn{3}{|c|}{\\bfseries " + f"{circ_type_1}" + "} & \n"
-    table += "\\multicolumn{3}{|c|}{\\bfseries " + f"{circ_type_2}" + "} & \n"
+    table += "\\multirow{2}{*}{\\bfseries \#Qubits} & \n"
+    table += "\\multicolumn{2}{|c|}{\\bfseries " + f"{circ_type_1}" + "} & \n"
+    table += "\\multicolumn{2}{|c|}{\\bfseries " + f"{circ_type_2}" + "} & \n"
     for simulator in simulators[:-1]:
         table += "\\multicolumn{2}{|c|}{\\bfseries " + \
             f"{simulator.name()}" + "} & \n"
     table += "\\multicolumn{2}{|c|}{\\bfseries " + \
         f"{simulators[-1].name()}" + "} \\\\ \n"
-    table += "\\cline{2-" + str(7 + 2*len(simulators)) + "} \n"
-    table += "& n&c&r & n&c&r"
+    table += "\\cline{3-" + str(n_cols) + "} \n"
+    table += "& & \#$C$ & \#$Rz$ & \#$C$ & \#$Rz$"
     for simulator in simulators:
         table += "& t(sec)&mem(mbs) "
     table += " \\\\ \n"
@@ -111,11 +117,13 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
 
         # table += circuit_name.replace("_", "\\_") + " & "
         table += circuit_name.split('_')[0] + " & "
-        table += " & ".join(get_circuit_stats(base_dir,
-                            collection, circ_type_1, circuit_name))
+
+        c1_stats = get_circuit_stats(base_dir, collection, circ_type_1, circuit_name)
+        c2_stats = get_circuit_stats(base_dir, collection, circ_type_2, circuit_name)
+        table += " & ".join(c1_stats)
         table += " & "
-        table += " & ".join(get_circuit_stats(base_dir,
-                            collection, circ_type_2, circuit_name))
+        # Only display qubits once
+        table += " & ".join(c2_stats[1:])
 
         log(f"-- {circuit_name} --", log_file)
 
@@ -147,16 +155,18 @@ def run_collection_benchmarks(base_dir: str, collection: str, circ_type_1: str, 
                     table += "U & U"
                     log(f"* {simulator.name()}: Undetermined.")
                 else:
-                    table += f"{round(res['time'], 5)} & {res['mem']/ (1024 * 1024)}"
-                    log(f"* {simulator.name()}: equivalent = {res['equiv']} ({round(res['time'], 4)} seconds, {round(res['mem'] / (1024 * 1024), 1)} mbs)", log_file)
+                    time = round(res['time'], 4)
+                    mem = round(res['mem'] / (1024 * 1024), 1)
+                    table += f"{time} & {mem}"
+                    log(f"* {simulator.name()}: equivalent = {res['equiv']} ({time} seconds, {mem} mbs)", log_file)
 
             p.join()
 
         table += " \\\\ \n"
 
     table += "\\hline \n"
-    table += "\\end{tabular} \n"
-    table += "\\end{center} \n"
+    table += "\\end{tabular}} \n"
+    table += "\\end{table} \n"
 
     with open(table_file, 'w') as f:
         f.write(table)
@@ -178,12 +188,12 @@ if __name__ == "__main__":
     # - circuit: specific circuit file qft_nativegates_ibm_qiskit_opt0_2.qasm
 
     BENCHMARK_BASE_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-    COLLECTIONS = ['transp_algorithm']
-    # COLLECTIONS = ['z_add']
+    # COLLECTIONS = ['min_transp_algorithm']
+    COLLECTIONS = ['z_add']
     # CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
     CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
     # SIMULATORS = [QCEC(), CTQC(), QuokkaSharp(), Qiskit()]
-    SIMULATORS = [CTQC(), QuokkaSharp(), Qiskit()]
+    SIMULATORS = [CTQC(), QCEC(), QuokkaSharp(), Qiskit()]
 
     for collection in COLLECTIONS:
         for pair in CIRCUIT_DIR_PAIRS:
