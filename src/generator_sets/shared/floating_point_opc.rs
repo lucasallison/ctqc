@@ -58,7 +58,7 @@ impl FloatingPointOPC {
             return self.f.is_nan() && other.f.is_nan();
         }
 
-        let res = (self.f - other.f).abs() < (self.cmp_threshold(other) * 100.0);
+        let res = (self.f - other.f).abs() < (self.cmp_threshold(other) * 10.0);
         // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other) * 100.0);
         res
     }

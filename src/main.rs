@@ -27,8 +27,6 @@ struct Args {
     /// - rbitvec: (row-wise bitvector) All Pauli strings are saved sequentially in a single bitvector.
     /// - cbitvec: (column-wise bitvector) The Pauli gates of each Pauli string at a certain
     ///            index are saved sequentially in a seperate bitvector.
-    /// - ppools:  All Pauli strings are divided between a number of row-wise bitvectors and
-    ///            simulated in parallel.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
     /// See TODO for a more detailed explaination.
     #[arg(short='d', long, default_value_t = String::from("rbitvec"), verbatim_doc_comment)]

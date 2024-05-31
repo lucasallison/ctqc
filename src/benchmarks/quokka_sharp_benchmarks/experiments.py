@@ -200,10 +200,10 @@ if __name__ == "__main__":
     COLLECTIONS = ['min_transp_algorithm']
     # COLLECTIONS = ['z_add']
     # CIRCUIT_DIR_PAIRS = [('origin', 'opt'), ('origin', 'flip'), ('origin', 'gm'), ('origin', 'shift4'), ('origin', 'shift7')]
-    # CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
-    CIRCUIT_DIR_PAIRS = [('origin', 'shift7')]
+    CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
+    # CIRCUIT_DIR_PAIRS = [('origin', 'shift7')]
     # SIMULATORS = [QCEC(), CTQC(), QuokkaSharp(), Qiskit()]
-    SIMULATORS = [CTQC()]
+    SIMULATORS = [CTQC('map'), CTQC('ptrees'), CTQC('rbitvec'), CTQC('cbitvec')]
 
     
     print("Compiling CTQC...  ")

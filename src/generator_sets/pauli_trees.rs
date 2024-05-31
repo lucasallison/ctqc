@@ -73,7 +73,7 @@ impl PauliTrees {
             root_node_table: BitVec::new(),
 
             node_table: BitVec::new(),
-            n_node_body_bits: n_node_body_bits.unwrap_or(32),
+            n_node_body_bits: n_node_body_bits.unwrap_or(8),
             n_nodes_stored: 0,
 
             pgates_per_leaf: pgates_per_leaf.unwrap_or(3),
@@ -785,7 +785,7 @@ impl PauliTrees {
     }
 
     fn resize(&mut self) {
-        let new_n_node_body_bits = self.n_node_body_bits + 8;
+        let new_n_node_body_bits = self.n_node_body_bits + 2;
 
         let mut resized_ptrees = PauliTrees::new(
             self.n_qubits,
