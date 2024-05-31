@@ -22,9 +22,16 @@ impl FloatingPointOPC {
         self.ops += 1 + fp.ops;
     }
 
+    pub fn merge(&mut self, fp: &FloatingPointOPC) {
+        self.f = self.f + fp.f;
+        self.ops = std::cmp::max(self.ops, fp.ops) + 1;
+    }
+
     pub fn mul(&mut self, fp: &FloatingPointOPC) {
         self.f = self.f * fp.f;
-        self.ops += 1 + fp.ops;
+        if fp.f.abs() != 1.0 {
+            self.ops += 1 + fp.ops;
+        }
     }
 
     pub fn div(&mut self, fp: &FloatingPointOPC) {
@@ -46,48 +53,41 @@ impl FloatingPointOPC {
         self.f
     }
 
-    pub fn weak_eq(&self, fp: &FloatingPointOPC) -> bool {
-        if self.f.is_nan() || fp.f.is_nan() {
-            return self.f.is_nan() && fp.f.is_nan();
+    pub fn weak_eq(&self, other: &FloatingPointOPC) -> bool {
+        if self.f.is_nan() || other.f.is_nan() {
+            return self.f.is_nan() && other.f.is_nan();
         }
 
-        // Plus one to account for the subtraction
-        let total_ops = (self.ops + fp.ops + 1) as f64;
-
-        // TODO directly return the result 
-        // let res = (self.f - fp.f).abs() < (f64::EPSILON * total_ops * 10.0);
-        let res = (self.f - fp.f).abs() < 0.000000001 * 100.0;
-
-        // println!("{} == {}? {}, EM: {}", self.f, fp.f, res, f64::EPSILON * total_ops);
-
+        let res = (self.f - other.f).abs() < (self.cmp_threshold(other) * 100.0);
+        // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other) * 100.0);
         res
+    }
+
+
+    pub fn cmp_threshold(&self, other: &FloatingPointOPC) -> f64 {
+        let total_ops = std::cmp::max(1, self.ops + other.ops);
+        f64::EPSILON * (total_ops) as f64
     }
 }
 
 impl PartialEq for FloatingPointOPC {
     /// Returns whether the two floating point numbers are equal within an error margin
-    fn eq(&self, fp: &FloatingPointOPC) -> bool {
-        if self.f.is_nan() || fp.f.is_nan() {
-            return self.f.is_nan() && fp.f.is_nan();
+    fn eq(&self, other: &FloatingPointOPC) -> bool {
+        if self.f.is_nan() || other.f.is_nan() {
+            return self.f.is_nan() && other.f.is_nan();
         }
-
-        // Plus one to account for the subtraction
-        let total_ops = (self.ops + fp.ops + 1) as f64;
 
         // We don't have to worry about overflow because the floats we
         // use are between -1.0 and 1.0
-        // TODO directly return the result 
-        // let res = (self.f - fp.f).abs() < (f64::EPSILON * total_ops);
-        let res = (self.f - fp.f).abs() < 0.000000001;
+        let res = (self.f - other.f).abs() < self.cmp_threshold(other);
+        // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other));
+        res
 
-        // println!("{} == {}? {}, EM: {}", self.f, fp.f, res, f64::EPSILON * total_ops);
-
-        res 
     }
 }
 
 impl fmt::Display for FloatingPointOPC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.f)
+        write!(f, "{} (ops: {})", self.f, self.ops)
     }
 }

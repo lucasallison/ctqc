@@ -277,8 +277,6 @@ impl GeneratorSet for PauliMap {
     fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
-        // println!("Checking generator {} in set \n{}.", i, self);
-
         let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
         let mut target_generator = PauliString::new(self.n_qubits);
         target_generator.set_pauli_gate(i, pgate);

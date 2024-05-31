@@ -44,7 +44,7 @@ impl CoefficientList {
             } else if self_index > other_index {
                 merged_coefficients.push(it_other.next().unwrap().clone());
             } else {
-                self_coefficient.add(other_coefficient);
+                self_coefficient.merge(other_coefficient);
                 merged_coefficients.push((*self_index, self_coefficient));
                 it_self.next();
                 it_other.next();
