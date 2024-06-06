@@ -53,8 +53,8 @@ pub struct PauliTrees {
     // We explicitly store the depth so we don't have to recalculate it each time
     depth: usize,
 
-    /// If `garbage_collection_theshold` procent of the node table is full
-    /// we start garbage collection
+    /// If we have `garbage_collection_theshold` number of nodes in the node table we start
+    /// garbage collection
     gargabe_collection_threshold: usize,
 
     n_qubits: usize,
@@ -66,17 +66,21 @@ impl PauliTrees {
         n_node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
+
         let mut p = PauliTrees {
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             generator_info: Vec::new(),
 
+            // Root node table
             root_node_table: BitVec::new(),
 
+            // Node table
             node_table: BitVec::new(),
-            n_node_body_bits: n_node_body_bits.unwrap_or(8),
+            n_node_body_bits: std::cmp::max(n_node_body_bits.unwrap_or(16), 2),
             n_nodes_stored: 0,
 
-            pgates_per_leaf: pgates_per_leaf.unwrap_or(3),
+            // Leaf table
+            pgates_per_leaf: pgates_per_leaf.unwrap_or(n_qubits / 4).clamp(1, n_qubits),
             leaf_table: BitVec::new(),
             n_leafs_stored: 0,
 
@@ -84,7 +88,7 @@ impl PauliTrees {
             gargabe_collection_threshold: 0,
             n_qubits,
         };
-
+        
         p.set_default();
         p
     }
@@ -219,7 +223,8 @@ impl PauliTrees {
     }
 
     fn max_storable_leafs(&self) -> usize {
-        // Its possible to store more leafs
+        // We can store as many leafs as the nodes can
+        // adress
         1 << (self.n_node_body_bits / 2)
     }
 
@@ -785,7 +790,7 @@ impl PauliTrees {
     }
 
     fn resize(&mut self) {
-        let new_n_node_body_bits = self.n_node_body_bits + 2;
+        let new_n_node_body_bits = self.n_node_body_bits + 8;
 
         let mut resized_ptrees = PauliTrees::new(
             self.n_qubits,
@@ -799,6 +804,7 @@ impl PauliTrees {
             resized_ptrees.insert_pstr(pstr, c_list)
         }
 
+        std::mem::swap(&mut resized_ptrees.h_s_conjugations_map, &mut self.h_s_conjugations_map);
         *self = resized_ptrees;
     }
 

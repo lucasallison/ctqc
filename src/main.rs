@@ -52,6 +52,18 @@ struct Args {
     /// of simulating them one by one.
     #[arg(short = 'a', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
+
+    /// When using the ptrees implementation we can set the size
+    /// of the internal nodes in the tree; the node body bits (nbb).
+    /// By default or when a 0 is provided the argument is ignored
+    #[arg(long, default_value_t = 0, verbatim_doc_comment)]
+    nbb: usize,
+
+    /// When using the ptrees implementation we can set the number
+    /// Pauli gates we want to be stored in the leafs; Pauli gates per leaf (pgl).
+    /// By default or when a 0 is provided the argument is ignored
+    #[arg(long, default_value_t = 0, verbatim_doc_comment)]
+    pgl: usize,
 }
 
 fn main() {
@@ -65,12 +77,17 @@ fn main() {
             .unwrap();
     }
 
+    let node_body_bits = if args.nbb == 0 { None } else { Some(args.nbb) };
+    let pgates_per_leaf = if args.pgl == 0 { None } else { Some(args.pgl) };
+
     // Initialize the simulator
     let mut simulator = Simulator::new(
         args.generator_set,
         args.conjugations_before_clean,
         args.threads,
         args.progress_bar,
+        node_body_bits,
+        pgates_per_leaf
     );
 
     // Parse the provided circuit

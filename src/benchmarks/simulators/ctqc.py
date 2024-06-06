@@ -7,7 +7,7 @@ from simulators.interface import Simulator
 
 class CTQC(Simulator):
 
-    def __init__(self, generator_set: str=None, clean: int=None, equiv_all_generators: bool=None):
+    def __init__(self, generator_set: str=None, clean: int=None, equiv_all_generators: bool=None, nbb: int=None, pgl: int=None):
 
         script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
         ctqc_dir_index = list(script_dir.parts).index('ctqc')
@@ -21,6 +21,12 @@ class CTQC(Simulator):
         self.generator_set = generator_set
         self.clean = clean
         self.equivalent_all_generators = equiv_all_generators
+
+        if (nbb is not None or pgl is not None) and generator_set != "ptrees":
+            raise ValueError("It is only useful to set nbb and pgl when ptrees are used")
+        
+        self.nbb = nbb
+        self.pgl = pgl
     
     def get_subprocess_args(self, circuit_1: str, circuit_2: str):
 
@@ -29,13 +35,19 @@ class CTQC(Simulator):
         if self.generator_set is not None:
             args += ['-d', self.generator_set]
         else:
-            args += (['-d', 'map'])
+            args += ['-d', 'map']
 
         if self.clean is not None:
             args += ['-c', str(self.clean)]
 
         if self.equivalent_all_generators is not None:
             args += ['-a']
+        
+        if self.nbb is not None:
+            args += ['--nbb', str(self.nbb)]
+
+        if self.pgl is not None:
+            args += ['--pgl', str(self.pgl)]
 
         return args
     
@@ -47,6 +59,11 @@ class CTQC(Simulator):
             name += f'_c{self.clean}'
         if self.equivalent_all_generators is not None:
             name += '_all_generators'
+        if self.nbb is not None:
+            name += f'_nbb_{str(self.nbb)}'
+        if self.pgl is not None:
+            name += f'_pgl_{str(self.pgl)}'
+
         return name
 
     def file_type(self) -> str:

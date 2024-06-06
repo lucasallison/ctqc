@@ -203,7 +203,8 @@ if __name__ == "__main__":
     CIRCUIT_DIR_PAIRS = [('origin', 'opt')]
     # CIRCUIT_DIR_PAIRS = [('origin', 'shift7')]
     # SIMULATORS = [QCEC(), CTQC(), QuokkaSharp(), Qiskit()]
-    SIMULATORS = [CTQC('map'), CTQC('ptrees'), CTQC('rbitvec'), CTQC('cbitvec')]
+    # SIMULATORS = [CTQC('map'), CTQC('ptrees'), CTQC('rbitvec'), CTQC('cbitvec')]
+    SIMULATORS = [CTQC('map'), CTQC('rbitvec'), CTQC('ptrees'), CTQC('ptrees', pgl=4)]
 
     
     print("Compiling CTQC...  ")

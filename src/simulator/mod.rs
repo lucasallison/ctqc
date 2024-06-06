@@ -21,6 +21,11 @@ pub struct Simulator {
     threads: usize,
     /// Print progress bar to the terminal
     progress_bar: bool,
+
+    /// Applicable if we are simulating using
+    /// the Pauli trees datastructure
+    node_body_bits: Option<usize>,
+    pgates_per_leaf: Option<usize>
 }
 
 impl Simulator {
@@ -29,6 +34,8 @@ impl Simulator {
         conjugations_before_clean: usize,
         threads: usize,
         progress_bar: bool,
+        node_body_bits: Option<usize>,
+        pgates_per_leaf: Option<usize>
     ) -> Self {
         let gs = GeneratorSetImplementation::from_string(&generator_set);
         Simulator {
@@ -36,6 +43,8 @@ impl Simulator {
             conjugations_before_clean,
             threads,
             progress_bar,
+            node_body_bits,
+            pgates_per_leaf
         }
     }
 
@@ -45,7 +54,7 @@ impl Simulator {
         let start = Instant::now();
 
         let mut generator_set =
-            get_generator_set(&self.generator_set, circuit.n_qubits(), self.threads);
+            get_generator_set(&self.generator_set, circuit.n_qubits(), self.threads, self.node_body_bits, self.pgates_per_leaf);
         generator_set.init_generators(true);
 
         let progress_bar = OptionalProgressBar::new(
@@ -206,7 +215,7 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> bool {
         let mut generator_set =
-            get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads);
+            get_generator_set(&self.generator_set, circuit_1.n_qubits(), self.threads, self.node_body_bits, self.pgates_per_leaf);
         generator_set.init_generators(check_zero_state_generators);
 
         let progress_bar = self.progress_bar_for_equiv_check(
@@ -255,7 +264,7 @@ impl Simulator {
         );
 
         let res = (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
-            let mut generator_set = get_generator_set(&self.generator_set, circuit_1.n_qubits(), 1);
+            let mut generator_set = get_generator_set(&self.generator_set, circuit_1.n_qubits(), 1, self.node_body_bits, self.pgates_per_leaf);
 
             generator_set.init_single_generator(i, check_zero_state_generators);
 
