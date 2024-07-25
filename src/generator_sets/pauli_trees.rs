@@ -179,7 +179,7 @@ impl PauliTrees {
     // ---- Node insertion functions ---- //
 
     /// Insert a node into the node table and return its index.
-    /// This proces consist of two steps. First, an index is computed based on the body of the node.
+    /// This process consist of two steps. First, an index is computed based on the body of the node.
     /// If the node at the index is taken, we perform linear probing to find the first empty spot.
     fn insert_node_into_table(&mut self, body: &BitSlice, leaf_bit: bool) -> usize {
         let mut index = self.bits_to_index(body, self.max_storable_nodes() - 1);

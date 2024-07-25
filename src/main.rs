@@ -13,12 +13,11 @@ mod generator_sets;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// File containing the circuit to simulate
+    /// File containing the first circuit.
     #[arg(short = 'f', long, verbatim_doc_comment)]
     circuit_file: String,
 
-    /// Optional flag which will run an equivalence check between the circuit
-    /// specified by the '-f' flag and the circuit from the file specified by this flag
+    /// File containing the second circuit
     #[arg(short, long, default_value_t = String::from("None"), verbatim_doc_comment)]
     equiv_circuit_file: String,
 
@@ -29,17 +28,17 @@ struct Args {
     ///            index are saved sequentially in a seperate bitvector.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
     /// See TODO for a more detailed explaination.
-    #[arg(short='d', long, default_value_t = String::from("rbitvec"), verbatim_doc_comment)]
+    #[arg(short='d', long, default_value_t = String::from("map"), verbatim_doc_comment)]
     generator_set: String,
 
     /// Provide after how many gates the simulator should "clean" the
-    /// data structure, e.g., remove redundently stored Pauli strings, zero
+    /// data structure, e.g., remove redundantly stored Pauli strings, zero
     /// coefficient Pauli strings, etc...
     #[arg(short, long, default_value_t = 10, verbatim_doc_comment)]
     conjugations_before_clean: usize,
 
     /// Provide number of threads to use. When 0 is provided
-    /// the number of threads equal the number of CPU cores.
+    /// the number of threads will equal the number of CPU cores.
     #[arg(short, long, default_value_t = 0, verbatim_doc_comment)]
     threads: usize,
 

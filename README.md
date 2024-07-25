@@ -1,55 +1,36 @@
-# CTQC: Clifford + T Quantum Circuit Simulator
+# CTQC: Clifford + T Quantum Circuit Equivalence Checker
 
-A rust implementation of a quantum circuit simulator based on the stabilizer formalism. 
+A rust implementation of a quantum circuit equivalence checker based on the stabilizer formalism. The theory behind the code and the code itself is explained in more detail in `TODO` (reference thesis).
 
 ## Usage
 
-In the future we will explore the possibility of packinging the code as a library or providing Python bindings, but for now the code has to be compiled manually. This can be done using the command `cargo build`. The application can also be run directly using `cargo run`. 
-
-Command line arguments:
-
-- f: Specify a file containing a quantum circuit to simulate.
-- e: Optional second file containing a quantum circuit. When specified an equivalence check will be run between the circuit of the first file and this one. 
-- v: Verbose mode. Information about the simulation is printed to the standard output. 
-- h: Print help
-
-### Examples
-
-Simulate a circuit: 
+In the future we will explore the possibility of packaging the code as a library or providing Python bindings, but for now the code has to be compiled manually. This can be done using the `cargo build` command. The application can also be run directly using `cargo run`. To check whether two circuits are equivalent the following command can be used:
 
 ```
-cargo run --release -- -f circuit
+cargo run --release -- -f circuit1.ctqc -e circuit2.ctqc 
 ```
 
-Check equivalence between two circuits:  
- 
+For large circuits it can be useful to add the `-p` flag, which will print a progress bar to the terminal. Other parameters that can set can be viewed by using the `--help` flag:
+
 ```
-cargo run --release -- -f circuit1 -e circuit2
+cargo run --release -- --help
 ```
 
 ## Circuit File Formats
 
-Circuits are read from files. For a full specification of accepted file format, see the [documentation](doc/circuit_file_format.md).
+The circuits that can be specified within these files is currently very limited. In future version we will look at the integration of QASM circuits, but as that is not the focus of this project we use a custom simplified format. There are five gates that can be used: H, S, CNOT, T and Rz(angle). Each gate of the circuit should be placed on a separate line and should be followed by the target qubit(s). In case of a CNOT the integers denote the control and target qubit respectively.
 
-## Implemenation (Background)
+### Example
 
-This section briefly describes the theory behind the simulator. For a more detailed explaination, see: TODO 
+```
+H 0
+CNOT 0 1
+Rz(0.5) 0
+S 1
+T 2
+H 3
+```
 
-### Stabilizer Formalism
+## Simulation
 
-A quantum state |ψ> is stabilized by U if U|ψ> = |ψ>, i.e., |ψ> is an eigenvector of U. The set of stabilizers of a state form a group under multiplication and uniquely define it. Since a group can be represented by
-its generators, we can uniquely represent a quantum state by the generators of its stabilizers.
-
-Given an arbitrary unitary U, a state |ψ> and one of its stabilizers g, then the following holds:
-
-U|ψ> = Ug|ψ> = UgU^†U|ψ>.
-
-From this we can see that if g stabilizes |ψ> then UgU^† stabilizes U|ψ>. More specifically, we know that if G is the set that generates the stabilizers of |ψ> then { UgU^† | g ∈ G } is the set that generates the stabilizers of U|ψ>.
-
-### Simulation
-
-The simulator relies on the stabilizer formalism by intializing the generators of the all zero state and subsequently conjugating the generators for each gate in the circuit. The result will be a set of generators that stabilize the state that would result from applying the circuit to the all zero state.
-
-### Equivalence checking
-
-For two circuits U and V to be equivalent we have to check whether UV^†|0> = |0> and UV^†|+> = |+>. This means that if we simulate the circuit UV^† twice, once starting with the generators of the all zero state and once with the generators of the all plus state, and in both cases we end up with the generators we started with we can conclude that the circuits are equivalent.
+While we can theoretically perform simulations by only providing a single circuit file through the `-f` flag, for most circuits this will be computationally too intensive. The reasons for this is because of the specific way we use the stabilizer formalism. This is explained in `TODO` (reference thesis).

@@ -38,7 +38,7 @@ pub trait GeneratorSet: Display {
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool);
 
-    /// Return a measurment sampler for the state represented by the generator set
+    /// Return a measurement sampler for the state represented by the generator set
     /// at the moment the function is called.
     fn get_measurement_sampler(&mut self) -> MeasurementSampler;
 
