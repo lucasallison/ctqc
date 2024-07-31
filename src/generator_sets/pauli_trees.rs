@@ -31,8 +31,8 @@ pub struct PauliTrees {
     root_node_table: BitVec,
 
     /// Each node consists of `2 + 2 * node_body_bits` bits.
-    /// The first bit indicates wheter the location in the table is taken or not.
-    /// The second bit indicates wheter the node is pointing to leaf or not.
+    /// The first bit indicates whether the location in the table is taken or not.
+    /// The second bit indicates whether the node is pointing to leaf or not.
     /// These bits are referred to as the "book keeping" bits of the node.
     /// The following `n_node_body_bits` bits are the index of the child node.
     /// These are referred to as the "body" bits of the node.
@@ -44,7 +44,7 @@ pub struct PauliTrees {
     n_nodes_stored: usize,
 
     /// Each leaf consists of 1 + 2 * pgates_per_leaf bits.
-    /// The first bit indicates wheter the location in the table is taken or not.
+    /// The first bit indicates whether the location in the table is taken or not.
     /// The following `pgates_per_leaf` bits are the Pauli gates.
     pgates_per_leaf: usize,
     leaf_table: BitVec,
