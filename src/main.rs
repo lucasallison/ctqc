@@ -86,7 +86,7 @@ fn main() {
         args.threads,
         args.progress_bar,
         node_body_bits,
-        pgates_per_leaf
+        pgates_per_leaf,
     );
 
     // Parse the provided circuit

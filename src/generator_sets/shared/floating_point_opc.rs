@@ -63,7 +63,6 @@ impl FloatingPointOPC {
         res
     }
 
-
     pub fn cmp_threshold(&self, other: &FloatingPointOPC) -> f64 {
         let total_ops = std::cmp::max(1, self.ops + other.ops);
         f64::EPSILON * (total_ops) as f64
@@ -82,7 +81,6 @@ impl PartialEq for FloatingPointOPC {
         let res = (self.f - other.f).abs() < self.cmp_threshold(other);
         // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other));
         res
-
     }
 }
 

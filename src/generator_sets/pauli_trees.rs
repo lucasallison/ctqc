@@ -41,21 +41,23 @@ pub struct PauliTrees {
     /// when constructing the PauliTrees object, we increment the number by 1.
     n_node_body_bits: usize,
     node_table: BitVec,
-    n_leafs_stored: usize,
+    n_nodes_stored: usize,
 
     /// Each leaf consists of 1 + 2 * pgates_per_leaf bits.
     /// The first bit indicates wheter the location in the table is taken or not.
     /// The following `pgates_per_leaf` bits are the Pauli gates.
     pgates_per_leaf: usize,
     leaf_table: BitVec,
-    n_nodes_stored: usize,
+    n_leafs_stored: usize,
 
     // We explicitly store the depth so we don't have to recalculate it each time
     depth: usize,
 
-    /// If we have `garbage_collection_theshold` number of nodes in the node table we start
-    /// garbage collection
-    gargabe_collection_threshold: usize,
+    /// If our node or leaf table is more than 80% full we start garbage collecting.
+    /// We compute upfront how many nodes/leafs this threshold is to prevent continuously
+    /// computing it
+    garbage_collection_threshold_nodes: usize,
+    garbage_collection_threshold_leafs: usize,
 
     n_qubits: usize,
 }
@@ -66,7 +68,6 @@ impl PauliTrees {
         n_node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
-
         let mut p = PauliTrees {
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             generator_info: Vec::new(),
@@ -85,10 +86,11 @@ impl PauliTrees {
             n_leafs_stored: 0,
 
             depth: 0,
-            gargabe_collection_threshold: 0,
+            garbage_collection_threshold_nodes: 0,
+            garbage_collection_threshold_leafs: 0,
             n_qubits,
         };
-        
+
         p.set_default();
         p
     }
@@ -108,7 +110,10 @@ impl PauliTrees {
         self.depth = self.tree_depth();
 
         // If 80 procent of the node table is full we start garbage collection
-        self.gargabe_collection_threshold = (0.8 * (self.max_storable_nodes() as f64)) as usize;
+        self.garbage_collection_threshold_nodes =
+            (0.8 * (self.max_storable_nodes() as f64)) as usize;
+        self.garbage_collection_threshold_leafs =
+            (0.8 * (self.max_storable_leafs() as f64)) as usize;
 
         if self.n_node_body_bits % 2 != 0 {
             self.n_node_body_bits += 1;
@@ -804,7 +809,10 @@ impl PauliTrees {
             resized_ptrees.insert_pstr(pstr, c_list)
         }
 
-        std::mem::swap(&mut resized_ptrees.h_s_conjugations_map, &mut self.h_s_conjugations_map);
+        std::mem::swap(
+            &mut resized_ptrees.h_s_conjugations_map,
+            &mut self.h_s_conjugations_map,
+        );
         *self = resized_ptrees;
     }
 
@@ -946,7 +954,9 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {
-        if self.n_nodes_stored > self.gargabe_collection_threshold {
+        if self.n_nodes_stored > self.garbage_collection_threshold_nodes
+            || self.n_leafs_stored > self.garbage_collection_threshold_leafs
+        {
             self.garbage_collection();
         }
 

@@ -62,18 +62,14 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-
     /// Removes all coefficients that are zero and returns whether the coefficient list
     /// is empty
     pub fn remove_zero_coefficients(&mut self) -> bool {
-
-        self.coefficients.retain(|(_, coef)| {
-            return !coef.weak_eq(&FloatingPointOPC::new(0.0))
-        });
+        self.coefficients
+            .retain(|(_, coef)| return !coef.weak_eq(&FloatingPointOPC::new(0.0)));
 
         self.is_empty()
     }
-
 
     /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
     pub fn is_empty(&self) -> bool {
@@ -84,7 +80,7 @@ impl CoefficientList {
         }
         true
     }
-    
+
     /// Returns if the coefficient list would be valid for the ith generator.
     /// This is the case if:
     /// 1. The coefficient list only contains the coefficient of the ith generator

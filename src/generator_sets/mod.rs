@@ -80,7 +80,7 @@ pub fn get_generator_set(
     n_qubits: usize,
     n_threads: usize,
     n_node_body_bits: Option<usize>,
-    pgates_per_leaf: Option<usize>
+    pgates_per_leaf: Option<usize>,
 ) -> Box<dyn GeneratorSet> {
     match generator_set {
         GeneratorSetImplementation::PauliMap => return Box::new(PauliMap::new(n_qubits)),
