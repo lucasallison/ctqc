@@ -188,8 +188,8 @@ impl ColumnWiseBitVec {
     fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.clear();
 
-        for (pstr, coef_list) in map.drain() {
-            if coef_list.is_empty() {
+        for (pstr, mut coef_list) in map.drain() {
+            if coef_list.remove_zero_coefficients() {
                 continue;
             }
             for (gate_ind, bslice) in pstr.chunks_exact(2).enumerate() {

@@ -62,18 +62,21 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
-    pub fn is_empty(&self) -> bool {
-        for (_, f) in self.coefficients.iter() {
-            if !(*f == FloatingPointOPC::new(0.0)) {
-                return false;
-            }
-        }
-        true
+
+    /// Removes all coefficients that are zero and returns whether the coefficient list
+    /// is empty
+    pub fn remove_zero_coefficients(&mut self) -> bool {
+
+        self.coefficients.retain(|(_, coef)| {
+            return !coef.weak_eq(&FloatingPointOPC::new(0.0))
+        });
+
+        self.is_empty()
     }
 
-    /// Similar to is_empty, but only checks if the coefficients are weakly equal to zero, i.e. within a larger error margin.
-    pub fn weak_is_empty(&self) -> bool {
+
+    /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
+    pub fn is_empty(&self) -> bool {
         for (_, f) in self.coefficients.iter() {
             if !(f.weak_eq(&FloatingPointOPC::new(0.0))) {
                 return false;
