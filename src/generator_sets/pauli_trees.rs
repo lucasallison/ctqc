@@ -690,14 +690,24 @@ impl PauliTrees {
 
     fn garbage_collection(&mut self) {
 
-        let mut new_ptrees = PauliTrees::new(self.n_qubits, Some(self.n_node_body_bits), Some(self.pgates_per_leaf));
+        let mut new_ptrees = PauliTrees::new(
+            self.n_qubits,
+            Some(self.n_node_body_bits),
+            Some(self.pgates_per_leaf),
+        );
 
         for pstr_index in 0..self.size() {
-            let (pstr, coef_list) = self.get_pstr_with_hs_conjugations(pstr_index);
-            new_ptrees.insert_pstr(pstr, coef_list);
+            let pstr = self.pstr_as_bitvec(pstr_index);
+            let c_list = self.generator_info[pstr_index].clone();
+            new_ptrees.insert_pstr(pstr, c_list)
         }
         
+        std::mem::swap(
+            &mut new_ptrees.h_s_conjugations_map,
+            &mut self.h_s_conjugations_map,
+        );
         *self = new_ptrees;
+
     }
 
     fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
