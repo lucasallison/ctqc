@@ -135,12 +135,12 @@ impl ColumnWiseBitVec {
                 continue;
             }
 
-            // We set the current Pauli string to have a X gate at the gate index.
+            // We set the current Pauli string to have a Y gate at the gate index.
             // Then we copy it and set the gate to be an Y gate.
             // This way the first Pauli string will have a X gate and the last an X gate.
-            self.set_pauli_gate(PauliGate::X, pstr_ind, rz.qubit_1);
-            self.extend_from_within(pstr_ind);
             self.set_pauli_gate(PauliGate::Y, pstr_ind, rz.qubit_1);
+            self.extend_from_within(pstr_ind);
+            self.set_pauli_gate(PauliGate::X, pstr_ind, rz.qubit_1);
 
             self.generator_info
                 .push(self.generator_info[pstr_ind].clone());
