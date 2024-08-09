@@ -1,0 +1,2206 @@
+[
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/ae_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 31.66390609741211,
+          "rss_bytes": 1344487424
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/ae_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/ae_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/ae_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/ae_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/ae_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/dj_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.004893302917480469,
+          "rss_bytes": 4816896
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.004452705383300781,
+          "rss_bytes": 5308416
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.004990100860595703,
+          "rss_bytes": 5242880
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.006582975387573242,
+          "rss_bytes": 5292032
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/dj_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/dj_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005566120147705078,
+          "rss_bytes": 4964352
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005006074905395508,
+          "rss_bytes": 5373952
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005661964416503906,
+          "rss_bytes": 5373952
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.00864100456237793,
+          "rss_bytes": 5324800
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/dj_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/dj_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.014671087265014648,
+          "rss_bytes": 5177344
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.011613845825195312,
+          "rss_bytes": 5570560
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.01718616485595703,
+          "rss_bytes": 5505024
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.03023386001586914,
+          "rss_bytes": 5537792
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/dj_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/groundstate_large_nativegates_ibm_qiskit_opt0_14.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.6674139499664307,
+          "rss_bytes": 62193664
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 5.0867249965667725,
+          "rss_bytes": 3171860480
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 10.403115034103394,
+          "rss_bytes": 3116974080
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/groundstate_large_nativegates_ibm_qiskit_opt0_14.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/groundstate_medium_nativegates_ibm_qiskit_opt0_12.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.11283206939697266,
+          "rss_bytes": 19234816
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.9038679599761963,
+          "rss_bytes": 537804800
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 1.6897830963134766,
+          "rss_bytes": 551731200
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 9.969491004943848,
+          "rss_bytes": 421167104
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/groundstate_medium_nativegates_ibm_qiskit_opt0_12.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/groundstate_small_nativegates_ibm_qiskit_opt0_4.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0046579837799072266,
+          "rss_bytes": 4603904
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.006416797637939453,
+          "rss_bytes": 6160384
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.00777125358581543,
+          "rss_bytes": 6078464
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.029513835906982422,
+          "rss_bytes": 6225920
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/groundstate_small_nativegates_ibm_qiskit_opt0_4.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-noancilla_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.041674137115478516,
+          "rss_bytes": 5881856
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.12007617950439453,
+          "rss_bytes": 40484864
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.15854716300964355,
+          "rss_bytes": 37502976
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 10.136005163192749,
+          "rss_bytes": 33800192
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-noancilla_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-noancilla_nativegates_ibm_qiskit_opt0_6.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.8011319637298584,
+          "rss_bytes": 10043392
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 4.070846080780029,
+          "rss_bytes": 329170944
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 5.668488025665283,
+          "rss_bytes": 345014272
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-noancilla_nativegates_ibm_qiskit_opt0_6.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-noancilla_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 13.162796020507812,
+          "rss_bytes": 25886720
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 25.357756853103638,
+          "rss_bytes": 1203666944
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 34.72381806373596,
+          "rss_bytes": 1004797952
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-noancilla_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-v-chain_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.04855680465698242,
+          "rss_bytes": 6438912
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.17590975761413574,
+          "rss_bytes": 40058880
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.2295989990234375,
+          "rss_bytes": 42647552
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 3.122246265411377,
+          "rss_bytes": 36814848
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-v-chain_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-v-chain_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 2.273979902267456,
+          "rss_bytes": 24084480
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 7.179453134536743,
+          "rss_bytes": 557465600
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 10.210317134857178,
+          "rss_bytes": 640483328
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-v-chain_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/grover-v-chain_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/grover-v-chain_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfolioqaoa_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.052139997482299805,
+          "rss_bytes": 7258112
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.3173701763153076,
+          "rss_bytes": 110346240
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.42437124252319336,
+          "rss_bytes": 123076608
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 4.40121603012085,
+          "rss_bytes": 75939840
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfolioqaoa_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfolioqaoa_nativegates_ibm_qiskit_opt0_6.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.4091770648956299,
+          "rss_bytes": 16056320
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 2.591170072555542,
+          "rss_bytes": 452460544
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 3.2442679405212402,
+          "rss_bytes": 469041152
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfolioqaoa_nativegates_ibm_qiskit_opt0_6.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfolioqaoa_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 4.373138904571533,
+          "rss_bytes": 55754752
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 21.19588303565979,
+          "rss_bytes": 1618378752
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 26.526684761047363,
+          "rss_bytes": 1498464256
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfolioqaoa_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfoliovqe_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.017271757125854492,
+          "rss_bytes": 5308416
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.1071012020111084,
+          "rss_bytes": 44138496
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.1419219970703125,
+          "rss_bytes": 43122688
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 1.5611910820007324,
+          "rss_bytes": 37388288
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfoliovqe_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfoliovqe_nativegates_ibm_qiskit_opt0_6.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.08783602714538574,
+          "rss_bytes": 10338304
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.6903090476989746,
+          "rss_bytes": 241319936
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 1.0525109767913818,
+          "rss_bytes": 263782400
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 10.75761604309082,
+          "rss_bytes": 203030528
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfoliovqe_nativegates_ibm_qiskit_opt0_6.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/portfoliovqe_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.36077213287353516,
+          "rss_bytes": 17743872
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 2.5156731605529785,
+          "rss_bytes": 525664256
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 3.9195590019226074,
+          "rss_bytes": 569507840
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 42.45478677749634,
+          "rss_bytes": 467648512
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/portfoliovqe_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingcall_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.006600856781005859,
+          "rss_bytes": 4554752
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.01556706428527832,
+          "rss_bytes": 6946816
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.018702030181884766,
+          "rss_bytes": 7241728
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.1788041591644287,
+          "rss_bytes": 6946816
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingcall_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingcall_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.04125809669494629,
+          "rss_bytes": 5963776
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.2134552001953125,
+          "rss_bytes": 28770304
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.31969380378723145,
+          "rss_bytes": 32669696
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 4.16518497467041,
+          "rss_bytes": 31145984
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingcall_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingcall_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.5463869571685791,
+          "rss_bytes": 15187968
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 3.1010420322418213,
+          "rss_bytes": 295550976
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 5.72089409828186,
+          "rss_bytes": 313360384
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingcall_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingput_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.007430076599121094,
+          "rss_bytes": 4685824
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.02300095558166504,
+          "rss_bytes": 9076736
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.028219223022460938,
+          "rss_bytes": 7831552
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.3114290237426758,
+          "rss_bytes": 7684096
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingput_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingput_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.05458402633666992,
+          "rss_bytes": 6062080
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.3265411853790283,
+          "rss_bytes": 45318144
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.5019128322601318,
+          "rss_bytes": 41631744
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 6.839088678359985,
+          "rss_bytes": 41697280
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingput_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/pricingput_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.718472957611084,
+          "rss_bytes": 14598144
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 4.206958770751953,
+          "rss_bytes": 314081280
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 7.8336591720581055,
+          "rss_bytes": 290226176
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/pricingput_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qaoa_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0049800872802734375,
+          "rss_bytes": 4898816
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.008156061172485352,
+          "rss_bytes": 7995392
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.009176969528198242,
+          "rss_bytes": 7815168
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.05265212059020996,
+          "rss_bytes": 7831552
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qaoa_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qaoa_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.006002187728881836,
+          "rss_bytes": 4898816
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.010318756103515625,
+          "rss_bytes": 8470528
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.01314091682434082,
+          "rss_bytes": 8945664
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.061470985412597656,
+          "rss_bytes": 8847360
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qaoa_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qaoa_nativegates_ibm_qiskit_opt0_11.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0065250396728515625,
+          "rss_bytes": 4964352
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.009242773056030273,
+          "rss_bytes": 8257536
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.013361930847167969,
+          "rss_bytes": 8126464
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.06973528861999512,
+          "rss_bytes": 8601600
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qaoa_nativegates_ibm_qiskit_opt0_11.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qft_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 32.00561308860779,
+          "rss_bytes": 721420288
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 37.152021169662476,
+          "rss_bytes": 3262873600
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qft_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qft_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qft_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qft_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qft_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qftentangled_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qftentangled_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qftentangled_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qftentangled_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qftentangled_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qftentangled_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qnn_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qnn_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qnn_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qnn_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qnn_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qnn_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeexact_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeexact_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeexact_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeexact_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeexact_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeexact_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeinexact_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeinexact_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeinexact_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeinexact_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qpeinexact_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qpeinexact_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-noancilla_nativegates_ibm_qiskit_opt0_6.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.27217602729797363,
+          "rss_bytes": 7208960
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 1.1246337890625,
+          "rss_bytes": 111362048
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 1.5232231616973877,
+          "rss_bytes": 112017408
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-noancilla_nativegates_ibm_qiskit_opt0_6.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-noancilla_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 1.210341215133667,
+          "rss_bytes": 13074432
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 3.658409833908081,
+          "rss_bytes": 276201472
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 5.376387119293213,
+          "rss_bytes": 288849920
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-noancilla_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-noancilla_nativegates_ibm_qiskit_opt0_8.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 9.921185970306396,
+          "rss_bytes": 31227904
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 17.215401887893677,
+          "rss_bytes": 563888128
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 23.557053327560425,
+          "rss_bytes": 580993024
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-noancilla_nativegates_ibm_qiskit_opt0_8.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-v-chain_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.009334087371826172,
+          "rss_bytes": 4751360
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.023730993270874023,
+          "rss_bytes": 10485760
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.029655933380126953,
+          "rss_bytes": 10780672
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.34575891494750977,
+          "rss_bytes": 10649600
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-v-chain_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-v-chain_nativegates_ibm_qiskit_opt0_7.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.13260507583618164,
+          "rss_bytes": 8339456
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.44986701011657715,
+          "rss_bytes": 70778880
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.6434578895568848,
+          "rss_bytes": 70107136
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 9.953531980514526,
+          "rss_bytes": 63340544
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-v-chain_nativegates_ibm_qiskit_opt0_7.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/qwalk-v-chain_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 2.7666780948638916,
+          "rss_bytes": 39665664
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 11.203078985214233,
+          "rss_bytes": 683098112
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 19.42315125465393,
+          "rss_bytes": 737378304
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/qwalk-v-chain_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/realamprandom_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/realamprandom_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/realamprandom_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/realamprandom_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/realamprandom_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/realamprandom_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/routing_nativegates_ibm_qiskit_opt0_2.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005103111267089844,
+          "rss_bytes": 4440064
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005231142044067383,
+          "rss_bytes": 4931584
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0052111148834228516,
+          "rss_bytes": 4784128
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.010658025741577148,
+          "rss_bytes": 4669440
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/routing_nativegates_ibm_qiskit_opt0_2.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/routing_nativegates_ibm_qiskit_opt0_6.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.03619980812072754,
+          "rss_bytes": 7241728
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.20140695571899414,
+          "rss_bytes": 75939840
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.29874134063720703,
+          "rss_bytes": 98582528
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/routing_nativegates_ibm_qiskit_opt0_6.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/routing_nativegates_ibm_qiskit_opt0_12.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/routing_nativegates_ibm_qiskit_opt0_12.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/su2random_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/su2random_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/su2random_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/su2random_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/su2random_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/su2random_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/tsp_nativegates_ibm_qiskit_opt0_4.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.008221864700317383,
+          "rss_bytes": 4685824
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.03812289237976074,
+          "rss_bytes": 10960896
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.04555225372314453,
+          "rss_bytes": 11026432
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/tsp_nativegates_ibm_qiskit_opt0_4.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/tsp_nativegates_ibm_qiskit_opt0_9.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.4316749572753906,
+          "rss_bytes": 28557312
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 3.1647748947143555,
+          "rss_bytes": 692420608
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 6.249476909637451,
+          "rss_bytes": 774897664
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/tsp_nativegates_ibm_qiskit_opt0_9.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/tsp_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 2.7521090507507324,
+          "rss_bytes": 46907392
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 6.695993185043335,
+          "rss_bytes": 1112178688
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 19.340208053588867,
+          "rss_bytes": 1649082368
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/tsp_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/twolocalrandom_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/twolocalrandom_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/twolocalrandom_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/twolocalrandom_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/twolocalrandom_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/twolocalrandom_nativegates_ibm_qiskit_opt0_64.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/vqe_nativegates_ibm_qiskit_opt0_5.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005010843276977539,
+          "rss_bytes": 4767744
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.008846044540405273,
+          "rss_bytes": 8028160
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.011109113693237305,
+          "rss_bytes": 8290304
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/vqe_nativegates_ibm_qiskit_opt0_5.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/vqe_nativegates_ibm_qiskit_opt0_10.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.08188986778259277,
+          "rss_bytes": 14286848
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.4298398494720459,
+          "rss_bytes": 186449920
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.7613742351531982,
+          "rss_bytes": 198098944
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/vqe_nativegates_ibm_qiskit_opt0_10.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/vqe_nativegates_ibm_qiskit_opt0_15.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 1.1612389087677002,
+          "rss_bytes": 38912000
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 5.01752495765686,
+          "rss_bytes": 1090093056
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 11.859717845916748,
+          "rss_bytes": 957956096
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/vqe_nativegates_ibm_qiskit_opt0_15.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/wstate_nativegates_ibm_qiskit_opt0_16.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.005369901657104492,
+          "rss_bytes": 4866048
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0077838897705078125,
+          "rss_bytes": 6176768
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.012219905853271484,
+          "rss_bytes": 6569984
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.043863773345947266,
+          "rss_bytes": 6291456
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/wstate_nativegates_ibm_qiskit_opt0_16.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/wstate_nativegates_ibm_qiskit_opt0_32.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 12.953482866287231,
+          "rss_bytes": 469450752
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 2.785560131072998,
+          "rss_bytes": 369491968
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 6.576172828674316,
+          "rss_bytes": 351993856
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "exception": "Timeout"
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/wstate_nativegates_ibm_qiskit_opt0_32.qasm"
+  },
+  {
+    "circuit": "quokka_sharp_benchmarks/algorithm/origin/wstate_nativegates_ibm_qiskit_opt0_64.qasm",
+    "results": [
+      {
+        "simulator": "CTQC_map",
+        "stats": {
+          "equivalent": false,
+          "time": 0.02913188934326172,
+          "rss_bytes": 5193728
+        }
+      },
+      {
+        "simulator": "CTQC_rbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.0629270076751709,
+          "rss_bytes": 7290880
+        }
+      },
+      {
+        "simulator": "CTQC_cbitvec",
+        "stats": {
+          "equivalent": false,
+          "time": 0.1544661521911621,
+          "rss_bytes": 7225344
+        }
+      },
+      {
+        "simulator": "CTQC_ptrees",
+        "stats": {
+          "equivalent": false,
+          "time": 0.33368873596191406,
+          "rss_bytes": 6897664
+        }
+      }
+    ],
+    "equiv_circuit": "quokka_sharp_benchmarks/algorithm/shift7/wstate_nativegates_ibm_qiskit_opt0_64.qasm"
+  }
+]
