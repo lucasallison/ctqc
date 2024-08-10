@@ -81,7 +81,7 @@ impl PauliTrees {
             n_nodes_stored: 0,
 
             // Leaf table
-            pgates_per_leaf: pgates_per_leaf.unwrap_or(n_qubits / 4).clamp(1, n_qubits),
+            pgates_per_leaf: pgates_per_leaf.unwrap_or(n_qubits / 4).clamp(2, n_qubits),
             leaf_table: BitVec::new(),
             n_leafs_stored: 0,
 

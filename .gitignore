@@ -20,3 +20,5 @@ Cargo.lock
 *.DS_Store
 
 .gitconfig
+
+*.qasm
