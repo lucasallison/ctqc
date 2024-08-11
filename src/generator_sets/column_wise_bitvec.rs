@@ -136,8 +136,8 @@ impl ColumnWiseBitVec {
             }
 
             // We set the current Pauli string to have a Y gate at the gate index.
-            // Then we copy it and set the gate to be an Y gate.
-            // This way the first Pauli string will have a X gate and the last an X gate.
+            // Then we copy it and set the gate to be an X gate.
+            // This way the first Pauli string will have a Y gate and the last an X gate.
             self.set_pauli_gate(PauliGate::Y, pstr_ind, rz.qubit_1);
             self.extend_from_within(pstr_ind);
             self.set_pauli_gate(PauliGate::X, pstr_ind, rz.qubit_1);
@@ -188,8 +188,8 @@ impl ColumnWiseBitVec {
     fn scatter(&mut self, mut map: HashMap<BitVec, CoefficientList, FxBuildHasher>) {
         self.clear();
 
-        for (pstr, mut coef_list) in map.drain() {
-            if coef_list.remove_zero_coefficients() {
+        for (pstr, coef_list) in map.drain() {
+            if coef_list.is_empty() {
                 continue;
             }
             for (gate_ind, bslice) in pstr.chunks_exact(2).enumerate() {

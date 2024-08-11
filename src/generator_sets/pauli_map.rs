@@ -97,7 +97,6 @@ impl PauliMap {
                 .unwrap();
 
             coef_list.multiply(&look_up_output.coefficient);
-            coef_list.remove_zero_coefficients();
 
             PauliUtils::set_pauli_gate_in_bitslice(
                 &mut pstr,
@@ -119,7 +118,7 @@ impl PauliMap {
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
         let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
 
-        // Reserve additional memory for potential new Pauli strings
+        // Reserve addtional memory for potential new Pauli strings
         self.pauli_strings_dst.reserve(pstrs_src.len() / 2);
 
         for (mut pstr, mut coef_list) in pstrs_src.drain() {
@@ -142,10 +141,7 @@ impl PauliMap {
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
             coef_list.multiply(&x_mult);
-            coef_list.remove_zero_coefficients();
-
             new_coef_list.multiply(&y_mult);
-            new_coef_list.remove_zero_coefficients();
 
             Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
             Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, new_pstr, new_coef_list);
@@ -292,11 +288,11 @@ impl GeneratorSet for PauliMap {
                 return false;
             }
 
-            if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
+            if pstr != target_generator.as_bitslice() && coef_list.weak_is_empty() {
                 continue;
             }
 
-            if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
+            if pstr != target_generator.as_bitslice() && !coef_list.weak_is_empty() {
                 return false;
             }
         }

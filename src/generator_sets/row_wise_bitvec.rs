@@ -464,8 +464,8 @@ impl RowWiseBitVec {
         self.pauli_strings.clear();
         self.generator_info.clear();
 
-        for (pstr, mut coefficients) in map.drain() {
-            if coefficients.remove_zero_coefficients() {
+        for (pstr, coefficients) in map.drain() {
+            if coefficients.is_empty() {
                 continue;
             }
             self.pauli_strings.extend_from_bitslice(&pstr);
