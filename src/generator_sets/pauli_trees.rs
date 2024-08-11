@@ -77,7 +77,7 @@ impl PauliTrees {
 
             // Node table
             node_table: BitVec::new(),
-            n_node_body_bits: std::cmp::max(n_node_body_bits.unwrap_or(16), 2),
+            n_node_body_bits: std::cmp::max(n_node_body_bits.unwrap_or(24), 2),
             n_nodes_stored: 0,
 
             // Leaf table
@@ -123,6 +123,8 @@ impl PauliTrees {
     // ---- Root node storage information ---- //
 
     fn n_bits_per_root_node(&self) -> usize {
+        // The node body bits contain two offset, and therefore
+        // we can only have 2^{n_node_body_bits / 2} nodes. 
         self.n_node_body_bits / 2
     }
 
@@ -368,7 +370,7 @@ impl PauliTrees {
     }
 
     fn node_index_to_root_node(&self, node_index: usize) -> BitVec {
-        self.index_to_bitvec(node_index, self.n_node_body_bits / 2)
+        self.index_to_bitvec(node_index, self.n_bits_per_root_node())
     }
 
     /// Converts a given index to a bitvec of length `self.n_node_body_bits`.
