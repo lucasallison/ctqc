@@ -13,7 +13,6 @@ for file in files:
         continue
 
     simulators = [res['simulator'].replace("_", "\_") for res in data[0]['results']]
-    circ_name = data[0]['circuit'].split('/')[-1].split('.')[0].split('_')[0]
     circ_type = data[0]['circuit'].split('/')[-2]
     equiv_circ_type = data[0]['equiv_circuit'].split('/')[-2]
 
@@ -45,9 +44,10 @@ for file in files:
     table += " \\\\ \n"
     table += "\\hline \n"
 
-    table += circ_name + " & "
 
     for benchmark in data:
+        # Circuit name
+        table += benchmark['circuit'].split('/')[-1].split('.')[0] + " & "
 
         table += " & ".join(['q', 'c', 'rz'])
         table += " & "
@@ -64,9 +64,8 @@ for file in files:
                 table += "E & E"
                 continue
 
-            # time -> runtime, rss_bytes -> max_rss_bytes
-            time = round(result['stats']['time'], 4)
-            mem = round(result['stats']['rss_bytes'] / (1024 * 1024), 1)
+            time = round(result['stats']['runtime'], 4)
+            mem = round(result['stats']['max_rss_bytes'] / (1024 * 1024), 1)
             table += f"{time} & {mem}"
 
         table += " \\\\ \n"
