@@ -13,8 +13,8 @@ for file in files:
         continue
 
     simulators = [res['simulator'].replace("_", "\_") for res in data[0]['results']]
-    circ_type = data[0]['circuit'].split('/')[-2]
-    equiv_circ_type = data[0]['equiv_circuit'].split('/')[-2]
+    circ_type = data[0]['circuit']['file'].split('/')[-2]
+    equiv_circ_type = data[0]['equiv_circuit']['file'].split('/')[-2]
 
     table = "\\begin{table}[htb] \n\n"
     table += "\\centering \n"
@@ -44,14 +44,14 @@ for file in files:
     table += " \\\\ \n"
     table += "\\hline \n"
 
-
     for benchmark in data:
         # Circuit name
-        table += benchmark['circuit'].split('/')[-1].split('.')[0] + " & "
+        table += benchmark['circuit']['file'].split('/')[-1].split('.')[0].replace('_', '\_') + " & "
 
-        table += " & ".join(['q', 'c', 'rz'])
+
+        table += " & ".join(str(s) for s in [benchmark['circuit']['stats']['n_qubits'], benchmark['circuit']['stats']['clif_gates'], benchmark['circuit']['stats']['rz_gates']])
         table += " & "
-        table += " & ".join(['ceq', 'rzeq'])
+        table += " & ".join(str(s) for s in [benchmark['equiv_circuit']['stats']['clif_gates'], benchmark['equiv_circuit']['stats']['rz_gates']])
 
         for result in benchmark['results']:
             table += " & "
