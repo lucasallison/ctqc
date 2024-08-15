@@ -1,0 +1,42 @@
+\begin{table}[htb]
+\centering
+\caption{Collection: QuokkaSharp Algorithm. Circuit types: transp and opt}
+\vspace{2mm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{\bfseries Circuit Name} &
+\multirow{2}{*}{\bfseries \#Qubits} &
+\multicolumn{2}{|c|}{\bfseries transp} &
+\multicolumn{2}{|c|}{\bfseries opt} &
+\multicolumn{2}{|c|}{\bfseries Map} &
+\multicolumn{2}{|c|}{\bfseries Qiskit} &
+\multicolumn{2}{|c|}{\bfseries QCEC} &
+\multicolumn{2}{|c|}{\bfseries QuokkaSharp} \\
+\cline{3-14}
+& & \#$C$ & \#$Rz$ & \#$C$ & \#$Rz$& t(sec)&mem(mbs) & t(sec)&mem(mbs) & t(sec)&mem(mbs) & t(sec)&mem(mbs) \\
+\hline
+ & 
+14 & 588 & 168 & 224 & 42
+ & 0.4297 & 72.2
+ & 0.0935 & 80.8
+ & \textcolor{red}0.0289 & 194.4
+ & 1.5118 & \textcolor{red}32.4
+ \\
+Ground State & 
+12 & 432 & 144 & 168 & 36
+ & 0.0751 & \textcolor{red}20.4
+ & 0.0344 & 76.2
+ & \textcolor{red}0.018 & 185.8
+ & 0.7922 & 25.3
+ \\
+ & 
+4 & 48 & 48 & 24 & 12
+ & \textcolor{red}0.0041 & \textcolor{red}4.3
+ & 0.0046 & 76.3
+ & 0.0097 & 157.7
+ & 0.0316 & 14.4
+ \\
+\hline
+\end{tabular}}
+\end{table}

@@ -1,4 +1,5 @@
-import os
+import os, re 
+from typing import Tuple
 from utils import CIRCUIT_NAMES_FULL, SIMULATOR_NAMES, get_json_files, load_json_data
 
 def get_circuit_type(data, key):
@@ -32,7 +33,7 @@ def create_table_header(data, simulators):
 
     return '\n'.join(header)
 
-def format_result(result):
+def format_result(result, sim_best_time_name, sim_best_mem_name):
     if 'exception' in result:
         return "- & -" if result['exception'] == 'Timeout' else "E & E"
 
@@ -41,7 +42,33 @@ def format_result(result):
     
     time = round(result['stats']['runtime'], 4)
     mem = round(result['stats']['max_rss_bytes'] / (1024 * 1024), 1)
-    return f"{time} & {mem}"
+    time_table_entry =  f"\\textcolor{{green}}{time}" if result['simulator'] == sim_best_time_name else time 
+    mem_table_entry =  f"\\textcolor{{green}}{mem}" if result['simulator'] == sim_best_mem_name else mem
+    return f"{time_table_entry} & {mem_table_entry}"
+
+def best_simulators(results) -> Tuple[str, str]:
+    """
+    Return the names of the simulators with tht best time and memory usage, respectively, 
+    or None if they all timed-out
+    """
+    best_time = None
+    sim_best_time_name = None
+    best_mem = None
+    sim_best_mem_name = None
+    for result in results:
+        if 'exception' in result or result.get('stats', {}).get('equivalence', '') == 'no_information':
+            continue
+
+        if best_time is None or result['stats']['runtime'] < best_time:
+            best_time = result['stats']['runtime']
+            sim_best_time_name = result['simulator']
+
+        if best_mem is None or result['stats']['max_rss_bytes'] < best_mem:
+            best_mem = result['stats']['max_rss_bytes'] 
+            sim_best_mem_name = result['simulator']
+    
+    return sim_best_time_name, sim_best_mem_name
+
 
 def create_table_body(data):
     body = []
@@ -71,9 +98,13 @@ def create_table_body(data):
                                benchmark['equiv_circuit']['stats']['rz_gates']]
         
         body.append(" & ".join(map(str, circuit_stats + equiv_circuit_stats)))
+
+
+
+        sim_best_time_name, sim_best_mem_name = best_simulators(benchmark['results']) 
         
         for result in benchmark['results']:
-            body.append(" & " + format_result(result))
+            body.append(" & " + format_result(result, sim_best_time_name, sim_best_mem_name))
         
         body.append(" \\\\")
 
@@ -96,9 +127,41 @@ def process_file(file_path):
     with open(output_file, 'w') as f:
         f.write('\n'.join(table))
 
+def process_file_per_circuit(file_path):
+    data = load_json_data(file_path)
+    simulators = [SIMULATOR_NAMES[res['simulator']] if res['simulator'] in SIMULATOR_NAMES else res['simulator'] for res in data[0]['results']]
+
+    prev_benchmark = None
+
+    circuit_data = list()
+    for benchmark in data + [{'circuit': {'file': ''}}]:
+        curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
+        
+        if prev_benchmark is None or prev_benchmark == curr_benchmark:
+            circuit_data.append(benchmark)
+            prev_benchmark = curr_benchmark
+            continue
+
+        table = [
+            create_table_header(circuit_data, simulators),
+            create_table_body(circuit_data),
+            create_table_footer()
+        ]
+
+        output_file = os.path.join(os.path.dirname(file_path), f"{os.path.basename(file_path).split('.')[0]}_{prev_benchmark}.tex")
+        with open(output_file, 'w') as f:
+            f.write('\n'.join(table))
+
+
+        prev_benchmark = curr_benchmark
+        circuit_data = [benchmark]
+
 def main():
     for file in get_json_files():
-        process_file(file)
+        if re.search('ketgpt', file):
+            process_file_per_circuit(file)
+        else:
+            process_file(file)
 
 if __name__ == "__main__":
     main()

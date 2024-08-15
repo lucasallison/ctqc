@@ -1,0 +1,91 @@
+\begin{table}[htb]
+\centering
+\caption{Collection: QuokkaSharp Algorithm. Circuit types: transp and opt}
+\vspace{2mm}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\multirow{2}{*}{\bfseries Circuit Name} &
+\multirow{2}{*}{\bfseries \#Qubits} &
+\multicolumn{2}{|c|}{\bfseries transp} &
+\multicolumn{2}{|c|}{\bfseries opt} &
+\multicolumn{2}{|c|}{\bfseries Map} &
+\multicolumn{2}{|c|}{\bfseries Qiskit} &
+\multicolumn{2}{|c|}{\bfseries QCEC} &
+\multicolumn{2}{|c|}{\bfseries QuokkaSharp} \\
+\cline{3-14}
+& & \#$C$ & \#$Rz$ & \#$C$ & \#$Rz$& t(sec)&mem(mbs) & t(sec)&mem(mbs) & t(sec)&mem(mbs) & t(sec)&mem(mbs) \\
+\hline
+ & 
+2 & 5 & 0 & 3 & 1
+ & 0.0037 & \textcolor{red}4.1
+ & \textcolor{red}0.0029 & 75.6
+ & 0.0052 & 128.9
+ & 0.0049 & 13.3
+ \\
+Grover's Algorithm without Ancilla & 
+3 & 17 & 19 & 15 & 12
+ & \textcolor{red}0.0039 & \textcolor{red}4.4
+ & 0.0056 & 76.0
+ & 0.0115 & 152.4
+ & 0.0123 & 13.7
+ \\
+ & 
+4 & 71 & 92 & 69 & 62
+ & \textcolor{red}0.007 & \textcolor{red}4.6
+ & 0.0075 & 76.6
+ & 0.0102 & 157.3
+ & 0.5973 & 45.8
+ \\
+ & 
+5 & 206 & 264 & 204 & 191
+ & 0.0589 & \textcolor{red}6.0
+ & 0.0249 & 76.8
+ & \textcolor{red}0.0167 & 160.7
+ & - & -
+ \\
+ & 
+6 & 585 & 764 & 583 & 558
+ & 1.0371 & \textcolor{red}10.5
+ & 0.0641 & 77.4
+ & \textcolor{red}0.029 & 168.7
+ & - & -
+ \\
+ & 
+7 & 1762 & 1980 & 1760 & 1724
+ & - & -
+ & 0.1412 & \textcolor{red}79.2
+ & \textcolor{red}0.0484 & 176.6
+ & - & -
+ \\
+ & 
+8 & 4667 & 5008 & 4665 & 4610
+ & - & -
+ & 0.3345 & \textcolor{red}82.7
+ & \textcolor{red}0.0996 & 195.6
+ & - & -
+ \\
+ & 
+9 & 13932 & 14520 & 13930 & 13838
+ & - & -
+ & 1.0314 & \textcolor{red}97.9
+ & \textcolor{red}0.3091 & 262.7
+ & - & -
+ \\
+ & 
+10 & 39351 & 40290 & 39349 & 39204
+ & - & -
+ & - & -
+ & \textcolor{red}1.2334 & \textcolor{red}448.9
+ & - & -
+ \\
+ & 
+11 & 115514 & 117050 & 115512 & 115277
+ & - & -
+ & - & -
+ & - & -
+ & - & -
+ \\
+\hline
+\end{tabular}}
+\end{table}
