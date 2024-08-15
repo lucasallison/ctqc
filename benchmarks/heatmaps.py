@@ -10,13 +10,17 @@ def initialize_aggregates(simulators):
 def process_benchmark(benchmark, simulators, time_aggregates, memory_aggregates, circuits):
     if all('exception' in result for result in benchmark['results']):
         return
-
+    
     curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
     if not circuits or curr_benchmark != circuits[-1]:
         for simulator in simulators:
             time_aggregates[simulator].append(0)
             memory_aggregates[simulator].append(0)
         circuits.append(curr_benchmark)
+
+    for result in benchmark['results']:
+        if result.get('stats', {}).get('equivalence', '') == 'no_information':
+            del result['stats']
 
     benchmark_times = [(result['simulator'], result.get('stats', {}).get('runtime', float('inf'))) for result in benchmark['results']]
     benchmark_mem = [(result['simulator'], result.get('stats', {}).get('max_rss_bytes', float('inf'))) for result in benchmark['results']]

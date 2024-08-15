@@ -35,6 +35,10 @@ def create_table_header(data, simulators):
 def format_result(result):
     if 'exception' in result:
         return "- & -" if result['exception'] == 'Timeout' else "E & E"
+
+    if result.get('stats', {}).get('equivalence', '') == 'no_information':
+        return "N & N "
+    
     time = round(result['stats']['runtime'], 4)
     mem = round(result['stats']['max_rss_bytes'] / (1024 * 1024), 1)
     return f"{time} & {mem}"
