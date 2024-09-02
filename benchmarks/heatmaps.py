@@ -49,7 +49,7 @@ def create_heatmap(data, xticklabels, yticklabels, title, xlabel, ylabel):
     ax.set_ylabel(ylabel)
     return ax
 
-def save_heatmap(ax, filename):
+def save_heatmap(filename):
     plt.savefig(filename, bbox_inches="tight")
     plt.close()
 
@@ -98,12 +98,12 @@ def main():
         # Time heatmap
         ax = create_heatmap(time_heatmap_data, simulators_full, circuits_full, 'Time', 'Implementations', 'Circuits')
         time_heatmap_file = os.path.join(dirname, f"{file_name}_time_heatmap.png")
-        save_heatmap(ax, time_heatmap_file)
+        save_heatmap(time_heatmap_file)
 
         # Memory heatmap
         ax = create_heatmap(mem_heatmap_data, simulators_full, circuits_full, 'Memory', 'Implementations', 'Circuits')
         mem_heatmap_file = os.path.join(dirname, f"{file_name}_mem_heatmap.png")
-        save_heatmap(ax, mem_heatmap_file)
+        save_heatmap(mem_heatmap_file)
 
         # Generate and save Latex figure
         simulator_set = dirname.split('/')[2]

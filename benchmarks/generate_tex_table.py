@@ -5,7 +5,7 @@ from utils import CIRCUIT_NAMES_FULL, SIMULATOR_NAMES, get_json_files, load_json
 def get_circuit_type(data, key):
     return data[0][key]['file'].split('/')[-2]
 
-def create_table_header(data, simulators):
+def create_table_header(data, simulators, benchmark_name):
     circ_type = get_circuit_type(data, 'circuit')
     equiv_circ_type = get_circuit_type(data, 'equiv_circuit')
     n_cols = 6 + 2 * len(simulators)
@@ -13,7 +13,7 @@ def create_table_header(data, simulators):
     header = [
         "\\begin{table}[htb]",
         "\\centering",
-        f"\\caption{{Collection: QuokkaSharp Algorithm. Circuit types: {circ_type} and {equiv_circ_type}}}",
+        f"\\caption{{Collection: {benchmark_name}. Circuit types: {circ_type} and {equiv_circ_type}}}",
         "\\vspace{2mm}",
         "\\resizebox{\\textwidth}{!}{",
         f"\\begin{{tabular}}{{{'|'+ n_cols * 'c|'}}}",
@@ -42,8 +42,8 @@ def format_result(result, sim_best_time_name, sim_best_mem_name):
     
     time = round(result['stats']['runtime'], 4)
     mem = round(result['stats']['max_rss_bytes'] / (1024 * 1024), 1)
-    time_table_entry =  f"\\textcolor{{green}}{time}" if result['simulator'] == sim_best_time_name else time 
-    mem_table_entry =  f"\\textcolor{{green}}{mem}" if result['simulator'] == sim_best_mem_name else mem
+    time_table_entry =  f"\\textcolor{{green}}{{{time}}}" if result['simulator'] == sim_best_time_name else time 
+    mem_table_entry =  f"\\textcolor{{green}}{{{mem}}}" if result['simulator'] == sim_best_mem_name else mem
     return f"{time_table_entry} & {mem_table_entry}"
 
 def best_simulators(results) -> Tuple[str, str]:
@@ -99,8 +99,6 @@ def create_table_body(data):
         
         body.append(" & ".join(map(str, circuit_stats + equiv_circuit_stats)))
 
-
-
         sim_best_time_name, sim_best_mem_name = best_simulators(benchmark['results']) 
         
         for result in benchmark['results']:
@@ -113,12 +111,12 @@ def create_table_body(data):
 def create_table_footer():
     return "\\hline\n\\end{tabular}}\n\\end{table}"
 
-def process_file(file_path):
+def process_file(file_path, benchmark_name):
     data = load_json_data(file_path)
     simulators = [SIMULATOR_NAMES[res['simulator']] if res['simulator'] in SIMULATOR_NAMES else res['simulator'] for res in data[0]['results']]
     
     table = [
-        create_table_header(data, simulators),
+        create_table_header(data, simulators, benchmark_name),
         create_table_body(data),
         create_table_footer()
     ]
@@ -127,41 +125,51 @@ def process_file(file_path):
     with open(output_file, 'w') as f:
         f.write('\n'.join(table))
 
-def process_file_per_circuit(file_path):
+def all_timedout(benchmark):
+    for result in benchmark['results']:
+        if 'exception' not in result:
+            return False
+    return True
+
+def split_results_table(file_path, benchmark_name):
     data = load_json_data(file_path)
     simulators = [SIMULATOR_NAMES[res['simulator']] if res['simulator'] in SIMULATOR_NAMES else res['simulator'] for res in data[0]['results']]
 
-    prev_benchmark = None
+    MAX_TABLE_SIZE = 60
+    split = 0
 
     circuit_data = list()
-    for benchmark in data + [{'circuit': {'file': ''}}]:
-        curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
-        
-        if prev_benchmark is None or prev_benchmark == curr_benchmark:
-            circuit_data.append(benchmark)
-            prev_benchmark = curr_benchmark
+    for benchmark in data + [None]:
+
+        if len(circuit_data) < MAX_TABLE_SIZE and benchmark is not None:
+            
+            # Only store benchmarks that did not time-out
+            if not all_timedout(benchmark):
+                circuit_data.append(benchmark)
+
             continue
 
+        if len(circuit_data) == MAX_TABLE_SIZE:
+            split += 1
+
         table = [
-            create_table_header(circuit_data, simulators),
+            create_table_header(circuit_data, simulators, benchmark_name),
             create_table_body(circuit_data),
             create_table_footer()
         ]
 
-        output_file = os.path.join(os.path.dirname(file_path), f"{os.path.basename(file_path).split('.')[0]}_{prev_benchmark}.tex")
+        output_file = os.path.join(os.path.dirname(file_path), f"{os.path.basename(file_path).split('.')[0]}_{split}.tex")
         with open(output_file, 'w') as f:
             f.write('\n'.join(table))
 
-
-        prev_benchmark = curr_benchmark
         circuit_data = [benchmark]
 
 def main():
     for file in get_json_files():
         if re.search('ketgpt', file):
-            process_file_per_circuit(file)
+            split_results_table(file, 'KetGPT')
         else:
-            process_file(file)
+            process_file(file, 'QuaokkaSharp')
 
 if __name__ == "__main__":
     main()
