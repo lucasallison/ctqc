@@ -38,6 +38,10 @@ SIMULATOR_NAMES = {'CTQC_map': 'Map',
 
 
 def rankmin(x):
+    """
+    Takes in a list of numbers and returns a list of their ranks. Example:
+    [7,2,5] -> [2,0,1]
+    """
     _, inv, counts = np.unique(x, return_inverse=True, return_counts=True)
     csum = np.zeros_like(counts)
     csum[1:] = counts[:-1].cumsum()
