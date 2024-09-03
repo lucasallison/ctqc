@@ -1,0 +1,6 @@
+qiskit
+psutil
+qiskit-aer
+mqt.qcec
+quokka_sharp
+python-dotenv
