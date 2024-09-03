@@ -16,7 +16,7 @@ For large circuits it can be useful to add the `-p` flag, which will print a pro
 cargo run --release -- --help
 ```
 
-The base directory contains an example circuits with random gates. To experiment with the usage of the tool this circuit can be used. For example, by checking trivial equivalence: 
+The base directory contains an example circuit with random gates. To experiment with the usage of the tool this circuit can be used. For example, by checking trivial equivalence: 
 
 ```
 cargo run --release -- -f example.ctqc -e example.ctqc -p
