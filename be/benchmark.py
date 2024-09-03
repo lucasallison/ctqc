@@ -12,10 +12,13 @@ from pathlib import Path
 from tools.logger import Logger
 from tools.utils import natural_keys, kill_process_tree, find_file
 from simulators.interface import Simulator
+from qiskit import qasm3, QuantumCircuit
+
 
 def circuit_stats(circuit: str) -> Dict:
-
-    from qiskit import qasm3, QuantumCircuit
+    """
+    Returns the number of qubits, Clifford gates and Rz gates in a circuit. 
+    """
     
     qc = QuantumCircuit.from_qasm_file(circuit)
     qasm_circuit = qasm3.dumps(qc)
@@ -69,6 +72,56 @@ def simulate(
     except Exception as e:
         result.put(e)
 
+def execute_simulation(circuit_benchmark_results: Dict, 
+                       simulator: Simulator, circuit: str, 
+                       equiv_circuit: str, 
+                       timedout: bool, 
+                       timeout: int, 
+                       logger: Logger):
+    """
+    Executes a simulation or equivalence check on a circuit using a simulator and stores the results 
+    in the provided dictionary.
+    """
+
+    circuit_benchmark_results['results'].append({
+        'simulator': simulator.name(),
+    })
+
+    if timedout[simulator.name()]:
+        logger.log(f"{simulator.name()}: Timeout", logging.INFO)
+        circuit_benchmark_results['results'][-1]['exception'] = 'Timeout'
+        return
+
+    result = Queue()
+    p = Process(target=simulate, args=(
+        simulator, circuit, equiv_circuit, result))
+    p.start()
+    p.join(timeout)
+
+    if p.is_alive():
+        kill_process_tree(p.pid)
+        logger.log(f"{simulator.name()}: Timeout", logging.INFO)
+        circuit_benchmark_results['results'][-1]['exception'] = 'Timeout'
+        timedout[simulator.name()] = True
+        return
+
+    result = result.get()
+    if isinstance(result, Exception):
+        logger.log(
+            f"{simulator.name()}: Exception - {result}",
+            logging.ERROR)
+        circuit_benchmark_results['results'][-1]['exception'] = str(result)
+        return
+
+    if not isinstance(result, dict):
+        exception = f"{simulator.name()}: Exception - The simulation or equivalence check did not return a dictionary"
+        logger.log(exception)
+        circuit_benchmark_results['results'][-1]['exception'] = exception
+        return
+
+    logger.log( f"{simulator.name()}: benchmarked {circuit} successfully")
+    circuit_benchmark_results['results'][-1]['stats'] = result
+
 
 def benchmark(circuit_dir: str,
               equiv_circuit_dir: str,
@@ -116,7 +169,6 @@ def benchmark(circuit_dir: str,
                 timedout[simulator.name()] = False
         
         prev_circ_name = circ_name
-    
 
         circuit_benchmark_results = {
             'circuit': {
@@ -143,45 +195,7 @@ def benchmark(circuit_dir: str,
 
         circuit_benchmark_results['results'] = list()
         for simulator in simulators:
-
-            circuit_benchmark_results['results'].append({
-                'simulator': simulator.name(),
-            })
-
-            if timedout[simulator.name()]:
-                logger.log(f"{simulator.name()}: Timeout", logging.INFO)
-                circuit_benchmark_results['results'][-1]['exception'] = 'Timeout'
-                continue
-
-            result = Queue()
-            p = Process(target=simulate, args=(
-                simulator, circuit, equiv_circuit, result))
-            p.start()
-            p.join(timeout)
-
-            if p.is_alive():
-                kill_process_tree(p.pid)
-                logger.log(f"{simulator.name()}: Timeout", logging.INFO)
-                circuit_benchmark_results['results'][-1]['exception'] = 'Timeout'
-                timedout[simulator.name()] = True
-                continue
-
-            result = result.get()
-            if isinstance(result, Exception):
-                logger.log(
-                    f"{simulator.name()}: Exception - {result}",
-                    logging.ERROR)
-                circuit_benchmark_results['results'][-1]['exception'] = str(result)
-                continue
-
-            if not isinstance(result, dict):
-                exception = f"{simulator.name()}: Exception - The simulation or equivalence check did not return a dictionary"
-                logger.log(exception)
-                circuit_benchmark_results['results'][-1]['exception'] = exception
-                continue
-
-            logger.log( f"{simulator.name()}: benchmarked {circuit} successfully")
-            circuit_benchmark_results['results'][-1]['stats'] = result
+            execute_simulation(circuit_benchmark_results, simulator, circuit, equiv_circuit, timedout, timeout, logger)
 
         # Write temporary results
         results_tmp_file = os.path.join(results_dir, f"{benchmark_name}_results.tmp")

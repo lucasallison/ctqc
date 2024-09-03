@@ -1,7 +1,3 @@
-# QBench
-
-Extensible repository to easily benchmark quantum simulators and equivalence verifiers.
-
 ## transpiler.py
 
 Contains a class that can be used to transpile and optimize qasm circuits. The script can be run directly as follows:
