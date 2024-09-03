@@ -145,8 +145,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.005362987518310547,
-          "max_rss_bytes": 5455872
+          "runtime": 0.005927085876464844,
+          "max_rss_bytes": 4947968
         }
       }
     ],
@@ -197,8 +197,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.008680343627929688,
-          "max_rss_bytes": 5881856
+          "runtime": 0.011754035949707031,
+          "max_rss_bytes": 5570560
         }
       }
     ],
@@ -249,8 +249,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.00786900520324707,
-          "max_rss_bytes": 5767168
+          "runtime": 0.010694742202758789,
+          "max_rss_bytes": 5570560
         }
       }
     ],
@@ -301,8 +301,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.004110813140869141,
-          "max_rss_bytes": 5472256
+          "runtime": 0.0048580169677734375,
+          "max_rss_bytes": 5406720
         }
       }
     ],
@@ -353,8 +353,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.004712104797363281,
-          "max_rss_bytes": 5128192
+          "runtime": 0.005546092987060547,
+          "max_rss_bytes": 5406720
         }
       }
     ],
@@ -405,8 +405,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.0049839019775390625,
-          "max_rss_bytes": 5734400
+          "runtime": 0.006828784942626953,
+          "max_rss_bytes": 5668864
         }
       }
     ],
@@ -457,8 +457,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.007990598678588867,
-          "max_rss_bytes": 5668864
+          "runtime": 0.007050037384033203,
+          "max_rss_bytes": 5259264
         }
       }
     ],
@@ -509,8 +509,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.01306295394897461,
-          "max_rss_bytes": 6012928
+          "runtime": 0.011771202087402344,
+          "max_rss_bytes": 5636096
         }
       }
     ],
@@ -561,8 +561,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.019736766815185547,
-          "max_rss_bytes": 6225920
+          "runtime": 0.013590097427368164,
+          "max_rss_bytes": 5636096
         }
       }
     ],
@@ -611,7 +611,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 6.08764386177063,
+          "max_rss_bytes": 82640896
+        }
       }
     ],
     "equiv_circuit": {
@@ -661,8 +665,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 10.274384021759033,
-          "max_rss_bytes": 443678720
+          "runtime": 1.3660027980804443,
+          "max_rss_bytes": 26607616
         }
       }
     ],
@@ -713,8 +717,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.02822709083557129,
-          "max_rss_bytes": 6471680
+          "runtime": 0.0074002742767333984,
+          "max_rss_bytes": 4849664
         }
       }
     ],
@@ -765,8 +769,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 1.8471739292144775,
-          "max_rss_bytes": 37240832
+          "runtime": 0.813378095626831,
+          "max_rss_bytes": 6422528
         }
       }
     ],
@@ -815,7 +819,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 14.86389970779419,
+          "max_rss_bytes": 12648448
+        }
       }
     ],
     "equiv_circuit": {
@@ -913,8 +921,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 2.7661938667297363,
-          "max_rss_bytes": 38338560
+          "runtime": 0.9315099716186523,
+          "max_rss_bytes": 6717440
         }
       }
     ],
@@ -963,7 +971,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 39.280555963516235,
+          "max_rss_bytes": 37486592
+        }
       }
     ],
     "equiv_circuit": {
@@ -1049,8 +1061,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 3.8995959758758545,
-          "max_rss_bytes": 88293376
+          "runtime": 0.8583860397338867,
+          "max_rss_bytes": 7880704
         }
       }
     ],
@@ -1101,8 +1113,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 26.133383989334106,
-          "max_rss_bytes": 312410112
+          "runtime": 10.850579977035522,
+          "max_rss_bytes": 22528000
         }
       }
     ],
@@ -1201,8 +1213,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 1.439188003540039,
-          "max_rss_bytes": 36585472
+          "runtime": 0.22846221923828125,
+          "max_rss_bytes": 6291456
         }
       }
     ],
@@ -1349,8 +1361,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.17594623565673828,
-          "max_rss_bytes": 7143424
+          "runtime": 0.0456082820892334,
+          "max_rss_bytes": 5095424
         }
       }
     ],
@@ -1401,8 +1413,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 3.716625928878784,
-          "max_rss_bytes": 32096256
+          "runtime": 0.8874571323394775,
+          "max_rss_bytes": 6455296
         }
       }
     ],
@@ -1451,7 +1463,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 12.033021926879883,
+          "max_rss_bytes": 21790720
+        }
       }
     ],
     "equiv_circuit": {
@@ -1501,8 +1517,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.28771495819091797,
-          "max_rss_bytes": 7192576
+          "runtime": 0.06405901908874512,
+          "max_rss_bytes": 5292032
         }
       }
     ],
@@ -1553,8 +1569,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 5.602264165878296,
-          "max_rss_bytes": 56852480
+          "runtime": 0.9592609405517578,
+          "max_rss_bytes": 6373376
         }
       }
     ],
@@ -1603,7 +1619,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 15.627465963363647,
+          "max_rss_bytes": 21004288
+        }
       }
     ],
     "equiv_circuit": {
@@ -1653,8 +1673,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.04885411262512207,
-          "max_rss_bytes": 7929856
+          "runtime": 0.018553972244262695,
+          "max_rss_bytes": 5308416
         }
       }
     ],
@@ -1705,8 +1725,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 3.090317726135254,
-          "max_rss_bytes": 16384000
+          "runtime": 5.230594158172607,
+          "max_rss_bytes": 14925824
         }
       }
     ],
@@ -1757,8 +1777,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.11089897155761719,
-          "max_rss_bytes": 8699904
+          "runtime": 0.04250693321228027,
+          "max_rss_bytes": 5505024
         }
       }
     ],
@@ -2349,8 +2369,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 13.90827202796936,
-          "max_rss_bytes": 90816512
+          "runtime": 4.152055025100708,
+          "max_rss_bytes": 8798208
         }
       }
     ],
@@ -2399,7 +2419,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 46.03883695602417,
+          "max_rss_bytes": 21135360
+        }
       }
     ],
     "equiv_circuit": {
@@ -2497,8 +2521,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.28125596046447754,
-          "max_rss_bytes": 9895936
+          "runtime": 0.08788585662841797,
+          "max_rss_bytes": 5242880
         }
       }
     ],
@@ -2549,8 +2573,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 7.0075719356536865,
-          "max_rss_bytes": 65519616
+          "runtime": 1.83890700340271,
+          "max_rss_bytes": 8290304
         }
       }
     ],
@@ -2757,8 +2781,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.009022951126098633,
-          "max_rss_bytes": 4669440
+          "runtime": 0.0048830509185791016,
+          "max_rss_bytes": 4456448
         }
       }
     ],
@@ -2807,7 +2831,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 0.7802841663360596,
+          "max_rss_bytes": 9142272
+        }
       }
     ],
     "equiv_circuit": {
@@ -3001,8 +3029,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.3818519115447998,
-          "max_rss_bytes": 9928704
+          "runtime": 0.05115985870361328,
+          "max_rss_bytes": 4947968
         }
       }
     ],
@@ -3051,7 +3079,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 9.5640230178833,
+          "max_rss_bytes": 35651584
+        }
       }
     ],
     "equiv_circuit": {
@@ -3257,8 +3289,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.06822609901428223,
-          "max_rss_bytes": 7880704
+          "runtime": 0.016814231872558594,
+          "max_rss_bytes": 5046272
         }
       }
     ],
@@ -3307,7 +3339,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 2.118314027786255,
+          "max_rss_bytes": 16662528
+        }
       }
     ],
     "equiv_circuit": {
@@ -3355,7 +3391,11 @@
       },
       {
         "simulator": "CTQC_ptrees",
-        "exception": "Timeout"
+        "stats": {
+          "equivalent": false,
+          "runtime": 36.76772403717041,
+          "max_rss_bytes": 129974272
+        }
       }
     ],
     "equiv_circuit": {
@@ -3405,8 +3445,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 0.06124591827392578,
-          "max_rss_bytes": 6438912
+          "runtime": 0.03141188621520996,
+          "max_rss_bytes": 5521408
         }
       }
     ],
@@ -3457,8 +3497,8 @@
         "simulator": "CTQC_ptrees",
         "stats": {
           "equivalent": false,
-          "runtime": 9.84017300605774,
-          "max_rss_bytes": 179601408
+          "runtime": 17.848496198654175,
+          "max_rss_bytes": 58081280
         }
       }
     ],
