@@ -76,6 +76,7 @@ def create_table_body(data):
     add_circ_name = False
 
     for benchmark in data:
+
         curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
         
         if prev_benchmark is None or curr_benchmark != prev_benchmark:
@@ -148,8 +149,8 @@ def split_results_table(file_path, benchmark_name):
                 circuit_data.append(benchmark)
 
             continue
-
-        if len(circuit_data) == MAX_TABLE_SIZE:
+    
+        if len(circuit_data) == MAX_TABLE_SIZE or benchmark is None:
             split += 1
 
         table = [
@@ -168,7 +169,8 @@ def main():
     for file in get_json_files():
         if re.search('ketgpt', file):
             split_results_table(file, 'KetGPT')
-        else:
+
+        if re.search('qsharp', file):
             process_file(file, 'QuaokkaSharp')
 
 if __name__ == "__main__":

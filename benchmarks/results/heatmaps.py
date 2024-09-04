@@ -1,4 +1,5 @@
 import os
+import re 
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -9,6 +10,9 @@ def initialize_aggregates(simulators):
 
 def process_benchmark(benchmark, simulators, time_aggregates, memory_aggregates, circuits):
     if all('exception' in result for result in benchmark['results']):
+        return
+    
+    if int(benchmark['circuit']['stats']['n_qubits']) <= 5:
         return
     
     curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
@@ -81,7 +85,10 @@ def save_latex_figure(tex_figure, filename):
 def main():
     files = get_json_files()
     for file in files:
-        data = load_json_data(file)
+
+        if not re.search('ketgpt', file) and not re.search('qsharp', file):
+            continue
+
         simulators = [res['simulator'] for res in data[0]['results']]
         time_aggregates, memory_aggregates = initialize_aggregates(simulators)
         circuits = []
