@@ -7,6 +7,7 @@ import pandas as pd
 from tqdm import tqdm
 from utils import get_json_files, load_json_data
 from heatmaps import initialize_aggregates, process_benchmark, prepare_heatmap_data
+from config import CIRCUIT_NAMES_COMPACT
 from qiskit import qasm3, QuantumCircuit
 from scipy.stats import entropy
 
@@ -76,23 +77,81 @@ def calc_clif_percentage(benchmark):
 
 def clif_percentage_plot(df, benchmark_name, out_dir):
 
-
-    new_index_name = {index: index + f' ({clif_percentage}%)'  for (index, clif_percentage) in zip(df.index, df['clif_percentage'])}
+    new_index_name = {index: index + f' ({int(clif_percentage)}%)'  for (index, clif_percentage) in zip(df.index, df['clif_percentage'])}
     df = df.rename(index = new_index_name)
     df = df.sort_values(by='clif_percentage')
     df = df.drop(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit'], axis=1)
-    print(df)
 
-    _, ax = plt.subplots()
+    _, ax = plt.subplots(figsize=(5, 2))
     sns.lineplot(data=df, ax=ax, markers=True)
-    ax.set_xlabel('Percentage of clifford gates')
-    ax.set_ylabel('Ranking')
+    ax.set_xlabel('Algorithm (Average Clifford gate percentage)')
+    ax.set_ylabel('Relative time \nperformance')
     ax.set_yticks([i for i in range(1, len(df.columns) + 1)])
     ax.set_yticklabels([i for i in range(1, len(df.columns) + 1)])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.xticks(rotation=90)
     plt.savefig(os.path.join(out_dir, benchmark_name+"_clif_percentage_plot.png"), bbox_inches="tight")
     plt.close()
 
+
+def max_qubit_plot(df, benchmark_name, out_dir):
+    _, ax = plt.subplots(figsize=(5, 5))
+    sns.lineplot(data=df, ax=ax, markers=True)
+    ax.set_xlabel('Algorithm ')
+    ax.set_ylabel('Maximum #Qubits ')
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    plt.xticks(rotation=90)
+    plt.savefig(os.path.join(out_dir, benchmark_name+"_max_attainable_qubit_plot.png"), bbox_inches="tight")
+    plt.close()
+
+
+def circuit_properties_tex_table(df): 
+
+    df = df.drop(columns=['Map', 'Qiskit', 'QCEC', 'QuokkaSharp'], axis=1)     
+    
+    headers = ['circuit'] + list(df.columns)
+
+    table = "\\begin{center} \n"
+    table += f"\\begin{{tabular}}{{ |{'|'.join('c'*len(headers))}| }} \n"
+    table += "\hline \n"
+    table += "&".join('\\textbf{' + header + '}' for header in headers) + " \\\\ \n"
+    table += "\hline \n \hline \n"
+
+    for index, row in df.iterrows():
+        table += str(index) + '&' + '&'.join(str(val) for val in row) + " \\\\ \n"
+        table += "\hline \n"
+    
+    table += "\end{tabular} \n"
+    table += "\end{center} \n"
+    print(table)
+
+def update_max_qubit_table(benchmark, circuits, simulators, max_qubit_df):
+
+    qubit = int(benchmark['circuit']['stats']['n_qubits'])
+    curr_benchmark_full = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
+    curr_benchmark = CIRCUIT_NAMES_COMPACT.get(curr_benchmark_full, curr_benchmark_full)
+
+    if not circuits or curr_benchmark != max_qubit_df.index[-1]:
+        max_qubit_df.loc[curr_benchmark] = [0] * (len(simulators) + 1)
+
+    for result in benchmark['results']:
+        if result.get('stats', {}).get('equivalence', '') == 'no_information':
+            del result['stats']
+
+        if 'stats' in result:
+            max_qubit_df.loc[curr_benchmark, result['simulator']] = max(max_qubit_df.loc[curr_benchmark, result['simulator']], qubit)
+
+    max_qubit_df.loc[curr_benchmark, 'highest_n_qubit'] = max(max_qubit_df.loc[curr_benchmark, 'highest_n_qubit'], int(benchmark['circuit']['stats']['n_qubits']))
+
+def print_tex_table_body(df):
+    print('* Headers:')
+    print('Index & ' + ' & '.join(df.columns))
+    print('* Body:')
+    table_body = ""
+    for index, row in df.iterrows():
+        table_body += str(index) + '&' + '&'.join(str(val) for val in row) + " \\\\ \n"
+        table_body += "\hline \n"
+    print(table_body)
 
 def main():
     files = get_json_files()
@@ -108,14 +167,19 @@ def main():
         cum_clif_percentage = []
         cum_rz_entropy = []
         cum_gates_per_qubit = []
+        max_qubit_df = pd.DataFrame(columns=['highest_n_qubit']+simulators)
 
         for benchmark in tqdm(data):
+
+            update_max_qubit_table(benchmark, circuits, simulators, max_qubit_df)
+
             if all('exception' in result for result in benchmark['results']):
                 continue
 
             circuit = benchmark['circuit']['file']
             equiv_circuit = benchmark['equiv_circuit']['file']
             curr_benchmark = circuit.split('/')[-1].split('.')[0].split('_')[0]
+            curr_benchmark = CIRCUIT_NAMES_COMPACT.get(curr_benchmark, curr_benchmark)
 
             if not circuits or curr_benchmark != circuits[-1]:
                 cum_clif_percentage.append((calc_clif_percentage(benchmark), 1))
@@ -129,17 +193,26 @@ def main():
             process_benchmark(benchmark, simulators, time_aggregates, memory_aggregates, circuits)
         
         time_heatmap_data, circuits_full, simulators_full = prepare_heatmap_data(time_aggregates, circuits, simulators)
-        avg_clif_percentage = [int(c[0] * 100 // c[1]) for c in cum_clif_percentage]
+        avg_clif_percentage = [round(c[0] * 100 / c[1], 1) for c in cum_clif_percentage]
         avg_rz_entropy = [round(c[0] / c[1], 2) for c in cum_rz_entropy]
-        avg_gates_per_qubit = [int(c[0] / c[1]) for c in cum_gates_per_qubit] 
-        
+        avg_gates_per_qubit = [round(c[0] / c[1], 1) for c in cum_gates_per_qubit] 
+
         df = pd.DataFrame(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit']+simulators_full)
         for i, circuit in enumerate(circuits_full):
             df.loc[circuit] = [avg_clif_percentage[i], avg_rz_entropy[i], avg_gates_per_qubit[i]] + [time_heatmap_data[i][j] + 1 for j in range(len(simulators_full))]
 
+        clif_percentage_plot(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
+        max_qubit_plot(max_qubit_df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
+
         df = df.sort_values(by='Map')
         print(df)
-        clif_percentage_plot(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
+
+        circuit_properties_df = df.drop(columns=['Map', 'Qiskit', 'QCEC', 'QuokkaSharp'], axis=1)     
+        print_tex_table_body(circuit_properties_df)
+        print_tex_table_body(max_qubit_df)
+
+
+        
 
 
 if __name__ == "__main__":
