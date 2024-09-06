@@ -74,7 +74,14 @@ def calc_clif_percentage(benchmark):
     return (c_clif_gates + ec_clif_gates) / (c_total_gates + ec_total_gates)
 
 
-def plot_results(df, benchmark_name, out_dir):
+def clif_percentage_plot(df, benchmark_name, out_dir):
+
+
+    new_index_name = {index: index + f' ({clif_percentage}%)'  for (index, clif_percentage) in zip(df.index, df['clif_percentage'])}
+    df = df.rename(index = new_index_name)
+    df = df.sort_values(by='clif_percentage')
+    df = df.drop(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit'], axis=1)
+    print(df)
 
     _, ax = plt.subplots()
     sns.lineplot(data=df, ax=ax, markers=True)
@@ -103,7 +110,7 @@ def main():
         cum_gates_per_qubit = []
 
         for benchmark in tqdm(data):
-            if all('exception' in result for result in benchmark['results']) or int(benchmark['circuit']['stats']['n_qubits']) <= 5:
+            if all('exception' in result for result in benchmark['results']):
                 continue
 
             circuit = benchmark['circuit']['file']
@@ -128,13 +135,11 @@ def main():
         
         df = pd.DataFrame(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit']+simulators_full)
         for i, circuit in enumerate(circuits_full):
-            # df.loc[circuit + f" ({avg_clif_percentage[i]}%)"] = [avg_clif_percentage[i]] + [time_heatmap_data[i][j] + 1 for j in range(len(simulators_full))]
             df.loc[circuit] = [avg_clif_percentage[i], avg_rz_entropy[i], avg_gates_per_qubit[i]] + [time_heatmap_data[i][j] + 1 for j in range(len(simulators_full))]
 
         df = df.sort_values(by='Map')
         print(df)
-        # df = df.drop(columns=['clif_percentage'], axis=1)
-        # plot_results(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
+        clif_percentage_plot(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
 
 
 if __name__ == "__main__":

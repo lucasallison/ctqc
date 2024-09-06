@@ -3,18 +3,16 @@ import re
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils import BASE_DIR, CIRCUIT_NAMES_FULL, SIMULATOR_NAMES, rankmin, get_json_files, load_json_data
+from utils import rankmin, get_json_files, load_json_data
+from config import BASE_DIR, CIRCUIT_NAMES_COMPACT, SIMULATOR_NAMES, MIN_QUBITS
 
 def initialize_aggregates(simulators):
     return {simulator: [] for simulator in simulators}, {simulator: [] for simulator in simulators}
 
 def process_benchmark(benchmark, simulators, time_aggregates, memory_aggregates, circuits):
-    if all('exception' in result for result in benchmark['results']):
+    if all('exception' in result for result in benchmark['results']) or int(benchmark['circuit']['stats']['n_qubits']) <= MIN_QUBITS:
         return
-    
-    if int(benchmark['circuit']['stats']['n_qubits']) <= 5:
-        return
-    
+
     curr_benchmark = benchmark['circuit']['file'].split('/')[-1].split('.')[0].split('_')[0]
     if not circuits or curr_benchmark != circuits[-1]:
         for simulator in simulators:
@@ -32,21 +30,29 @@ def process_benchmark(benchmark, simulators, time_aggregates, memory_aggregates,
     update_aggregates(benchmark_times, time_aggregates)
     update_aggregates(benchmark_mem, memory_aggregates)
 
+
 def update_aggregates(benchmark_data, aggregates):
     benchmark_data.sort(key=lambda x: x[1])
+    ranking = 0
     for pos, (simulator, value) in enumerate(benchmark_data):
         if pos > 0 and value != benchmark_data[pos-1][1]:
-            pos += 1
-        aggregates[simulator][-1] += pos
+            ranking += 1
+        aggregates[simulator][-1] += ranking
 
 def prepare_heatmap_data(aggregates, circuits, simulators):
     heatmap_data = np.array([t for t in aggregates.values()]).T
     for i in range(len(heatmap_data)):
         heatmap_data[i] = rankmin(heatmap_data[i])
-    return heatmap_data, [CIRCUIT_NAMES_FULL[c] if c in CIRCUIT_NAMES_FULL else c for c in circuits], [SIMULATOR_NAMES[s] if s in SIMULATOR_NAMES else s for s in simulators]
+    return heatmap_data, [CIRCUIT_NAMES_COMPACT[c] if c in CIRCUIT_NAMES_COMPACT else c for c in circuits], [SIMULATOR_NAMES[s] if s in SIMULATOR_NAMES else s for s in simulators]
 
 def create_heatmap(data, xticklabels, yticklabels, title, xlabel, ylabel):
-    ax = sns.heatmap(data, linewidth=0.5, cbar=False, cmap="RdYlGn_r", xticklabels=xticklabels, yticklabels=yticklabels)
+    plt.figure(figsize=(3, 5))
+    ax = sns.heatmap(data, 
+                     linewidth=0.5, 
+                     cbar=False, 
+                     cmap="RdYlGn_r", 
+                     xticklabels=xticklabels, 
+                     yticklabels=yticklabels)
     if title is not None:
         ax.set_title(title)
     ax.set_xlabel(xlabel)
@@ -86,9 +92,10 @@ def main():
     files = get_json_files()
     for file in files:
 
-        if not re.search('ketgpt', file) and not re.search('qsharp', file):
+        if not re.search('ketgpt', file) and not re.search('qsharp/all/algorithm/qsharp_algorithm_origin_opt', file):
             continue
 
+        data = load_json_data(file)
         simulators = [res['simulator'] for res in data[0]['results']]
         time_aggregates, memory_aggregates = initialize_aggregates(simulators)
         circuits = []
@@ -98,6 +105,7 @@ def main():
         
         time_heatmap_data, circuits_full, simulators_full = prepare_heatmap_data(time_aggregates, circuits, simulators)
         mem_heatmap_data, _, _ = prepare_heatmap_data(memory_aggregates, circuits, simulators)
+
 
         dirname = os.path.dirname(file)
         file_name = os.path.basename(file).split('.')[0]
