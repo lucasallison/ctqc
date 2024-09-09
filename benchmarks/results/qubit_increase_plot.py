@@ -6,15 +6,17 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from typing import List
 from matplotlib.ticker import MaxNLocator
-from utils import CIRCUIT_NAMES_FULL, SIMULATOR_NAMES, get_json_files, load_json_data
+from utils import get_json_files, load_json_data
+from config import CIRCUIT_NAMES_COMPACT, SIMULATOR_NAMES
 
-def plot_results(results_df, circuit_name, out_dir):
+def plot_results(results_df, circuit_name, out_dir, time_plot):
 
-    _, ax = plt.subplots()
+    _, ax = plt.subplots(figsize=(5, 2))
     sns.lineplot(data=results_df, ax=ax)
-    ax.set_title(CIRCUIT_NAMES_FULL.get(circuit_name, circuit_name))
-    ax.set_xlabel('Qubits')
-    ax.set_ylabel('Runtime (seconds)')
+    ax.set_title(f"{'Runtimes' if time_plot else 'Memory usage'} for the {CIRCUIT_NAMES_COMPACT.get(circuit_name, circuit_name)} circuits")
+    ax.set_xlabel('#Qubits')
+    ax.set_ylabel('Runtime (seconds)' if time_plot else 'Max. RSS (bytes)')
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     
     indices = list(results_df.index.values)
     if len(indices) > 20:
@@ -22,13 +24,15 @@ def plot_results(results_df, circuit_name, out_dir):
         ax.set_xticks(xticks_positions)
         ax.set_xticklabels([indices[i] for i in xticks_positions])
 
-    plt.savefig(os.path.join(out_dir, circuit_name+"_qubit_increase.png"), bbox_inches="tight")
+    time_plot_str = "time" if time_plot else "memory"
+    plt.savefig(os.path.join(out_dir, circuit_name+"_qubit_increase_"+time_plot_str+".png"), bbox_inches="tight")
     plt.close()
 
 
 def process_benchmark(data, simulators: List, out_dir: str):
 
-    results_df = None
+    time_results_df = None
+    mem_results_df = None
     prev_circuit = None
     for benchmark in data:
 
@@ -42,24 +46,31 @@ def process_benchmark(data, simulators: List, out_dir: str):
         # Plot previous benchmark results
         if curr_circuit != prev_circuit:
             
-            if results_df is not None:
-                plot_results(results_df, prev_circuit, out_dir)
+            if time_results_df is not None:
+                plot_results(time_results_df, prev_circuit, out_dir, True)
+                plot_results(mem_results_df, prev_circuit, out_dir, False)
 
-            results_df = pd.DataFrame(columns=simulators)
+            time_results_df = pd.DataFrame(columns=simulators)
+            mem_results_df = pd.DataFrame(columns=simulators)
 
         # Add results to dataframe
-        row_data = list() 
+        time_row_data = list() 
+        mem_row_data = list()
         for result in benchmark['results']:
             if 'exception' in result or result.get('stats', {}).get('equivalence', '') == 'no_information':
-                row_data.append(None)
+                time_row_data.append(None)
+                mem_row_data.append(None)
             else:
-                row_data.append(result['stats']['runtime'])
+                time_row_data.append(result['stats']['runtime'])
+                mem_row_data.append(result['stats']['max_rss_bytes'])
         
-        results_df.loc[qubits] = row_data
+        time_results_df.loc[qubits] = time_row_data
+        mem_results_df.loc[qubits] = mem_row_data
         prev_circuit = curr_circuit
 
     # Plot last benchmark results
-    plot_results(results_df, prev_circuit, out_dir)
+    plot_results(time_results_df, prev_circuit, out_dir, True)
+    plot_results(mem_results_df, prev_circuit, out_dir, False)
 
 
 def main():

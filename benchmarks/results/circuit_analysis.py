@@ -179,7 +179,6 @@ def main():
             circuit = benchmark['circuit']['file']
             equiv_circuit = benchmark['equiv_circuit']['file']
             curr_benchmark = circuit.split('/')[-1].split('.')[0].split('_')[0]
-            curr_benchmark = CIRCUIT_NAMES_COMPACT.get(curr_benchmark, curr_benchmark)
 
             if not circuits or curr_benchmark != circuits[-1]:
                 cum_clif_percentage.append((calc_clif_percentage(benchmark), 1))
@@ -196,6 +195,8 @@ def main():
         avg_clif_percentage = [round(c[0] * 100 / c[1], 1) for c in cum_clif_percentage]
         avg_rz_entropy = [round(c[0] / c[1], 2) for c in cum_rz_entropy]
         avg_gates_per_qubit = [round(c[0] / c[1], 1) for c in cum_gates_per_qubit] 
+        print(len(cum_gates_per_qubit))
+        print(len(circuits_full))
 
         df = pd.DataFrame(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit']+simulators_full)
         for i, circuit in enumerate(circuits_full):
@@ -204,15 +205,12 @@ def main():
         clif_percentage_plot(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
         max_qubit_plot(max_qubit_df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
 
-        df = df.sort_values(by='Map')
+        df = df.sort_values(by='gates_per_qubit')
         print(df)
 
         circuit_properties_df = df.drop(columns=['Map', 'Qiskit', 'QCEC', 'QuokkaSharp'], axis=1)     
         print_tex_table_body(circuit_properties_df)
         print_tex_table_body(max_qubit_df)
-
-
-        
 
 
 if __name__ == "__main__":
