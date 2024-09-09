@@ -68,8 +68,8 @@ impl GeneratorSetImplementation {
             "cbitvec" => GeneratorSetImplementation::ColumnWiseBitVec,
             "rbitvec" => GeneratorSetImplementation::RowWiseBitVec,
             _ => {
-                eprintln!("\"{}\" is not a valid generator set implementation. Defaulting to row-wise bitvector", data_structure);
-                GeneratorSetImplementation::RowWiseBitVec
+                eprintln!("\"{}\" is not a valid generator set implementation. Defaulting to the map based generator set.", data_structure);
+                GeneratorSetImplementation::PauliMap
             }
         }
     }

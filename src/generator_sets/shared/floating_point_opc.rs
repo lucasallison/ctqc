@@ -59,7 +59,6 @@ impl FloatingPointOPC {
         }
 
         let res = (self.f - other.f).abs() < (self.cmp_threshold(other) * 10.0);
-        // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other) * 100.0);
         res
     }
 
