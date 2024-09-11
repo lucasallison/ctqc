@@ -438,7 +438,7 @@ impl RowWiseBitVec {
     // -------------------------- Clean Up ------------------------- //
 
     /// Gather all unique Pauli strings in a map.
-    /// Important! the row wise bitvector is emptied in order to populate te map.
+    /// Important! the row wise bitvector is emptied in order to populate te map. They should be scattered back.
     // Declared public for Pauli Pools
     pub fn gather(&mut self) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut map = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
@@ -503,6 +503,7 @@ impl GeneratorSet for RowWiseBitVec {
 
         let mut pstrs = self.gather();
         PauliMap::clean_map(&mut pstrs);
+        // Scatter them back in case we want to apply more gates
         self.scatter(pstrs.clone());
 
         PauliMap::from_map(pstrs, self.n_qubits).is_x_or_z_generators(check_zero_state)
@@ -513,6 +514,7 @@ impl GeneratorSet for RowWiseBitVec {
 
         let mut pstrs = self.gather();
         PauliMap::clean_map(&mut pstrs);
+        // Scatter them back in case we want to apply more gates
         self.scatter(pstrs.clone());
 
         PauliMap::from_map(pstrs, self.n_qubits).is_single_x_or_z_generator(check_zero_state, i)

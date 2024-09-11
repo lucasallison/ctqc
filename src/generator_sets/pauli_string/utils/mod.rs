@@ -25,7 +25,7 @@ pub fn is_single_z_pstr(pstr: &BitSlice, i: usize) -> bool {
     bitslice_is_ith_generator(pstr, i, true)
 }
 
-/// Returns true if the bitslice is the ith generator of the all zero/plust state,
+/// Returns true if the bitslice is the ith generator of the all zero/plus state,
 /// i.e., I^⊗{i-1}ZI^⊗{n-i} or I^⊗{i-1}ZI^⊗{n-i}.
 pub fn bitslice_is_ith_generator(pstr: &BitSlice, i: usize, zero_state_generator: bool) -> bool {
     let n_gates = pstr.len() / 2;

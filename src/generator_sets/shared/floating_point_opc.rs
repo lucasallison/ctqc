@@ -53,15 +53,6 @@ impl FloatingPointOPC {
         self.f
     }
 
-    pub fn weak_eq(&self, other: &FloatingPointOPC) -> bool {
-        if self.f.is_nan() || other.f.is_nan() {
-            return self.f.is_nan() && other.f.is_nan();
-        }
-
-        let res = (self.f - other.f).abs() < (self.cmp_threshold(other) * 10.0);
-        res
-    }
-
     pub fn cmp_threshold(&self, other: &FloatingPointOPC) -> f64 {
         let total_ops = std::cmp::max(1, self.ops + other.ops);
         f64::EPSILON * (total_ops) as f64
@@ -78,7 +69,6 @@ impl PartialEq for FloatingPointOPC {
         // We don't have to worry about overflow because the floats we
         // use are between -1.0 and 1.0
         let res = (self.f - other.f).abs() < self.cmp_threshold(other);
-        // println!("{} == {}? {}, EM: {}", self.f, other.f, res, self.cmp_threshold(other));
         res
     }
 }

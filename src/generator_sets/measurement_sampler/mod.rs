@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 use bitvec::prelude::*;
 use fxhash::FxBuildHasher;
@@ -11,6 +12,7 @@ use super::shared::floating_point_opc::FloatingPointOPC;
 use super::utils::imaginary_coefficient::ImaginaryCoef;
 
 use crate::generator_sets::pauli_map::PauliMap;
+use crate::generator_sets::pauli_string::PauliString;
 
 /// A struct that is constructed from a generator set in order to sample measurements.
 pub struct MeasurementSampler {
@@ -105,6 +107,7 @@ impl MeasurementSampler {
 
     /// Multiplies pstr_1 and pstr_2. result is stored in pstr_1 and any coefficient is returned.
     fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ImaginaryCoef {
+
         let mut coef = ImaginaryCoef::new(1.0, false);
 
         for i in 0..self.n_qubits {
@@ -167,6 +170,7 @@ impl MeasurementSampler {
                 // TODO explain why !m_coef.i
                 // If the result is a Pauli string with a single Z gate at the z_index
                 // update the sum
+
                 if !m_coef.i && PauliUtils::is_single_z_pstr(m_pstr.as_bitslice(), z_index) {
                     sum.add(&m_coef.real);
                 }
@@ -229,7 +233,6 @@ impl MeasurementSampler {
                     // X -> 1/(4p0) * 2X = 1/(2p0) * X
                     // When we measure |1⟩:
                     // X -> 1/(4(1-p0)) * 2X = 1/(2(1-p0)) * X
-
                     if measurement {
                         coef_list
                             .multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * (1.0 - p0)), 4));
@@ -300,5 +303,23 @@ impl MeasurementSampler {
         }
 
         self.size = self.generator_info.len();
+    }
+}
+
+impl fmt::Display for MeasurementSampler {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut s = String::new();
+
+        for pstr_index in 0..self.size {
+
+            s.push_str(&format!("{}", PauliString::from_bitvec(self.pstr_as_bitslice(pstr_index).to_bitvec())));
+
+            s.push_str(" (");
+            for c in self.generator_info[pstr_index].coefficients.iter() {
+                s.push_str(&format!("{}: {}, ", c.0, c.1.as_f64()));
+            }
+            s.push_str(")\n");
+        }
+        write!(f, "{}", s)
     }
 }

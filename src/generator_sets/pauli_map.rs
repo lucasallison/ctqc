@@ -166,7 +166,8 @@ impl PauliMap {
     }
 
     /// Inserts the Pauli string into the map or merges the coefficient list with
-    /// the existing one if the Pauli string already exists.
+    /// the existing one if the Pauli string already exists. If the coefficient list is empty
+    /// the Pauli string is removed from the map.
     pub fn insert_pstr_bitvec_into_map(
         map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
         pstr: BitVec,
@@ -288,11 +289,11 @@ impl GeneratorSet for PauliMap {
                 return false;
             }
 
-            if pstr != target_generator.as_bitslice() && coef_list.weak_is_empty() {
+            if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
                 continue;
             }
 
-            if pstr != target_generator.as_bitslice() && !coef_list.weak_is_empty() {
+            if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
                 return false;
             }
         }
@@ -309,6 +310,7 @@ impl GeneratorSet for PauliMap {
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
+        self.apply_all_h_s_conjugations();
         MeasurementSampler::from_map(self.pauli_strings_src.clone(), self.n_qubits)
     }
 

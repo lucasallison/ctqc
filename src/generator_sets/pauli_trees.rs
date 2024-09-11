@@ -535,7 +535,9 @@ impl PauliTrees {
         }
     }
 
-    fn set_pgate(&mut self, pstr_index: usize, gate_index: usize, pgate: PauliGate) {
+    /// Set the ith Pauli gate of the pstr_index Pauli string to the provided Pauli gate. The root table is either updated 
+    /// immediately or the offset of root in the node table is returned.
+    fn set_pgate(&mut self, pstr_index: usize, gate_index: usize, pgate: PauliGate, update_root_table: bool) -> usize{
         // In the worst case we update `self.depth` nodes and one leaf
         self.check_memory_availability(self.depth, 1);
 
@@ -546,7 +548,12 @@ impl PauliTrees {
         let root_node_index = self.root_node_index(pstr_index);
         let new_root_index =
             self.recursive_set_pgate(root_node_index, gate_index, n_leaf_nodes, &pgate);
-        self.update_root_node_index(pstr_index, new_root_index)
+        
+        if update_root_table {
+            self.update_root_node_index(pstr_index, new_root_index);
+            return pstr_index;
+        }
+        new_root_index
     }
 
     fn recursive_set_pgate(
@@ -813,8 +820,8 @@ impl PauliTrees {
 
             self.generator_info[pstr_index].multiply(&complete_coef_mult);
 
-            self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate);
-            self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate);
+            self.set_pgate(pstr_index, cnot.qubit_1, look_up_output.q1_p_gate, true);
+            self.set_pgate(pstr_index, qubit_2, look_up_output.q2_p_gate, true);
         }
 
         self.h_s_conjugations_map.reset(cnot.qubit_1);
@@ -822,46 +829,78 @@ impl PauliTrees {
     }
 
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
+
+        // To ensure we do not store duplicate root table entries, we collect all of them into a map
+        // and scatter them back after the conjugation.
+        let mut root_table_map = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+
+        let mut new_gen_info = std::mem::take(&mut self.generator_info);
         
-        for pstr_index in 0..self.size() {
+        for (pstr_index, mut coef_list) in (0..self.size()).zip(new_gen_info.drain(..)) {
 
             let (actual_pgate, coef_mul) =
                 self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
             // Apply the H/S conjugations
-            self.generator_info[pstr_index].multiply(&coef_mul);
-            self.set_pgate(pstr_index, rz.qubit_1, actual_pgate);
+            coef_list.multiply(&coef_mul);
+            let root_node_index = self.set_pgate(pstr_index, rz.qubit_1, actual_pgate, false);
 
+            // The Rz gate has no effect on the Pauli string, we can insert it directly
             if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
+                Self::insert_root_entry_into_map(&mut root_table_map, root_node_index, coef_list);
                 continue;
             }
 
-            self.root_node_table.extend_from_within(
-                pstr_index * self.n_bits_per_root_node()
-                    ..(pstr_index + 1) * self.n_bits_per_root_node(),
-            );
+            let new_pstr_pgate = if actual_pgate == PauliGate::X {
+                PauliGate::Y
+            } else {
+                PauliGate::X
+            };
 
-            self.generator_info
-                .push(self.generator_info[pstr_index].clone());
+            // Create the new Pauli string
+            let mut new_coef_list = coef_list.clone();
+            let new_root_node_index = self.set_pgate(pstr_index, rz.qubit_1, new_pstr_pgate, false);
 
-            if actual_pgate == PauliGate::X {
-                self.set_pgate(self.size() - 1, rz.qubit_1, PauliGate::Y);
-            } else if actual_pgate == PauliGate::Y {
-                self.set_pgate(self.size() - 1, rz.qubit_1, PauliGate::X);
-            }
-
+            // Account for the current conjuagtion of the Rz
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &actual_pgate, conjugate_dagger);
-            let (first_mult, last_mult) = if actual_pgate == PauliGate::X {
+            let (origin_pstr_mult, new_pstr_mult) = if actual_pgate == PauliGate::X {
                 (x_mult, y_mult)
             } else {
                 (y_mult, x_mult)
             };
 
-            self.generator_info[pstr_index].multiply(&first_mult);
-            self.generator_info.last_mut().unwrap().multiply(&last_mult);
+            coef_list.multiply(&origin_pstr_mult);
+            new_coef_list.multiply(&new_pstr_mult);
+
+            // Inset both the original and the new Pauli string
+            Self::insert_root_entry_into_map(&mut root_table_map, root_node_index, coef_list);
+            Self::insert_root_entry_into_map(&mut root_table_map, new_root_node_index, new_coef_list);
+
         }
+        
         self.h_s_conjugations_map.reset(rz.qubit_1);
+        self.scatter(&mut root_table_map);
+    }
+
+    // ---- Helper functions ---- //
+
+    fn insert_root_entry_into_map(
+        m: &mut HashMap<usize, CoefficientList, FxBuildHasher>,
+        root_index: usize,
+        c_list: CoefficientList,
+    ) {
+        match m.entry(root_index) {
+            Entry::Occupied(mut e) => {
+                e.get_mut().merge(&c_list);
+            }
+            Entry::Vacant(e) => {
+                e.insert(c_list);
+            }
+        }
     }
 }
 
@@ -927,8 +966,10 @@ impl GeneratorSet for PauliTrees {
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
-        let pstr_to_coef_map = self.get_pstr_to_coef_map();
-        MeasurementSampler::from_map(pstr_to_coef_map, self.n_qubits)
+        // TODO: apply H/S conjugations
+        panic!("Cannot get measurement sampler from ColumnWiseBitVec, all H/S conjugations must be applied first");
+        // let pstr_to_coef_map = self.get_pstr_to_coef_map();
+        // MeasurementSampler::from_map(pstr_to_coef_map, self.n_qubits)
     }
 
     fn clean(&mut self) {

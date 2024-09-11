@@ -252,8 +252,10 @@ impl GeneratorSet for ColumnWiseBitVec {
     }
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
-        let pstrs = self.gather();
-        MeasurementSampler::from_map(pstrs, self.n_qubits)
+        // TODO apply all H/S conjugations
+        panic!("Cannot get measurement sampler from ColumnWiseBitVec, all H/S conjugations must be applied first");
+        // let pstrs = self.gather();
+        // MeasurementSampler::from_map(pstrs, self.n_qubits)
     }
 
     fn clean(&mut self) {

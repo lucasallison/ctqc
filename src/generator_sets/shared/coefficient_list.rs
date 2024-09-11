@@ -65,17 +65,7 @@ impl CoefficientList {
     /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
     pub fn is_empty(&self) -> bool {
         for (_, f) in self.coefficients.iter() {
-            if !(*f == FloatingPointOPC::new(0.0)) {
-                return false;
-            }
-        }
-        true
-    }
-
-    /// Similar to is_empty, but only checks if the coefficients are weakly equal to zero, i.e. within a larger error margin.
-    pub fn weak_is_empty(&self) -> bool {
-        for (_, f) in self.coefficients.iter() {
-            if !(f.weak_eq(&FloatingPointOPC::new(0.0))) {
+            if !(f.eq(&FloatingPointOPC::new(0.0))) {
                 return false;
             }
         }
@@ -89,12 +79,12 @@ impl CoefficientList {
     pub fn is_valid_ith_generator_coef_list(&self, i: usize) -> bool {
         for (gen_index, f) in self.coefficients.iter() {
             // If this is a coefficient for a different generator, check if it is zero
-            if *gen_index != i && !(f.weak_eq(&FloatingPointOPC::new(0.0))) {
+            if *gen_index != i && !(f.eq(&FloatingPointOPC::new(0.0))) {
                 return false;
             }
 
             // If it is the coefficient for the ith generator, check if it is 1.0
-            if *gen_index == i && !(f.weak_eq(&FloatingPointOPC::new(1.0))) {
+            if *gen_index == i && !(f.eq(&FloatingPointOPC::new(1.0))) {
                 return false;
             }
         }
