@@ -12,14 +12,21 @@ class CTQC(Simulator):
         self.binary_path = os.getenv('CTQC_BINARY_PATH')
 
         self.cmd_line_args = cmd_line_args
-    
+
 
     def name(self) -> str:
-        return 'CTQC' if self.cmd_line_args is None else 'CTQC_' + '_'.join(self.cmd_line_args)
-    
+        return 'CTQC' if self.cmd_line_args is None else 'CTQC_' + '_'.join('' if s.startswith('-') else s for s in self.cmd_line_args)
+
 
     def simulate(self):
         pass
+
+
+    def get_subprocess_args(self, circuit_1: str, circuit_2: str) -> List[str]:
+        args = [self.binary_path, '-f', circuit_1, '-e', circuit_2]
+        if self.cmd_line_args is not None:
+            args += self.cmd_line_args
+        return args
 
 
     def equivalence_check(self, circuit_1: str, circuit_2: str) -> Dict:

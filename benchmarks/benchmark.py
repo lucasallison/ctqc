@@ -221,7 +221,8 @@ if __name__ == "__main__":
     # Create the directory to store the benchmark results 
     if os.path.exists(RESULTS_DIR):
         RESULTS_DIR += f"_{datetime.datetime.now().isoformat(sep='_', timespec='seconds')}"
-    os.makedirs(RESULTS_DIR)
+        print(RESULTS_DIR)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     logger = Logger(RESULTS_DIR, os.path.join(RESULTS_DIR, 'benchmarks.log'), True)
 
     for sim_benchmark in SIM_BENCHMARKS:

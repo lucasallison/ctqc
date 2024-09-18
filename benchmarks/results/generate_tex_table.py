@@ -1,6 +1,7 @@
 import os, re 
 from typing import Tuple
-from utils import CIRCUIT_NAMES_FULL, SIMULATOR_NAMES, get_json_files, load_json_data
+from utils import get_json_files, load_json_data
+from config import CIRCUIT_NAMES_FULL, SIMULATOR_NAMES
 
 def get_circuit_type(data, key):
     return data[0][key]['file'].split('/')[-2]

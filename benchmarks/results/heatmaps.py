@@ -92,9 +92,6 @@ def main():
     files = get_json_files()
     for file in files:
 
-        if not re.search('ketgpt', file) and not re.search('qsharp/all/algorithm/qsharp_algorithm_origin_opt', file):
-            continue
-
         data = load_json_data(file)
         simulators = [res['simulator'] for res in data[0]['results']]
         time_aggregates, memory_aggregates = initialize_aggregates(simulators)
