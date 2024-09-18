@@ -1,12 +1,15 @@
 use std::fmt::Display;
 
+use bitvec::prelude::*;
+
 use crate::circuit::Gate;
+use shared::coefficient_list::CoefficientList;
 
 pub mod measurement_sampler;
 use measurement_sampler::MeasurementSampler;
 
-mod pauli_string;
-mod shared;
+pub mod pauli_string;
+pub mod shared;
 mod utils;
 
 // Implementations of the GeneratorSet trait
@@ -23,6 +26,16 @@ use pauli_trees::PauliTrees;
 use row_wise_bitvec::RowWiseBitVec;
 
 pub trait GeneratorSet: Display {
+
+    /// Add the provided Pauli strings to the set.
+    fn init_any(&mut self, pstrs: BitVec, coef_list: Vec<CoefficientList>);
+
+    /// Sum the coefficients of all Pauli strings that contain only I/Z gates
+    fn sum_coef_zi_pstrs(&mut self) -> f64;
+
+
+    /// ------------------------
+
     /// Initialize the generator set with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool);
 

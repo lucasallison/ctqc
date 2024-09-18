@@ -45,8 +45,24 @@ impl PauliString {
         PauliString { pstr }
     }
 
+    pub fn from_str(s: &str) -> PauliString {
+        let mut pstr = BitVec::with_capacity(2 * s.len());
+        for c in s.chars() {
+            let (b1, b2) = PauliUtils::pauli_gate_as_tuple(PauliUtils::pgate_from_char(&c));
+            pstr.push(b1);
+            pstr.push(b2);
+        }
+        PauliString { pstr }
+    }
+
     pub fn as_bitslice(&self) -> &BitSlice {
         &self.pstr
+    }
+
+    pub fn add_gate(&mut self, gate: PauliGate) {
+        let (b1, b2) = PauliUtils::pauli_gate_as_tuple(gate);
+        self.pstr.push(b1);
+        self.pstr.push(b2);
     }
 
     pub fn set_pauli_gate(&mut self, index: usize, gate: PauliGate) {

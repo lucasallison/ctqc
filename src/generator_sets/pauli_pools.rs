@@ -76,6 +76,16 @@ impl PauliPools {
 }
 
 impl GeneratorSet for PauliPools {
+
+    fn init_any(&mut self, _pstrs: BitVec, _coef_list: Vec<CoefficientList>) {
+        panic!("Function not implemented for this generator set");
+    }
+
+    fn sum_coef_zi_pstrs(&mut self) -> f64 {
+        panic!("Function not implemented for this generator set");
+
+    }
+
     /// Initialize the RowWiseBitVec with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool) {
         let mut gm = PauliMap::new(self.n_qubits);

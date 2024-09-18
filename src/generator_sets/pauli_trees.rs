@@ -890,6 +890,16 @@ impl PauliTrees {
 }
 
 impl GeneratorSet for PauliTrees {
+
+    fn init_any(&mut self, _pstrs: BitVec, _coef_list: Vec<CoefficientList>) {
+        panic!("Function not implemented for this generator set");
+    }
+
+    fn sum_coef_zi_pstrs(&mut self) -> f64 {
+        panic!("Function not implemented for this generator set");
+
+    }
+
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default();
 
@@ -969,7 +979,7 @@ impl std::fmt::Display for PauliTrees {
             let pstr = self.ith_pstr_as_str(pstr_index);
 
             for (i, pgate) in pstr.chars().enumerate() {
-                let current_pgate = PauliUtils::char_to_pauli_gate(&pgate);
+                let current_pgate = PauliUtils::pgate_from_char(&pgate);
 
                 let actual_pgate = self
                     .h_s_conjugations_map

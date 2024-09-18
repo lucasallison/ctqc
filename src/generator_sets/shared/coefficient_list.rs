@@ -1,3 +1,5 @@
+use ordered_float::Float;
+
 use super::floating_point_opc::FloatingPointOPC;
 
 /// A set that can be associated to a Pauli string. The list
@@ -19,12 +21,42 @@ impl CoefficientList {
         }
     }
 
+    pub fn new_with_coef(generator_index: usize, coef: f64) -> CoefficientList {
+        CoefficientList {
+            coefficients: vec![(generator_index, FloatingPointOPC::new(coef))],
+        }
+    }
+
+    pub fn get_first_index(&self) -> usize {
+        if self.coefficients.is_empty() {
+            panic!("Coefficient list is empty.");
+        }
+        self.coefficients[0].0
+    }
+
+    pub fn get_first_coef(&self) -> FloatingPointOPC {
+        if self.coefficients.is_empty() {
+            panic!("Coefficient list is empty.");
+        }
+        self.coefficients[0].1
+    }
+
+
     /// Multiply all coefficients with the provided value
     /// fp_ops are the number of floating point operations performed on provided f64.
     pub fn multiply(&mut self, fp: &FloatingPointOPC) {
         for (_, coefficient) in self.coefficients.iter_mut() {
             coefficient.mul(fp);
         }
+    }
+
+    /// Return the sum of all stored coefficients
+    pub fn sum(&self) -> f64 {
+        let mut sum = FloatingPointOPC::new(0.0);
+        for (_, f) in self.coefficients.iter() {
+            sum.add(f);
+        }
+        sum.as_f64()
     }
 
     /// Merge the provided coeffiencts list with the current one.
