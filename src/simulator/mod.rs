@@ -212,9 +212,8 @@ impl Simulator {
             "circuits": [circuit_1.name(), circuit_2.name()],
             "equivalent": equiv,
             "runtime": {
-                "nano_seconds": start.elapsed().as_nanos(),
-                "mili_seconds": start.elapsed().as_millis(),
-                "seconds": start.elapsed().as_secs(),
+                "mili_seconds": start.elapsed().as_millis() % 1000,
+                "seconds": start.elapsed().as_secs() % 60,
                 "minutes": start.elapsed().as_secs() / 60
             }
         });
@@ -625,9 +624,8 @@ impl Simulator {
             "simulation_type": "simulation",
             "circuit": circuit.name(),
             "runtime": {
-                "nano_seconds": start.elapsed().as_nanos(),
-                "mili_seconds": start.elapsed().as_millis(),
-                "seconds": start.elapsed().as_secs(),
+                "mili_seconds": start.elapsed().as_millis() % 1000,
+                "seconds": start.elapsed().as_secs() % 60,
                 "minutes": start.elapsed().as_secs() / 60
             },
             "measurements": measurement_results
