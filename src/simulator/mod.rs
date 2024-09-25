@@ -21,7 +21,7 @@ use crate::generator_sets::{get_generator_set, GeneratorSet, GeneratorSetImpleme
 
 mod utils;
 use utils::optional_progress_bar::OptionalProgressBar;
-use utils::{z_x_print_char, DAG_CHAR};
+use utils::{z_x_print_char, DAG_CHAR, half_all_coefficients, merge_maps, insert_into_map, sum_coef_zi_pstrs};
 
 /// Executes the simulation/equivalence check
 pub struct Simulator {
@@ -60,6 +60,10 @@ impl Simulator {
         }
     }
 
+    /// When simulating a measurement for the jth qubit, we need to take the previous simulated measurements into account. If, for example, we simulated
+    /// a measurement of |0> for the ith qubit, we want to adjust the observable in such a way that we only measure the states where the ith qubit is |0>.
+    /// We do this by expanding the observable in such a way that we will only obtain the coefficients of the states that correspond to our simulated measurements.
+    /// More specifically, this can be achieved by tensoring 0.5(I +/- Z_j) with the observable, where a + is used when the simulated measurement result is 0 and a - is used when the simulated measurement result is 1.
     fn fix_measurement(aggr_observable: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, init_observable: &HashMap<BitVec, CoefficientList, FxBuildHasher>, target_qubit: usize, measurement: bool) {
 
         let mut new_aggr_observable = HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
@@ -79,12 +83,13 @@ impl Simulator {
 
             }
 
-            Self::insert_into_map(&mut new_aggr_observable, pstr, coef_list);
+            insert_into_map(&mut new_aggr_observable, pstr, coef_list);
         }
 
         std::mem::swap(aggr_observable, &mut new_aggr_observable);
 
     }
+
 
     fn extend_inital_observable(observable: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, target_qubit: usize, n_qubits: usize) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
 
@@ -109,10 +114,10 @@ impl Simulator {
 
             let new_coef_list = CoefficientList::new_with_coef(n_summands_init_observable + i, coef_list.get_first_coef().as_f64());
 
-            Self::insert_into_map(&mut unconjugated_observable_summands, new_pstr.as_bitslice().to_bitvec().clone(), new_coef_list.clone());
+            insert_into_map(&mut unconjugated_observable_summands, new_pstr.as_bitslice().to_bitvec().clone(), new_coef_list.clone());
 
-            Self::insert_into_map(&mut new_initial_observable, new_pstr.as_bitslice().to_bitvec().clone(), new_coef_list.clone());
-            Self::insert_into_map(&mut new_initial_observable, pstr, coef_list);
+            insert_into_map(&mut new_initial_observable, new_pstr.as_bitslice().to_bitvec().clone(), new_coef_list.clone());
+            insert_into_map(&mut new_initial_observable, pstr, coef_list);
         }
         std::mem::swap(observable, &mut new_initial_observable);
         unconjugated_observable_summands
@@ -130,48 +135,6 @@ impl Simulator {
         summand_indices
     }
 
-    fn half_all_coefficients(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>) {
-        for (_, coef_list) in map.iter_mut() {
-            coef_list.multiply(&FloatingPointOPC::new(0.5));
-        }
-    }
-
-    fn merge_maps(map1: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, map2: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>) {
-        for (pstr, coef_list) in map2.drain() {
-            match map1.entry(pstr) {
-                Entry::Occupied(mut entry) => {
-                    entry.get_mut().merge(&coef_list);
-                }
-                Entry::Vacant(entry) => {
-                    entry.insert(coef_list);
-                }
-            }
-        }
-    }
-
-    fn insert_into_map(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, pstr: BitVec, coef_list: CoefficientList) {
-        match map.entry(pstr) {
-            Entry::Occupied(mut entry) => {
-                entry.get_mut().merge(&coef_list);
-            }
-            Entry::Vacant(entry) => {
-                entry.insert(coef_list);
-            }
-        }
-
-    }
-
-    fn sum_coef_zi_pstrs(pstrs: &HashMap<BitVec, CoefficientList, FxBuildHasher>) -> f64 {
-        let mut sum = 0.0;
-        for (pstr, coef_list) in pstrs {
-            if PauliUtils::is_zi_pstr(pstr) {
-                sum += coef_list.sum();
-            }
-        }
-
-        sum
-    }
-
     fn select_measurement(probabilities: &[f64]) -> u8 {
         
         let total_weight: f64 = probabilities.iter().sum();
@@ -186,7 +149,7 @@ impl Simulator {
         1
     }
 
-    /// Simulates the provided circuit by setting the generators to the generators of the all zero state
+    /// Simulates a measurement 
     /// and calling the 'sim' function.
     pub fn simulate(&mut self, circuit: &Circuit) {
         // let start = Instant::now();
@@ -228,13 +191,13 @@ impl Simulator {
             // Update the aggregated observable, simulate a measurement and fix the initial observable depending on the measurement outcome
 
             target_observable.apply_all_h_s_conjugations();
-            Self::merge_maps(&mut aggr_target_observable, &mut target_observable.take_pstr_map());
+            merge_maps(&mut aggr_target_observable, &mut target_observable.take_pstr_map());
 
             let mut aggr_target_observable_measure_one = aggr_target_observable.clone();  
             Self::fix_measurement(&mut aggr_target_observable_measure_one, &init_observable, qubit, true);
 
-            let p0 = Self::sum_coef_zi_pstrs(&aggr_target_observable);
-            let p1 = Self::sum_coef_zi_pstrs(&aggr_target_observable_measure_one);
+            let p0 = sum_coef_zi_pstrs(&aggr_target_observable);
+            let p1 = sum_coef_zi_pstrs(&aggr_target_observable_measure_one);
 
             let measurement = Self::select_measurement(&[p0, p1]);
             if measurement != 0 {
@@ -243,7 +206,7 @@ impl Simulator {
             println!("Qubit {} -> Measurement: {} (p0: {}, p1: {})", qubit, measurement , p0/(p0+p1), p1/(p0+p1));
 
             unconjugated_observable_summands = Self::extend_inital_observable(&mut init_observable, qubit + 1, circuit.n_qubits());
-            Self::half_all_coefficients(&mut aggr_target_observable);
+            half_all_coefficients(&mut aggr_target_observable);
         }
     }
 

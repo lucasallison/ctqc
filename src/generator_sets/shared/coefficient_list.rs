@@ -1,5 +1,3 @@
-use ordered_float::Float;
-
 use super::floating_point_opc::FloatingPointOPC;
 
 /// A set that can be associated to a Pauli string. The list
