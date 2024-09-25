@@ -17,12 +17,27 @@ pub fn set_pauli_gate_in_bitslice(pstr: &mut BitSlice, pgate: PauliGate, j: usiz
     pstr.set(2 * j + 1, b2);
 }
 
-/// Returns wheter the Pauli string contains only identity gates
+/// Returns if the Pauli string contains only identity gates
 /// and a single Z gate at the ith position, i.e., I^⊗{i-1}ZI^⊗{n-i}
-/// The functionility is the same as `bitslice_is_ith_generator` but
+/// The functionality is the same as `bitslice_is_ith_generator` but
 /// this function provides clarity in some contexts.
 pub fn is_single_z_pstr(pstr: &BitSlice, i: usize) -> bool {
     bitslice_is_ith_generator(pstr, i, true)
+}
+
+/// Returns true if the Pauli string contains only I/Z gates
+pub fn is_zi_pstr(pstr: &BitSlice) -> bool {
+    let n_gates = pstr.len() / 2;
+
+    for gate_ind in 0..n_gates {
+        let p_gate = get_pauli_gate_from_bitslice(pstr, gate_ind);
+
+        if p_gate != PauliGate::I && p_gate != PauliGate::Z {
+            return false;
+        }
+    }
+
+    true
 }
 
 /// Returns true if the bitslice is the ith generator of the all zero/plus state,
@@ -64,7 +79,7 @@ pub fn pauli_gate_from_tuple(b1: bool, b2: bool) -> PauliGate {
     }
 }
 
-pub fn char_to_pauli_gate(c: &char) -> PauliGate {
+pub fn pgate_from_char(c: &char) -> PauliGate {
     match *c {
         'I' => PauliGate::I,
         'X' => PauliGate::X,

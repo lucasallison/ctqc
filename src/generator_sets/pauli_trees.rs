@@ -124,7 +124,7 @@ impl PauliTrees {
 
     fn n_bits_per_root_node(&self) -> usize {
         // The node body bits contain two offset, and therefore
-        // we can only have 2^{n_node_body_bits / 2} nodes. 
+        // we can only have 2^{n_node_body_bits / 2} nodes.
         self.n_node_body_bits / 2
     }
 
@@ -490,19 +490,27 @@ impl PauliTrees {
     }
 
     /// Get the ith Pauli gate of the pstr_index Pauli string.
-    // Wrapper around access_pgate for readability 
+    // Wrapper around access_pgate for readability
     fn get_pgate(&mut self, pstr_index: usize, gate_index: usize) -> PauliGate {
         self.access_pgate(pstr_index, gate_index, None, false).0
     }
 
-    /// Set the ith Pauli gate of the pstr_index Pauli string to the provided Pauli gate. The offset of root in the node table is returned. 
+    /// Set the ith Pauli gate of the pstr_index Pauli string to the provided Pauli gate. The offset of root in the node table is returned.
     /// The root table is optionally updated immediately.
-    // Wrapper around access_pgate for readability 
-    fn set_pgate(&mut self, pstr_index: usize, gate_index: usize, pgate: &PauliGate, update_root_table: bool) -> usize {
-        self.access_pgate(pstr_index, gate_index, Some(pgate), update_root_table).1.unwrap()
+    // Wrapper around access_pgate for readability
+    fn set_pgate(
+        &mut self,
+        pstr_index: usize,
+        gate_index: usize,
+        pgate: &PauliGate,
+        update_root_table: bool,
+    ) -> usize {
+        self.access_pgate(pstr_index, gate_index, Some(pgate), update_root_table)
+            .1
+            .unwrap()
     }
 
-    /// Get or set the ith Pauli gate of the pstr_index Pauli string. 
+    /// Get or set the ith Pauli gate of the pstr_index Pauli string.
     /// In case the no Pauli gate is provided, the gate is only retrieved.  
     /// In case a Pauli gate is provided, the gate is set, and the new root index is returned. Optionally
     /// the root table can be updated immediately.
@@ -511,52 +519,52 @@ impl PauliTrees {
         pstr_index: usize,
         gate_index: usize,
         pgate: Option<&PauliGate>,
-        update_root_table: bool
+        update_root_table: bool,
     ) -> (PauliGate, Option<usize>) {
-
         if pgate.is_none() {
             self.check_memory_availability(self.depth, 1);
         }
 
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
-    
+
         let root_node_index = self.root_node_index(pstr_index);
         let result = self.recursive_access_pgate(root_node_index, gate_index, n_leaf_nodes, pgate);
-    
+
         if let Some(new_root_index) = result.1 {
             if update_root_table {
                 self.update_root_node_index(pstr_index, new_root_index);
-            } 
+            }
         }
 
         (result.0, result.1)
     }
-    
+
     fn recursive_access_pgate(
         &mut self,
         node_index: usize,
         relative_gate_index: usize,
         n_leaf_nodes: usize,
-        pgate: Option<&PauliGate>
+        pgate: Option<&PauliGate>,
     ) -> (PauliGate, Option<usize>) {
         let body = self.get_node_body(node_index);
-    
+
         if self.node_points_to_leaf(node_index) {
             let leaf_index = self.leaf_index_from_node_body(body);
-        
+
             // A gate is provided, change the leaf and return the new node index
             if let Some(pgate) = pgate {
-                let mut new_leaf_pgates = BitVec::from_bitslice(self.get_leaf_pgates_bits(leaf_index));
+                let mut new_leaf_pgates =
+                    BitVec::from_bitslice(self.get_leaf_pgates_bits(leaf_index));
                 let (b1, b2) = PauliUtils::pauli_gate_as_tuple(*pgate);
-            
+
                 new_leaf_pgates.set(2 * relative_gate_index, b1);
                 new_leaf_pgates.set(2 * relative_gate_index + 1, b2);
-            
+
                 let new_leaf_index = self.insert_leaf_into_table(&new_leaf_pgates);
                 let node_body = self.leaf_index_to_node_body(new_leaf_index);
                 let new_node_index = self.insert_node_into_table(&node_body, true);
-            
+
                 return (*pgate, Some(new_node_index));
 
             // Only retrieve the current gate
@@ -567,7 +575,7 @@ impl PauliTrees {
                 );
             }
         }
-    
+
         // Half of the leaf nodes are stored in the left subtree, the rest in the right
         let n_leaf_nodes_left = n_leaf_nodes / 2;
         let n_leaf_nodes_right = n_leaf_nodes - n_leaf_nodes_left;
@@ -576,7 +584,7 @@ impl PauliTrees {
         let mut right_index = self.node_index_from_node_body(body, false);
 
         let recurse_left = relative_gate_index < (n_leaf_nodes_left * self.pgates_per_leaf);
-        
+
         // Recurse on the left/right node and retrieve their potentially new index
         let (pgate_result, new_index) = if recurse_left {
             self.recursive_access_pgate(left_index, relative_gate_index, n_leaf_nodes_left, pgate)
@@ -595,7 +603,6 @@ impl PauliTrees {
 
         // If the node was updated, we need to update the node and return its index
         if let Some(new_index) = new_index {
-
             if recurse_left {
                 left_index = new_index;
             } else {
@@ -606,11 +613,9 @@ impl PauliTrees {
             let new_node_index = self.insert_node_into_table(&new_node_body, false);
             return (pgate_result, Some(new_node_index));
         }
-        
+
         return (pgate_result, None);
-
     }
-
 
     /// Return the ith stored Pauli string as a bitvec
     fn pstr_as_bitvec(&self, i: usize) -> BitVec {
@@ -698,9 +703,7 @@ impl PauliTrees {
         }
     }
 
-
     fn garbage_collection(&mut self) {
-
         let mut new_ptrees = PauliTrees::new(
             self.n_qubits,
             Some(self.n_node_body_bits),
@@ -712,13 +715,12 @@ impl PauliTrees {
             let c_list = self.generator_info[pstr_index].clone();
             new_ptrees.insert_pstr(pstr, c_list)
         }
-        
+
         std::mem::swap(
             &mut new_ptrees.h_s_conjugations_map,
             &mut self.h_s_conjugations_map,
         );
         *self = new_ptrees;
-
     }
 
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
@@ -808,18 +810,17 @@ impl PauliTrees {
     }
 
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
-
         // To ensure we do not store duplicate root table entries, we collect all of them into a map
         // and scatter them back after the conjugation.
-        let mut root_table_map = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
-            self.size(),
-            FxBuildHasher::default(),
-        );
+        let mut root_table_map =
+            HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+                self.size(),
+                FxBuildHasher::default(),
+            );
 
         let mut new_gen_info = std::mem::take(&mut self.generator_info);
-        
-        for (pstr_index, mut coef_list) in (0..self.size()).zip(new_gen_info.drain(..)) {
 
+        for (pstr_index, mut coef_list) in (0..self.size()).zip(new_gen_info.drain(..)) {
             let (actual_pgate, coef_mul) =
                 self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
@@ -841,7 +842,8 @@ impl PauliTrees {
 
             // Create the new Pauli string
             let mut new_coef_list = coef_list.clone();
-            let new_root_node_index = self.set_pgate(pstr_index, rz.qubit_1, &new_pstr_pgate, false);
+            let new_root_node_index =
+                self.set_pgate(pstr_index, rz.qubit_1, &new_pstr_pgate, false);
 
             // Account for the current conjuagtion of the Rz
             let (x_mult, y_mult) =
@@ -857,10 +859,13 @@ impl PauliTrees {
 
             // Inset both the original and the new Pauli string
             Self::insert_root_entry_into_map(&mut root_table_map, root_node_index, coef_list);
-            Self::insert_root_entry_into_map(&mut root_table_map, new_root_node_index, new_coef_list);
-
+            Self::insert_root_entry_into_map(
+                &mut root_table_map,
+                new_root_node_index,
+                new_coef_list,
+            );
         }
-        
+
         self.h_s_conjugations_map.reset(rz.qubit_1);
         self.scatter(&mut root_table_map);
     }
@@ -890,6 +895,10 @@ impl PauliTrees {
 }
 
 impl GeneratorSet for PauliTrees {
+    fn init_any(&mut self, _pstrs: BitVec, _coef_list: Vec<CoefficientList>) {
+        panic!("Function not implemented for this generator set");
+    }
+
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default();
 
@@ -969,7 +978,7 @@ impl std::fmt::Display for PauliTrees {
             let pstr = self.ith_pstr_as_str(pstr_index);
 
             for (i, pgate) in pstr.chars().enumerate() {
-                let current_pgate = PauliUtils::char_to_pauli_gate(&pgate);
+                let current_pgate = PauliUtils::pgate_from_char(&pgate);
 
                 let actual_pgate = self
                     .h_s_conjugations_map

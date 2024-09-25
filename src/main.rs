@@ -52,6 +52,11 @@ struct Args {
     #[arg(short = 'a', long, default_value_t = false, verbatim_doc_comment)]
     equiv_all_generators: bool,
 
+    /// Simulates the circuit "backwards" in order to more efficiently simulate
+    /// measurements.
+    #[arg(short = 'b', long, default_value_t = false, verbatim_doc_comment)]
+    sim_backwards: bool,
+
     /// When using the ptrees implementation we can set the size
     /// of the internal nodes in the tree; the node body bits (nbb).
     /// By default or when a 0 is provided the argument is ignored
@@ -95,9 +100,17 @@ fn main() {
     // Simulate, or run an equivalence check
     match args.equiv_circuit_file.as_str() {
         "None" => {
-            simulator.simulate(&circuit);
+            if args.sim_backwards {
+                simulator.simulate_backwards(&circuit);
+            } else {
+                simulator.simulate_with_sampler(&circuit);
+            }
         }
         _ => {
+            if args.sim_backwards {
+                eprintln!("Simulating the circuit backwards can only be done when running a normal simulation, not an equivalence check.");
+            }
+
             let equiv_circuit = Circuit::from_file(&args.equiv_circuit_file);
             simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators);
         }

@@ -19,12 +19,27 @@ impl CoefficientList {
         }
     }
 
+    pub fn new_with_coef(generator_index: usize, coef: f64) -> CoefficientList {
+        CoefficientList {
+            coefficients: vec![(generator_index, FloatingPointOPC::new(coef))],
+        }
+    }
+
     /// Multiply all coefficients with the provided value
     /// fp_ops are the number of floating point operations performed on provided f64.
     pub fn multiply(&mut self, fp: &FloatingPointOPC) {
         for (_, coefficient) in self.coefficients.iter_mut() {
             coefficient.mul(fp);
         }
+    }
+
+    /// Return the sum of all stored coefficients
+    pub fn sum(&self) -> f64 {
+        let mut sum = FloatingPointOPC::new(0.0);
+        for (_, f) in self.coefficients.iter() {
+            sum.add(f);
+        }
+        sum.as_f64()
     }
 
     /// Merge the provided coeffiencts list with the current one.
@@ -71,7 +86,7 @@ impl CoefficientList {
         }
         true
     }
-    
+
     /// Returns if the coefficient list would be valid for the ith generator.
     /// This is the case if:
     /// 1. The coefficient list only contains the coefficient of the ith generator

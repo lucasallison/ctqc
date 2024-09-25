@@ -1,12 +1,16 @@
 use std::fmt::Display;
+use std::any::Any;
+
+use bitvec::prelude::*;
 
 use crate::circuit::Gate;
+use shared::coefficient_list::CoefficientList;
 
 pub mod measurement_sampler;
 use measurement_sampler::MeasurementSampler;
 
-mod pauli_string;
-mod shared;
+pub mod pauli_string;
+pub mod shared;
 mod utils;
 
 // Implementations of the GeneratorSet trait
@@ -22,7 +26,10 @@ use pauli_pools::PauliPools;
 use pauli_trees::PauliTrees;
 use row_wise_bitvec::RowWiseBitVec;
 
-pub trait GeneratorSet: Display {
+pub trait GeneratorSet: Display+Any {
+    /// Add the provided Pauli strings to the set.
+    fn init_any(&mut self, pstrs: BitVec, coef_list: Vec<CoefficientList>);
+
     /// Initialize the generator set with the generators of the all zero state or all plus state.
     fn init_generators(&mut self, zero_state_generators: bool);
 

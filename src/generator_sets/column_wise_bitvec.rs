@@ -1,3 +1,4 @@
+use core::panic;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -202,6 +203,10 @@ impl ColumnWiseBitVec {
 }
 
 impl GeneratorSet for ColumnWiseBitVec {
+    fn init_any(&mut self, _pstrs: BitVec, _coef_list: Vec<CoefficientList>) {
+        panic!("Function not implemented for this generator set");
+    }
+
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default(self.n_qubits);
 
