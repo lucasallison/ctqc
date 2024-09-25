@@ -347,7 +347,9 @@ impl Simulator {
     /// Obtains a start-of-time observable that will give the probability of measuring |0> for the qubit by 
     /// conjugating the current-time observable with the inverse of the circuit.
     pub fn simulate_backwards(&mut self, circuit: &Circuit) {
-         let start = Instant::now();
+        let start = Instant::now();
+
+        let qubits_to_measure = circuit.measurements();
 
         // We will keep track of multiple maps to efficiently store the observable used to simulate measurements:
         // 1. Represents the observable used for a measurement at the end of the circuit, or "current-time" observable.
@@ -361,7 +363,7 @@ impl Simulator {
         //    probability of measuring |0> and |1> for the ith qubit by summing the coefficients of the summands that consist of exclusively I and Z matrices.
 
         // The first measurement is simulated with the observable 0.5(I + Z_0)
-        let mut current_time_observable = Self::get_first_qubit_observable(circuit.n_qubits());
+        let mut current_time_observable = Self::get_single_qubit_observable(circuit.n_qubits(), qubits_to_measure[0]);
 
         // None of the summands are conjugated
         let mut unconjugated_observable_summands = current_time_observable.clone();
@@ -372,7 +374,7 @@ impl Simulator {
         // Save measurement results
         let mut measurement_results = Vec::with_capacity(circuit.n_qubits());
 
-        for qubit in 0..circuit.n_qubits() {
+        for qubit in qubits_to_measure {
 
             // Convert the unconjugated summands to a PauliMap to perform conjugations
             let mut unconjugated_observable_summands_pmap = PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits());
@@ -395,7 +397,6 @@ impl Simulator {
                 &mut start_of_time_observable,
                 &mut unconjugated_observable_summands_pmap.take_pstr_map(),
             );
-
 
             // From the start-of-time observable and the current-time observable, which are inteded to measure |0>, we can obtain the observable that will
             // give us the probability of measuring |1> for the qubit. This is because the observable only differs a minus sign in the Z_qubit term.
@@ -576,19 +577,20 @@ impl Simulator {
         1
     }
 
-    /// Return the observable for the first qubit, i.e., 0.5(I + Z_0)
-    fn get_first_qubit_observable(
+    /// Return the observable for single qubit, i.e., 0.5(I + Z_{target_qubit})
+    fn get_single_qubit_observable(
         n_qubits: usize,
+        target_qubit: usize,
     ) -> HashMap<BitVec, CoefficientList, FxBuildHasher> {
         let mut observable: HashMap<BitVec, CoefficientList, FxBuildHasher> =
             HashMap::with_capacity_and_hasher(1, FxBuildHasher::default());
 
         let only_i_pstr = bitvec![0; 2*n_qubits];
-        let mut first_z_pstr = bitvec![0; 2*n_qubits];
-        PauliUtils::set_pauli_gate_in_bitslice(&mut first_z_pstr, PauliGate::Z, 0);
+        let mut single_z_pstr = bitvec![0; 2*n_qubits];
+        PauliUtils::set_pauli_gate_in_bitslice(&mut single_z_pstr, PauliGate::Z, target_qubit);
 
         observable.insert(only_i_pstr, CoefficientList::new_with_coef(0, 0.5));
-        observable.insert(first_z_pstr, CoefficientList::new_with_coef(1, 0.5));
+        observable.insert(single_z_pstr, CoefficientList::new_with_coef(1, 0.5));
 
         observable
     }

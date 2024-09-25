@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use meval;
 use regex::Regex;
 use snafu::prelude::*;
+use std::collections::HashSet;
 use std::{cmp, fmt};
 use std::{error::Error, fs};
 
@@ -120,7 +121,7 @@ lazy_static! {
 pub struct Circuit {
     name: String,
     gates: Vec<Gate>,
-    measurements: Vec<usize>,
+    measurements: HashSet<usize>,
     n_qubits: usize,
 }
 
@@ -129,7 +130,7 @@ impl Circuit {
         let mut circuit = Circuit {
             name: file.clone(),
             gates: Vec::new(),
-            measurements: Vec::new(),
+            measurements: HashSet::new(),
             n_qubits: 0,
         };
 
@@ -189,7 +190,7 @@ impl Circuit {
                     .parse::<usize>()?;
             } else if M_RE.is_match(line) {
                 let gate_qubit = line.split(" ").collect::<Vec<&str>>();
-                self.measurements.push(gate_qubit[1].parse::<usize>()?);
+                self.measurements.insert(gate_qubit[1].parse::<usize>()?);
                 continue;
             } else {
                 return Err(Box::new(ParseError::InvalidLine {
@@ -251,8 +252,10 @@ impl Circuit {
         }
     }
 
-    pub fn measurements(&self) -> &Vec<usize> {
-        &self.measurements
+    pub fn measurements(&self) -> Vec<usize> {
+        let mut measurements_vec: Vec<usize> = self.measurements.iter().cloned().collect();
+        measurements_vec.sort();
+        measurements_vec
     }
 }
 
