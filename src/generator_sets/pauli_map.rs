@@ -216,49 +216,30 @@ impl PauliMap {
         map
     }
 
-    /// Merges the provided PauliMap into the current one.
-    pub fn merge(&mut self, mut other: PauliMap) {
-
-        other.apply_all_h_s_conjugations();
-
-        for (pstr, coef_list) in other.take_pstr_map().drain() {
-            match self.pauli_strings_src.entry(pstr) {
-                Entry::Occupied(mut entry) => {
-                    entry.get_mut().merge(&coef_list);
-                }
-                Entry::Vacant(entry) => {
-                    entry.insert(coef_list);
-                }
-            }
-        }
-    }
 }
 
 impl GeneratorSet for PauliMap {
-
     fn init_any(&mut self, pstrs: BitVec, coef_lists: Vec<CoefficientList>) {
         self.set_default();
 
         let bits_per_pstrs = 2 * self.n_qubits;
-        assert_eq!(pstrs.len(), bits_per_pstrs * coef_lists.len(), "There should be exactly one coefficient list for each Pauli string.");
+        assert_eq!(
+            pstrs.len(),
+            bits_per_pstrs * coef_lists.len(),
+            "There should be exactly one coefficient list for each Pauli string."
+        );
 
-        for (chunk, coef_list) in pstrs.chunks(bits_per_pstrs).into_iter().zip(coef_lists.into_iter()) {
-            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_src, chunk.to_bitvec(), coef_list);
+        for (chunk, coef_list) in pstrs
+            .chunks(bits_per_pstrs)
+            .into_iter()
+            .zip(coef_lists.into_iter())
+        {
+            Self::insert_pstr_bitvec_into_map(
+                &mut self.pauli_strings_src,
+                chunk.to_bitvec(),
+                coef_list,
+            );
         }
-    }
-
-    fn sum_coef_zi_pstrs(&mut self) -> f64 {
-        self.apply_all_h_s_conjugations();
-
-        let mut sum = 0.0;
-        for (pstr, coef_list) in &self.pauli_strings_src {
-
-            if PauliUtils::is_zi_pstr(pstr) {
-                sum += coef_list.sum();
-            }
-        }
-
-        sum
     }
 
     fn init_generators(&mut self, zero_state_generators: bool) {

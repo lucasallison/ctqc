@@ -25,21 +25,6 @@ impl CoefficientList {
         }
     }
 
-    pub fn get_first_index(&self) -> usize {
-        if self.coefficients.is_empty() {
-            panic!("Coefficient list is empty.");
-        }
-        self.coefficients[0].0
-    }
-
-    pub fn get_first_coef(&self) -> FloatingPointOPC {
-        if self.coefficients.is_empty() {
-            panic!("Coefficient list is empty.");
-        }
-        self.coefficients[0].1
-    }
-
-
     /// Multiply all coefficients with the provided value
     /// fp_ops are the number of floating point operations performed on provided f64.
     pub fn multiply(&mut self, fp: &FloatingPointOPC) {
@@ -101,7 +86,7 @@ impl CoefficientList {
         }
         true
     }
-    
+
     /// Returns if the coefficient list would be valid for the ith generator.
     /// This is the case if:
     /// 1. The coefficient list only contains the coefficient of the ith generator

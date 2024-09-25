@@ -107,7 +107,6 @@ impl MeasurementSampler {
 
     /// Multiplies pstr_1 and pstr_2. result is stored in pstr_1 and any coefficient is returned.
     fn multiply_pstrs(&self, pstr_1: &mut BitSlice, pstr_2: &BitSlice) -> ImaginaryCoef {
-
         let mut coef = ImaginaryCoef::new(1.0, false);
 
         for i in 0..self.n_qubits {
@@ -311,8 +310,10 @@ impl fmt::Display for MeasurementSampler {
         let mut s = String::new();
 
         for pstr_index in 0..self.size {
-
-            s.push_str(&format!("{}", PauliString::from_bitvec(self.pstr_as_bitslice(pstr_index).to_bitvec())));
+            s.push_str(&format!(
+                "{}",
+                PauliString::from_bitvec(self.pstr_as_bitslice(pstr_index).to_bitvec())
+            ));
 
             s.push_str(" (");
             for c in self.generator_info[pstr_index].coefficients.iter() {

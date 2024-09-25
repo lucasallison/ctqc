@@ -1,10 +1,10 @@
-use std::collections::{HashMap, hash_map::Entry};
-use lazy_static::lazy_static;
-use bitvec::prelude::*;
-use fxhash::FxBuildHasher;
+use crate::generator_sets::pauli_string::utils as PauliUtils;
 use crate::generator_sets::shared::coefficient_list::CoefficientList;
 use crate::generator_sets::shared::floating_point_opc::FloatingPointOPC;
-use crate::generator_sets::pauli_string::utils as PauliUtils;
+use bitvec::prelude::*;
+use fxhash::FxBuildHasher;
+use lazy_static::lazy_static;
+use std::collections::{hash_map::Entry, HashMap};
 
 pub mod optional_progress_bar;
 
@@ -12,7 +12,7 @@ lazy_static! {
     pub static ref DAG_CHAR: char = std::char::from_u32(8224).unwrap();
 }
 
-/// Return the character representation of only non-identity Pauli matrix of the 
+/// Return the character representation of only non-identity Pauli matrix of the
 /// initial stabilizer generator that is used to verify equivalence.
 pub fn z_x_print_char(check_zero_state_generators: bool) -> char {
     if check_zero_state_generators {
@@ -30,7 +30,10 @@ pub fn half_all_coefficients(map: &mut HashMap<BitVec, CoefficientList, FxBuildH
 }
 
 /// Merge the second map into the first map.
-pub fn merge_maps(map1: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, map2: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>) {
+pub fn merge_maps(
+    map1: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
+    map2: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
+) {
     for (pstr, coef_list) in map2.drain() {
         match map1.entry(pstr) {
             Entry::Occupied(mut entry) => {
@@ -44,7 +47,11 @@ pub fn merge_maps(map1: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, ma
 }
 
 /// Insert the given coefficient list into the map at the given Pauli string.
-pub fn insert_into_map(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>, pstr: BitVec, coef_list: CoefficientList) {
+pub fn insert_into_map(
+    map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
+    pstr: BitVec,
+    coef_list: CoefficientList,
+) {
     match map.entry(pstr) {
         Entry::Occupied(mut entry) => {
             entry.get_mut().merge(&coef_list);
@@ -53,7 +60,6 @@ pub fn insert_into_map(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>
             entry.insert(coef_list);
         }
     }
-
 }
 
 /// Return the sum of the coefficients of the Pauli strings in the given map that are of the form Z_i.
