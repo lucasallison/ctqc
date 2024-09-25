@@ -373,6 +373,7 @@ impl Simulator {
         let mut measurement_results = Vec::with_capacity(circuit.n_qubits());
 
         for qubit in 0..circuit.n_qubits() {
+
             // Convert the unconjugated summands to a PauliMap to perform conjugations
             let mut unconjugated_observable_summands_pmap = PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits());
 
@@ -395,14 +396,13 @@ impl Simulator {
                 &mut unconjugated_observable_summands_pmap.take_pstr_map(),
             );
 
-            println!("SOT observable \n{}", PauliMap::from_map(start_of_time_observable.clone(), circuit.n_qubits()));
 
             // From the start-of-time observable and the current-time observable, which are inteded to measure |0>, we can obtain the observable that will
             // give us the probability of measuring |1> for the qubit. This is because the observable only differs a minus sign in the Z_qubit term.
             // Where this minus sign needs to appear in the start-of-time observable can be derived from the current-time observable.
             let mut start_of_time_observable_p1 = start_of_time_observable.clone();
             Self::get_plus_one_observable(
-                &mut start_of_time_observable,
+                &mut start_of_time_observable_p1,
                 &current_time_observable,
                 qubit,
             );
@@ -419,12 +419,16 @@ impl Simulator {
                 "p0": p0 / (p0 + p1)
             }));
 
-            // Keep the observable that corresponds to the measurement result
-            if measurement != 0 {
+            // Keep the start-of-time observable that corresponds to the measurement result and update the current-time observable
+            if measurement == 1 {
                 std::mem::swap(
                     &mut start_of_time_observable,
                     &mut start_of_time_observable_p1,
                 );
+
+                let mut updated_current_time_observable = current_time_observable.clone();
+                Self::get_plus_one_observable(&mut updated_current_time_observable, &current_time_observable, qubit);
+                std::mem::swap(&mut current_time_observable, &mut updated_current_time_observable);
             }
 
             if qubit + 1 >= circuit.n_qubits() {
@@ -453,7 +457,7 @@ impl Simulator {
         current_time_observable: &HashMap<BitVec, CoefficientList, FxBuildHasher>,
         target_qubit: usize,
     ) {
-        let mut new_star_of_time_observable =
+        let mut new_start_of_time_observable =
             HashMap::<BitVec, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
                 start_of_time_observable.len(),
                 FxBuildHasher::default(),
@@ -470,10 +474,10 @@ impl Simulator {
                 }
             }
 
-            insert_into_map(&mut new_star_of_time_observable, pstr, coef_list);
+            insert_into_map(&mut new_start_of_time_observable, pstr, coef_list);
         }
 
-        std::mem::swap(start_of_time_observable, &mut new_star_of_time_observable);
+        std::mem::swap(start_of_time_observable, &mut new_start_of_time_observable);
     }
 
     /// Expands the observable by "tensoring" the observable with 0.5(I + Z_i) for the ith qubit.
@@ -562,9 +566,6 @@ impl Simulator {
             return 0;
         }
 
-        println!("Probabilities: {:?}", probabilities);
-
-
         let p0 = probabilities[0] / total_weight;
         let mut rng = rand::thread_rng();
         let random_weight: f64 = rng.gen();
@@ -601,6 +602,7 @@ impl Simulator {
     ) {
 
         for (i, gate) in circuit.iter(true).enumerate() {
+
             // Clean the generator set every `self.conjugations_before_clean` gates, if the value is not 0
             if conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
                 generator_set.clean();
