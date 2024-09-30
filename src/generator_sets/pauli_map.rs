@@ -215,7 +215,6 @@ impl PauliMap {
         self.set_default();
         map
     }
-
 }
 
 impl GeneratorSet for PauliMap {

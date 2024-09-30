@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use std::any::Any;
+use std::fmt::Display;
 
 use bitvec::prelude::*;
 
@@ -26,7 +26,7 @@ use pauli_pools::PauliPools;
 use pauli_trees::PauliTrees;
 use row_wise_bitvec::RowWiseBitVec;
 
-pub trait GeneratorSet: Display+Any {
+pub trait GeneratorSet: Display + Any {
     /// Add the provided Pauli strings to the set.
     fn init_any(&mut self, pstrs: BitVec, coef_list: Vec<CoefficientList>);
 

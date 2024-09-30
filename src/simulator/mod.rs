@@ -343,7 +343,7 @@ impl Simulator {
         Self::print_sim_result_json(start, circuit, measurement_samples);
     }
 
-    /// Obtains a start-of-time observable that will give the probability of measuring |0> for the qubit by 
+    /// Obtains a start-of-time observable that will give the probability of measuring |0> for the qubit by
     /// conjugating the current-time observable with the inverse of the circuit.
     pub fn simulate_backwards(&mut self, circuit: &Circuit) {
         let start = Instant::now();
@@ -362,7 +362,8 @@ impl Simulator {
         //    probability of measuring |0> and |1> for the ith qubit by summing the coefficients of the summands that consist of exclusively I and Z matrices.
 
         // The first measurement is simulated with the observable 0.5(I + Z_0)
-        let mut current_time_observable = Self::get_single_qubit_observable(circuit.n_qubits(), qubits_to_measure[0]);
+        let mut current_time_observable =
+            Self::get_single_qubit_observable(circuit.n_qubits(), qubits_to_measure[0]);
 
         // None of the summands are conjugated
         let mut unconjugated_observable_summands = current_time_observable.clone();
@@ -374,9 +375,9 @@ impl Simulator {
         let mut measurement_results = Vec::with_capacity(circuit.n_qubits());
 
         for qubit in qubits_to_measure {
-
             // Convert the unconjugated summands to a PauliMap to perform conjugations
-            let mut unconjugated_observable_summands_pmap = PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits());
+            let mut unconjugated_observable_summands_pmap =
+                PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits());
 
             let progress_bar = OptionalProgressBar::new(
                 self.progress_bar,
@@ -384,7 +385,12 @@ impl Simulator {
                 &Self::pb_style(&format!("Qubit {}", qubit), "gates"),
             );
 
-            Self::conjugate_rev_circuit(&mut unconjugated_observable_summands_pmap, circuit, &progress_bar, self.conjugations_before_clean);
+            Self::conjugate_rev_circuit(
+                &mut unconjugated_observable_summands_pmap,
+                circuit,
+                &progress_bar,
+                self.conjugations_before_clean,
+            );
 
             unconjugated_observable_summands_pmap.apply_all_h_s_conjugations();
 
@@ -412,7 +418,7 @@ impl Simulator {
             let p1 = sum_coef_zi_pstrs(&start_of_time_observable_p1);
 
             let measurement = Self::select_measurement(&[p0, p1]);
-            
+
             measurement_results.push(json!({
                 "qubit": qubit,
                 "measurement": measurement,
@@ -427,17 +433,23 @@ impl Simulator {
                 );
 
                 let mut updated_current_time_observable = current_time_observable.clone();
-                Self::get_plus_one_observable(&mut updated_current_time_observable, &current_time_observable, qubit);
-                std::mem::swap(&mut current_time_observable, &mut updated_current_time_observable);
+                Self::get_plus_one_observable(
+                    &mut updated_current_time_observable,
+                    &current_time_observable,
+                    qubit,
+                );
+                std::mem::swap(
+                    &mut current_time_observable,
+                    &mut updated_current_time_observable,
+                );
             }
 
             if qubit + 1 >= circuit.n_qubits() {
                 break;
             }
 
-            unconjugated_observable_summands = Self::expand_observable(
-                &mut current_time_observable,
-                qubit + 1);
+            unconjugated_observable_summands =
+                Self::expand_observable(&mut current_time_observable, qubit + 1);
 
             // We have tensored the current-time observable with 0.5(I +/- Z_i), so we should adjust the coefficients in the start-of-time observable
             // accordingly
@@ -448,9 +460,9 @@ impl Simulator {
     }
 
     /// Return the observable to measure |1> for the target qubit
-    /// For each qubit we expand the current-time observable by tensoring it with 0.5(I + Z_i). However, if we want an observable that will give us the probability of measuring 
-    /// |0> we should have tensored the current-time observable with 0.5(I + Z_i). However, if we know which summands are tensored with Z_i in the current-time 
-    /// observable (which we can easily determine from the current-time observable, as this will be exaclty the summands whose ith matrix with are a Z matrix), we can simply 
+    /// For each qubit we expand the current-time observable by tensoring it with 0.5(I + Z_i). However, if we want an observable that will give us the probability of measuring
+    /// |0> we should have tensored the current-time observable with 0.5(I + Z_i). However, if we know which summands are tensored with Z_i in the current-time
+    /// observable (which we can easily determine from the current-time observable, as this will be exaclty the summands whose ith matrix with are a Z matrix), we can simply
     /// multiply those conjugated summands with -1 in the start-of-time observable to obtain the start-of-time observable that will give us the probability of measuring |1>.
     fn get_plus_one_observable(
         start_of_time_observable: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
@@ -594,16 +606,14 @@ impl Simulator {
         observable
     }
 
-    /// Conjugate generators stored in the Pauli map with the reverse circuit 
+    /// Conjugate generators stored in the Pauli map with the reverse circuit
     fn conjugate_rev_circuit(
         generator_set: &mut PauliMap,
         circuit: &Circuit,
         progress_bar: &OptionalProgressBar,
         conjugations_before_clean: usize,
     ) {
-
         for (i, gate) in circuit.iter(true).enumerate() {
-
             // Clean the generator set every `self.conjugations_before_clean` gates, if the value is not 0
             if conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
                 generator_set.clean();
@@ -619,7 +629,11 @@ impl Simulator {
         progress_bar.set_message(format!("{} pauli string(s)", generator_set.size()));
     }
 
-    fn print_sim_result_json(start: Instant, circuit: &Circuit, measurement_results: Vec<serde_json::Value>) {
+    fn print_sim_result_json(
+        start: Instant,
+        circuit: &Circuit,
+        measurement_results: Vec<serde_json::Value>,
+    ) {
         let res = json!({
             "simulation_type": "simulation",
             "circuit": circuit.name(),
