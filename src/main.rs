@@ -25,9 +25,8 @@ struct Args {
     /// - map:     A map of Pauli strings to their coefficients.
     /// - rbitvec: (row-wise bitvector) All Pauli strings are saved sequentially in a single bitvector.
     /// - cbitvec: (column-wise bitvector) The Pauli gates of each Pauli string at a certain
-    ///            index are saved sequentially in a seperate bitvector.
+    ///            index are saved sequentially in a separate bitvector.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
-    /// See TODO for a more detailed explaination.
     #[arg(short='d', long, default_value_t = String::from("map"), verbatim_doc_comment)]
     generator_set: String,
 
