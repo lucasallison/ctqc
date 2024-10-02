@@ -101,11 +101,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Transpile a QASM circuit to a CTQC circuit.')
 
     parser.add_argument('-f', type=str, required=True, help='File containing the QASM circuit.')
-    parser.add_argument('-o', type=str, required=True, help='File to write the CTQC circuit to.')
+    # parser.add_argument('-o', type=str, required=True, help='File to write the CTQC circuit to.')
     parser.add_argument('-opt', type=int, default=2, help='Optimization level used in transpilation. Default is 2.')
     args = parser.parse_args()
 
     try:
-        qasm_to_ctqc(args.f, args.o, args.opt)
+        qasm_to_ctqc(args.f, args.f+'.ctqc', args.opt)
     except Exception as e:
         print(e, file=sys.stderr)

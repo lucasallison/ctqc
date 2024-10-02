@@ -1,6 +1,6 @@
-# CTQC: Clifford + T Quantum Circuit Equivalence Checker
+# CTQC: Clifford + T Quantum Circuit Equivalence Verifier
 
-A rust implementation of a quantum circuit equivalence checker based on the stabilizer formalism. The theory behind the code and the code itself is explained in more detail in `TODO` (reference thesis).
+A Rust implementation of a quantum circuit equivalence verification tool based on the stabilizer formalism. The theory behind the code and the code itself is explained in more detail [here](thesis.pdf).
 
 ## Usage
 
@@ -16,15 +16,15 @@ For large circuits it can be useful to add the `-p` flag, which will print a pro
 cargo run --release -- --help
 ```
 
-The base directory contains an example circuit with random gates. To experiment with the usage of the tool this circuit can be used. For example, by checking trivial equivalence: 
+The circuits directory contains an example circuit with random gates. To experiment with the usage of the tool this circuit can be used. For example, by checking trivial equivalence: 
 
 ```
-cargo run --release -- -f example.ctqc -e example.ctqc -p
+cargo run --release -- -f circuits/example.ctqc -e circuits/example.ctqc -p
 ```
 
 ## Circuit File Formats
 
-The circuits that can be specified within these files is currently very limited. In future version we will look at the integration of QASM circuits, but as that is not the focus of this project we use a custom simplified format. There are five gates that can be used: H, S, CNOT, T and Rz(angle). Each gate of the circuit should be placed on a separate line and should be followed by the target qubit(s). In case of a CNOT the integers denote the control and target qubit respectively.
+The quantum circuits are represented using a custom file format. Each line in the file specifies one of five possible gates: H, S, CNOT, T, or Rz(angle), followed by the target qubit(s). For the CNOT gate, the integers represent the control and target qubits in that order.
 
 ### Example
 
@@ -37,6 +37,34 @@ T 2
 H 3
 ```
 
+### OpenQASM 
+
+In a future version, we plan to integrate OpenQASM circuits. However, for the current proof of concept, we only require a few operations, so a simplified file format is used. You can convert QASM files to this format using the `qasm_to_ctqc.py` script. To do so, first install Qiskit:
+
+```
+pip install qiskit
+```
+
+Afterwards, the script can be used to convert QASM files:
+
+```
+python qasm_to_ctqc.py -f circuit.qasm -o circuit.ctqc
+```
+
+### Example Circuits
+
+The `circuits` directory includes example circuits in a custom file format. Moreover, the `KetGPT.tar.gz` tarball contains both the original and optimized versions of the circuits from the [KetGPT benchmark set](https://www.kaggle.com/datasets/boranapak/ketgpt-data), also in the custom format.
+
 ## Simulation
 
-While we can theoretically perform simulations by only providing a single circuit file through the `-f` flag, for most circuits this will be computationally too intensive. The reasons for this is because of the specific way we use the stabilizer formalism. This is explained in `TODO` (reference thesis).
+Although it is theoretically possible to run simulations by specifying a single circuit file using the -f flag, this approach is computationally demanding for most circuits. The reason lies in the particular use of the stabilizer formalism, as detailed [here](thesis.pdf). However, for certain circuits, simulations remain feasible by incorporating a measurement gate into the circuit:
+
+```
+M target_qubit
+```
+
+For example, you can run the Bell circuit with the following command:
+
+```
+cargo run --release -- -f circuits/bell_circuit.ctqc
+```
