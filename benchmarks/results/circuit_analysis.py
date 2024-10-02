@@ -77,8 +77,8 @@ def calc_clif_percentage(benchmark):
 
 def clif_percentage_plot(df, benchmark_name, out_dir):
 
-    new_index_name = {index: index + f' ({int(clif_percentage)}%)'  for (index, clif_percentage) in zip(df.index, df['clif_percentage'])}
-    df = df.rename(index = new_index_name)
+    new_index_name = {index: index + f' ({int(clif_percentage)}%)' for (index, clif_percentage) in zip(df.index, df['clif_percentage'])}
+    df = df.rename(index=new_index_name)
     df = df.sort_values(by='clif_percentage')
     df = df.drop(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit'], axis=1)
 
@@ -90,6 +90,10 @@ def clif_percentage_plot(df, benchmark_name, out_dir):
     ax.set_yticklabels([i for i in range(1, len(df.columns) + 1)])
     ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
     plt.xticks(rotation=90)
+
+    # Invert the Y-axis
+    ax.invert_yaxis()
+
     plt.savefig(os.path.join(out_dir, benchmark_name+"_clif_percentage_plot.png"), bbox_inches="tight")
     plt.close()
 
@@ -195,8 +199,6 @@ def main():
         avg_clif_percentage = [round(c[0] * 100 / c[1], 1) for c in cum_clif_percentage]
         avg_rz_entropy = [round(c[0] / c[1], 2) for c in cum_rz_entropy]
         avg_gates_per_qubit = [round(c[0] / c[1], 1) for c in cum_gates_per_qubit] 
-        print(len(cum_gates_per_qubit))
-        print(len(circuits_full))
 
         df = pd.DataFrame(columns=['clif_percentage', 'rz_entropy', 'gates_per_qubit']+simulators_full)
         for i, circuit in enumerate(circuits_full):
@@ -205,10 +207,11 @@ def main():
         clif_percentage_plot(df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
         max_qubit_plot(max_qubit_df, os.path.basename(file).split('.')[0], out_dir = os.path.dirname(file))
 
-        df = df.sort_values(by='gates_per_qubit')
-        print(df)
+        df = df.sort_values(by='Map')
 
-        circuit_properties_df = df.drop(columns=['Map', 'Qiskit', 'QCEC', 'QuokkaSharp'], axis=1)     
+        circuit_properties_df = df.drop(columns=['Qiskit', 'QCEC', 'QuokkaSharp'], axis=1)     
+        circuit_properties_df= circuit_properties_df.reindex(columns=['Map', 'clif_percentage', 'rz_entropy', 'gates_per_qubit'])
+
         print_tex_table_body(circuit_properties_df)
         print_tex_table_body(max_qubit_df)
 

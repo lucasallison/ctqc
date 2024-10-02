@@ -17,7 +17,7 @@ CIRCUIT_NAMES_COMPACT = {
     'vqe': 'VQE',
     'qnn': 'QNN',
     'portfoliovqe': 'Portfolio (VQE)',
-    'wstate': 'W State',
+    'wstate': 'W state',
     'portfolioqaoa': 'Portfolio (QAOA)',
     'pricingput': 'Pricing Option',
     'qaoa': 'QAOA',

@@ -72,6 +72,7 @@ def simulate(
     except Exception as e:
         result.put(e)
 
+
 def execute_simulation(circuit_benchmark_results: Dict, 
                        simulator: Simulator, circuit: str, 
                        equiv_circuit: str, 
@@ -216,24 +217,30 @@ def benchmark(circuit_dir: str,
 
 
 if __name__ == "__main__":
-    from config import *
+    from config import TIMEOUT, RESULTS_DIR, SIM_BENCHMARKS, EQUIV_BENCHMARKS
+
+    print(f"Starting benchmarking with timeout {TIMEOUT} seconds")
 
     # Create the directory to store the benchmark results 
     if os.path.exists(RESULTS_DIR):
         RESULTS_DIR += f"_{datetime.datetime.now().isoformat(sep='_', timespec='seconds')}"
-        print(RESULTS_DIR)
-    os.makedirs(RESULTS_DIR, exist_ok=True)
+    os.makedirs(RESULTS_DIR)
     logger = Logger(RESULTS_DIR, os.path.join(RESULTS_DIR, 'benchmarks.log'), True)
 
     for sim_benchmark in SIM_BENCHMARKS:
 
         benchmark_name = sim_benchmark['benchmark_name']
+        out_dir = os.path.join(RESULTS_DIR, sim_benchmark['results_subdir'])
+        simulators = sim_benchmark['simulators']
+
+        os.makedirs(out_dir, exist_ok=True)
+
         try:
             benchmark(
                 sim_benchmark['dir'],
                 None,
-                SIMULATORS,
-                RESULTS_DIR,
+                simulators,
+                out_dir,
                 benchmark_name,
                 TIMEOUT,
                 logger)
@@ -245,12 +252,17 @@ if __name__ == "__main__":
     for equiv_benchmark in EQUIV_BENCHMARKS:
 
         benchmark_name = equiv_benchmark['benchmark_name']
+        out_dir = os.path.join(RESULTS_DIR, equiv_benchmark['results_subdir'])
+        equiv_checkers = equiv_benchmark['equiv_checkers']
+
+        os.makedirs(out_dir, exist_ok=True)
+
         try:
             benchmark(
                 equiv_benchmark['dirs'][0],
                 equiv_benchmark['dirs'][1],
-                EQUIV_CHECKERS,
-                RESULTS_DIR,
+                equiv_checkers,
+                out_dir,
                 benchmark_name,
                 TIMEOUT,
                 logger)
