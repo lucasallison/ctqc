@@ -1,0 +1,4 @@
+qiskit
+qiskit-optimization
+networkx
+numpy
