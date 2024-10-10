@@ -218,29 +218,6 @@ impl PauliMap {
 }
 
 impl GeneratorSet for PauliMap {
-    fn init_any(&mut self, pstrs: BitVec, coef_lists: Vec<CoefficientList>) {
-        self.set_default();
-
-        let bits_per_pstrs = 2 * self.n_qubits;
-        assert_eq!(
-            pstrs.len(),
-            bits_per_pstrs * coef_lists.len(),
-            "There should be exactly one coefficient list for each Pauli string."
-        );
-
-        for (chunk, coef_list) in pstrs
-            .chunks(bits_per_pstrs)
-            .into_iter()
-            .zip(coef_lists.into_iter())
-        {
-            Self::insert_pstr_bitvec_into_map(
-                &mut self.pauli_strings_src,
-                chunk.to_bitvec(),
-                coef_list,
-            );
-        }
-    }
-
     fn init_generators(&mut self, zero_state_generators: bool) {
         self.set_default();
 
