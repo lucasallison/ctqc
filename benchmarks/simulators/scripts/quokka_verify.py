@@ -1,8 +1,10 @@
 try: 
-    import sys, time
+    import sys, time, os
     import quokka_sharp as qk
+    from dotenv import load_dotenv
 
-    tool_path = "/Users/lucas/Development/thesis/ctqc/benchmarks/.gpmc/GPMC/build/gpmc -mode=1"
+    load_dotenv()
+    tool_path = os.getenv('GPMC_BINARY_PATH')
 
     circuit_1 = sys.argv[1]
     circuit_2 = sys.argv[2]
