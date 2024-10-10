@@ -4,10 +4,12 @@ if [ ! -d ".gpmc" ]; then
     mkdir .gpmc
     cd .gpmc
     git clone https://git.trs.css.i.nagoya-u.ac.jp/k-hasimt/GPMC.git
+    cd GPMC  
     sed -i "1s/^/set(CMAKE_CXX_STANDARD 17)\n\n/" CMakeLists.txt
-    cd GPMC && ./build.sh r
+    ./build.sh r
     cd ../..
 	echo "GPMC_BINARY_PATH=\"$PWD/.gpmc/GPMC/build/gpmc -mode=1\"" > simulators/scripts/.env
+fi
 
 echo "Decrompressing MQT benchmark circuits..."
 if [ ! -d "mqt_benchmarks/transp_circuits" ]; then
