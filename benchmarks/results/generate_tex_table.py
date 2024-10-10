@@ -168,11 +168,12 @@ def split_results_table(file_path, benchmark_name):
 
 def main():
     for file in get_json_files():
-        if re.search('ketgpt', file):
-            split_results_table(file, 'KetGPT')
-
         if re.search('qsharp', file):
             process_file(file, 'QuaokkaSharp')
+            continue
+        
+        split_results_table(file, 'KetGPT')
+
 
 if __name__ == "__main__":
     main()

@@ -29,58 +29,26 @@ def get_examplary_max_cut_qp(n_nodes: int, degree: int = 2) -> QuadraticProgram:
     return maxcut.to_quadratic_program()
 
 
-def create_circuit(num_qubits: int) -> QuantumCircuit:
-    """Returns a quantum circuit implementing the Quantum Approximation Optimization Algorithm for a specific max-cut example.
-
-    Arguments:
-        num_qubits: number of qubits of the returned quantum circuit
-
-    Returns:
-        QuantumCircuit: quantum circuit implementing the Quantum Approximation Optimization Algorithm
+def qaoa_random_params(num_qubits: int) -> QuantumCircuit:
+    """
+    Returns a qaoa circuit with random parameters.
     """
     qp = get_examplary_max_cut_qp(num_qubits)
     assert isinstance(qp, QuadraticProgram)
 
-    qaoa = QAOA(sampler=Sampler(), reps=2, optimizer=SLSQP(maxiter=25))
+    qaoa = QAOA(sampler=Sampler(), reps=2, optimizer=SLSQP(maxiter=2))
     
     
     # Computing the minium eigenvalue is too expensive, so we just use a random optimal point
-    qaoa_result = qaoa.compute_minimum_eigenvalue(qp.to_ising()[0])
+    # qaoa_result = qaoa.compute_minimum_eigenvalue(qp.to_ising()[0])
     # qc = qaoa.ansatz.assign_parameters(qaoa_result.optimal_point)
-
-    print('optimal: ', qaoa_result.optimal_point)
-
-
-
-    from qiskit_optimization.algorithms import MinimumEigenOptimizer
-    from qiskit_optimization.converters import QuadraticProgramToQubo
-    from qiskit.algorithms import ClassicalMinimumEigensolver
-
-    # Convert the QuadraticProgram to a QUBO (Quadratic Unconstrained Binary Optimization)
-    qp_qubo = QuadraticProgramToQubo().convert(qp)
-
-    # Solve classically to get a warm start
-    classical_solver = MinimumEigenOptimizer(ClassicalMinimumEigensolver())
-    classical_result = classical_solver.solve(qp_qubo)
-
-    # Use classical solution as an initial guess for quantum parameters
-    initial_params = np.array(classical_result.x)
-
-    print('Guess:', initial_params)
-
 
     random_optimal_point = np.random.random(len(qaoa.ansatz.parameters))
 
 
-    print('Random:', random_optimal_point)
-
-
-
-
-    #qc = qaoa.ansatz.assign_parameters(qaoa_result.optimal_point)
-    #qc.name = "qaoa"
-    #return qc
-    return 1
+    qc = qaoa.ansatz.assign_parameters(random_optimal_point)
+    qc.name = "qaoa"
+    return qc
 
 
 
@@ -88,17 +56,15 @@ def create_circuit(num_qubits: int) -> QuantumCircuit:
 if __name__ == "__main__":
 
 
-    print(create_circuit(1000))
-
-
-    exit(0)
-
-
-
-
     algorithms = ["dj", "ghz", "graphstate", "wstate", ]
 
-    qubit_counts = [i*(10**j) for j in range(2, 4) for i in range(1, 10)]
+
+    wholes = lambda i,j: j*(10**i)
+    halves = lambda i,j: j*(10**i) + (10**i)//2
+    highest_exponent = 3
+    # qubit_counts = [f(i, j) for i in range(1, highest_exponent) for j in range(1, 10) for f in (wholes, )] + [j*10**highest_exponent for j in range(1, 6)]
+    qubit_counts = [2**i for i in range(3, 14)]
+    print(qubit_counts)
 
     for algorithm in algorithms:
 

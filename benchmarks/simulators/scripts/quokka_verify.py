@@ -2,7 +2,7 @@ try:
     import sys, time
     import quokka_sharp as qk
 
-    tool_path = "/Users/lucas/Development/thesis/GPMC/build/gpmc -mode=1"
+    tool_path = "/Users/lucas/Development/thesis/ctqc/benchmarks/.gpmc/GPMC/build/gpmc -mode=1"
 
     circuit_1 = sys.argv[1]
     circuit_2 = sys.argv[2]

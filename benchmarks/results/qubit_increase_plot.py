@@ -75,7 +75,7 @@ def process_benchmark(data, simulators: List, out_dir: str):
 
 def main():
     for file in get_json_files():
-        if not re.search('ketgpt', file):
+        if re.search('qsharp', file):
             continue
     
         data = load_json_data(file)
