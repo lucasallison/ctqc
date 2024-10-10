@@ -53,7 +53,7 @@ python qasm_to_ctqc.py -f circuit.qasm -o circuit.ctqc
 
 ### Example Circuits
 
-The `circuits` directory includes example circuits in a custom file format. Moreover, the `KetGPT.tar.gz` tarball contains both the original and optimized versions of the circuits from the [KetGPT benchmark set](https://www.kaggle.com/datasets/boranapak/ketgpt-data), also in the custom format.
+The `circuits` directory includes example circuits in a custom file format. Moreover, the `mqt_benchmarks.tar.gz` tarball contains both the original and optimized versions of the circuits from the [MQT benchmark set](https://www.cda.cit.tum.de/mqtbench/), also in the custom format.
 
 ## Simulation
 
