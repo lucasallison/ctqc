@@ -16,5 +16,5 @@ class QuokkaSharp(Simulator):
         pass
 
     def equivalence_check(self, circuit_1: str, circuit_2: str) -> Dict:
-        cmd = ['python', self.quokka_sharp_verify_path, circuit_1, circuit_2]
+        cmd = ['python3', self.quokka_sharp_verify_path, circuit_1, circuit_2]
         return exec_subprocess(cmd)
