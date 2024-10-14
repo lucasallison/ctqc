@@ -18,12 +18,14 @@ fi
 
 echo "Decrompressing KetGPT benchmark circuits..."
 if [ ! -d "ketgpt_benchmarks/transp_circuits" ]; then
-    tar -xvzf ketgpt_benchmarks/transp_circuits.tar.gz -C ketgpt_benchmarks
+    # tar -xvzf ketgpt_benchmarks/transp_circuits.tar.gz -C ketgpt_benchmarks
+    echo "Ignoring unused benchmark"
 fi
 
 echo "Decrompressing QuokkaSharp benchmark circuits..."
 if [ ! -d "quokka_sharp_benchmarks/algorithm" ]; then
-    tar -xvzf quokka_sharp_benchmarks/algorithm.tar.gz -C quokka_sharp_benchmarks
+    # tar -xvzf quokka_sharp_benchmarks/algorithm.tar.gz -C quokka_sharp_benchmarks
+    echo "Ignoring unused benchmark"
 fi
 
 echo "Building CTQC..."
