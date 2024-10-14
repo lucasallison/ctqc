@@ -6,6 +6,7 @@ if [ ! -d ".gpmc" ]; then
     git clone https://git.trs.css.i.nagoya-u.ac.jp/k-hasimt/GPMC.git
     cd GPMC  
     sed -i "1s/^/set(CMAKE_CXX_STANDARD 17)\n\n/" CMakeLists.txt
+    sed -i -e "262,266d" core/Main.cpp
     ./build.sh r
     cd ../..
 	echo "GPMC_BINARY_PATH=\"$PWD/.gpmc/GPMC/bin/gpmc -mode=1\"" > simulators/scripts/.env
