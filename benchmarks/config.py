@@ -4,7 +4,7 @@ from simulators.qcec import QCEC
 from simulators.ctqc import CTQC
 
 # Timeout in seconds
-TIMEOUT = 60
+TIMEOUT = 30 * 60
 
 # Path to the directory that will contain the benchmark results
 # RESULTS_DIR = 'reproduced_results'
