@@ -2,3 +2,4 @@ qiskit
 qiskit-optimization
 networkx
 numpy
+mqt.bench
