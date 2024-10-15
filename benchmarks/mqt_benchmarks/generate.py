@@ -27,7 +27,8 @@ def qaoa_random_params(num_qubits: int) -> QuantumCircuit:
 if __name__ == "__main__":
 
 
-    algorithms = ["dj", "ghz", "graphstate", "qaoa", "wstate" ]
+    # algorithms = ["dj", "ghz", "graphstate", "qaoa", "wstate" ]
+    algorithms = ["grover-noancilla", "grover-v-chain", "portfolioqaoa", "portfoliovqe", "qft", "qftentangled", "qnn", "qpeexact", "qpeinexact", "qwalk-noancilla", "qwalk-v-chain", "realamprandom", "su2random", "twolocalrandom", "vqe", "shor", "pricingcall", "pricingput", "groundstate", "routing", "tsp" ]
 
     # wholes = lambda i,j: j*(10**i)
     # halves = lambda i,j: j*(10**i) + (10**i)//2
