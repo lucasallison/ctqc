@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import signal
 from mqt.bench import get_benchmark
 from qiskit import QuantumCircuit
 from qiskit.qasm2 import dumps
@@ -26,6 +27,8 @@ def qaoa_random_params(num_qubits: int) -> QuantumCircuit:
 
 if __name__ == "__main__":
 
+    TIMEMOUT = 2 * 60
+
 
     # algorithms = ["dj", "ghz", "graphstate", "qaoa", "wstate" ]
     algorithms = ["grover-noancilla", "grover-v-chain", "portfolioqaoa", "portfoliovqe", "qft", "qftentangled", "qnn", "qpeexact", "qpeinexact", "qwalk-noancilla", "qwalk-v-chain", "realamprandom", "su2random", "twolocalrandom", "vqe", "shor", "pricingcall", "pricingput", "groundstate", "routing", "tsp" ]
@@ -38,16 +41,33 @@ if __name__ == "__main__":
     qubit_counts = [2**i for i in range(3, 16)]
     print(qubit_counts)
 
+    algorithm_timedout = False
     for algorithm in algorithms:
+        algorithm_timedout = False
 
         for qubit_count in qubit_counts:
+
+            if algorithm_timedout:
+                print(f"Skipping {algorithm}_{qubit_count}.qasm due to previous timeout.")
+                continue
 
             circ_file = os.path.join('circuits', f"{algorithm}_{qubit_count}.qasm")
             if os.path.exists(circ_file):
                 print(f"{circ_file} already exists. Skipping...")
                 continue
 
-            result = get_benchmark(benchmark_name=algorithm, level="indep", circuit_size=qubit_count, compiler="qiskit")
+
+            def timeout_handler(signum, frame):
+                raise TimeoutError(f"Timeout reached.")
+
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(TIMEMOUT)
+            try:
+                result = get_benchmark(benchmark_name=algorithm, level="indep", circuit_size=qubit_count, compiler="qiskit")
+            except Exception as e:
+                print(f"Failed to generate {algorithm}_{qubit_count}.qasm: {e}")
+                algorithm_timedout = True
+                continue
 
             if isinstance(result, QuantumCircuit):
                 qasm = dumps(result)
