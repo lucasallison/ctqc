@@ -9,7 +9,7 @@ circuits=(
     "qpe_transp"
     "realamp_transp"
     "su_transp"
-    "wstate"
+    "wstate_transp"
 )
 
 mkdir -p transp_circuits/transp
