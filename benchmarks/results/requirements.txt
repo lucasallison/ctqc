@@ -1,6 +1,0 @@
-seaborn
-matplotlib
-numpy
-qiskit
-scipy
-tqdm
