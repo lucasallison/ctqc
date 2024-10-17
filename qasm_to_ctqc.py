@@ -1,8 +1,20 @@
-import re, argparse, sys
+import re, argparse, sys, os, signal
 from qiskit import QuantumCircuit, qasm3
 from qiskit.compiler import transpile
 
-def qasm_to_ctqc(qasm_file: str, transpiled_circuit_name: str, opt: int=2):
+def qasm_to_ctqc(qasm_file: str, transpiled_circuit_file: str, opt: int=2, timeout: int=60):
+
+    if os.path.exists(transpiled_circuit_file):
+        print(f"The file '{transpiled_circuit_file}' already exists. Skipping this circuit.")
+        return
+    
+    print(f'Transpiling {qasm_file}...')
+
+    def timeout_handler(signum, frame):
+        raise TimeoutError(f"Timeout reached.")
+
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(timeout)
 
     try:
         origin = QuantumCircuit.from_qasm_file(qasm_file)
@@ -93,7 +105,7 @@ def qasm_to_ctqc(qasm_file: str, transpiled_circuit_name: str, opt: int=2):
             
         transpilation_started = True
 
-    with open(transpiled_circuit_name, 'w') as f:
+    with open(transpiled_circuit_file, 'w') as f:
         f.write(ctqc_transpiled)
 
 
@@ -103,13 +115,14 @@ if __name__ == "__main__":
     parser.add_argument('-f', type=str, required=True, help='File containing the QASM circuit.')
     parser.add_argument('-o', type=str, default=None, help='File to write the CTQC circuit to.')
     parser.add_argument('-opt', type=int, default=2, help='Optimization level used in transpilation. Default is 2.')
+    parser.add_argument('-t', type=int, default=60, help='Timeout in seconds')
     args = parser.parse_args()
 
     try:
         if args.o is None:
             output_file = args.f.replace('.qasm', '.ctqc') if args.f.endswith('.qasm') else args.f + '.ctqc'
-            qasm_to_ctqc(args.f, output_file, args.opt)
+            qasm_to_ctqc(args.f, output_file, args.opt, args.t)
         else:
-            qasm_to_ctqc(args.f, args.o, args.opt)
+            qasm_to_ctqc(args.f, args.o, args.opt, args.t)
     except Exception as e:
         print('Exception!', e, file=sys.stderr)
