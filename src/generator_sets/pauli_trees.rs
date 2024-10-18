@@ -723,6 +723,30 @@ impl PauliTrees {
         *self = new_ptrees;
     }
 
+   fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
+        // Map from root index to Pauli string index
+        let mut m = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+
+        // Gather all unique Pauli strings
+        for pstr_index in 0..self.size() {
+            let root_node_index = self.root_node_index(pstr_index);
+            match m.entry(root_node_index) {
+                Entry::Occupied(mut e) => {
+                    e.get_mut().merge(&self.generator_info[pstr_index].clone());
+                }
+                Entry::Vacant(e) => {
+                    e.insert(self.generator_info[pstr_index].clone());
+                }
+            }
+        }
+
+        m
+    }
+
+
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
         // Scatter all unique Pauli strings
         self.root_node_table.clear();
@@ -812,25 +836,22 @@ impl PauliTrees {
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
         // To ensure we do not store duplicate root table entries, we collect all of them into a map
         // and scatter them back after the conjugation.
-        let mut root_table_map =
-            HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
-                self.size(),
-                FxBuildHasher::default(),
-            );
+        let mut root_table_map = HashMap::<usize, usize, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
 
-        let mut new_gen_info = std::mem::take(&mut self.generator_info);
-
-        for (pstr_index, mut coef_list) in (0..self.size()).zip(new_gen_info.drain(..)) {
+        for pstr_index in 0..self.size() {
             let (actual_pgate, coef_mul) =
                 self.get_actual_p_gate_and_coef_mul(pstr_index, rz.qubit_1);
 
             // Apply the H/S conjugations
-            coef_list.multiply(&coef_mul);
-            let root_node_index = self.set_pgate(pstr_index, rz.qubit_1, &actual_pgate, false);
+            self.generator_info[pstr_index].multiply(&coef_mul);
+            let root_index = self.set_pgate(pstr_index, rz.qubit_1, &actual_pgate, true);
+            root_table_map.insert(root_index, pstr_index);
 
             // The Rz gate has no effect on the Pauli string, we can insert it directly
             if actual_pgate == PauliGate::Z || actual_pgate == PauliGate::I {
-                Self::insert_root_entry_into_map(&mut root_table_map, root_node_index, coef_list);
                 continue;
             }
 
@@ -841,11 +862,11 @@ impl PauliTrees {
             };
 
             // Create the new Pauli string
-            let mut new_coef_list = coef_list.clone();
+            let mut new_coef_list = self.generator_info[pstr_index].clone();
             let new_root_node_index =
                 self.set_pgate(pstr_index, rz.qubit_1, &new_pstr_pgate, false);
 
-            // Account for the current conjuagtion of the Rz
+            // Account for the current conjugation of the Rz
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &actual_pgate, conjugate_dagger);
             let (origin_pstr_mult, new_pstr_mult) = if actual_pgate == PauliGate::X {
@@ -854,43 +875,24 @@ impl PauliTrees {
                 (y_mult, x_mult)
             };
 
-            coef_list.multiply(&origin_pstr_mult);
+            self.generator_info[pstr_index].multiply(&origin_pstr_mult);
             new_coef_list.multiply(&new_pstr_mult);
 
-            // Inset both the original and the new Pauli string
-            Self::insert_root_entry_into_map(&mut root_table_map, root_node_index, coef_list);
-            Self::insert_root_entry_into_map(
-                &mut root_table_map,
-                new_root_node_index,
-                new_coef_list,
-            );
+            // The Pauli string is already in the table
+            if root_table_map.contains_key(&new_root_node_index) {
+                self.generator_info[root_table_map[&new_root_node_index]].merge(&new_coef_list);
+
+            // The Pauli string is not present, append to the root node table
+            } else {
+                let root_node =
+                    self.index_to_bitvec(new_root_node_index, self.n_bits_per_root_node());
+                self.root_node_table.extend_from_bitslice(&root_node);
+                self.generator_info.push(new_coef_list);
+                root_table_map.insert(new_root_node_index, self.size() - 1);
+            }
         }
 
         self.h_s_conjugations_map.reset(rz.qubit_1);
-        self.scatter(&mut root_table_map);
-    }
-
-    // ---- Helper functions ---- //
-
-    fn insert_root_entry_into_map(
-        m: &mut HashMap<usize, CoefficientList, FxBuildHasher>,
-        root_index: usize,
-        c_list: CoefficientList,
-    ) {
-        match m.entry(root_index) {
-            Entry::Occupied(mut e) => {
-                e.get_mut().merge(&c_list);
-
-                if e.get_mut().is_empty() {
-                    e.remove_entry();
-                }
-            }
-            Entry::Vacant(e) => {
-                if !c_list.is_empty() {
-                    e.insert(c_list);
-                }
-            }
-        }
     }
 }
 
@@ -953,12 +955,15 @@ impl GeneratorSet for PauliTrees {
 
     fn get_measurement_sampler(&mut self) -> MeasurementSampler {
         // TODO: apply H/S conjugations
-        panic!("Cannot get measurement sampler from ColumnWiseBitVec, all H/S conjugations must be applied first");
+        panic!("Cannot get measurement sampler from PauliTrees, all H/S conjugations must be applied first");
         // let pstr_to_coef_map = self.get_pstr_to_coef_map();
         // MeasurementSampler::from_map(pstr_to_coef_map, self.n_qubits)
     }
 
-    fn clean(&mut self) {}
+    fn clean(&mut self) {
+        let mut m = self.gather();
+        self.scatter(&mut m);
+    }
 
     fn size(&self) -> usize {
         self.generator_info.len()
