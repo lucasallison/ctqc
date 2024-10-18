@@ -211,11 +211,7 @@ impl Simulator {
             "simulation_type": "equivalence",
             "circuits": [circuit_1.name(), circuit_2.name()],
             "equivalent": equiv,
-            "runtime": {
-                "mili_seconds": start.elapsed().as_millis() % 1000,
-                "seconds": start.elapsed().as_secs() % 60,
-                "minutes": start.elapsed().as_secs() / 60
-            }
+            "runtime_as_secs": start.elapsed().as_secs_f64(),
         });
         serde_json::to_string_pretty(&res).unwrap()
     }
@@ -637,11 +633,7 @@ impl Simulator {
         let res = json!({
             "simulation_type": "simulation",
             "circuit": circuit.name(),
-            "runtime": {
-                "mili_seconds": start.elapsed().as_millis() % 1000,
-                "seconds": start.elapsed().as_secs() % 60,
-                "minutes": start.elapsed().as_secs() / 60
-            },
+            "runtime_as_secs": start.elapsed().as_secs_f64(),
             "measurements": measurement_results
         });
 
