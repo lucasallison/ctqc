@@ -1,7 +1,7 @@
 import os
 from typing import Dict
 from simulators.interface import Simulator
-from simulators.utils import exec_subprocess
+from simulators.utils import exec_subprocess_with_memory_limit
 
 
 class QCEC(Simulator):
@@ -17,4 +17,4 @@ class QCEC(Simulator):
 
     def equivalence_check(self, circuit_1: str, circuit_2: str) -> Dict:
         cmd = ['python3', self.qcec_verify_path, circuit_1, circuit_2]
-        return exec_subprocess(cmd)
+        return exec_subprocess_with_memory_limit(cmd)

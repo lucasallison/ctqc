@@ -1,8 +1,9 @@
 import os, time, subprocess, json, resource
 from typing import Dict, List
 from dotenv import load_dotenv
-#from simulators.interface import Simulator
-from interface import Simulator
+from simulators.utils import exec_subprocess_with_memory_limit
+from simulators.interface import Simulator
+#from interface import Simulator
 
 
 class CTQC(Simulator):
@@ -35,21 +36,10 @@ class CTQC(Simulator):
         ctqc_circuit_1 = circuit_1.replace('.qasm', '.ctqc')
         ctqc_circuit_2 = circuit_2.replace('.qasm', '.ctqc')
 
-        start_time = time.time()
-        res = subprocess.run(self.get_subprocess_args(ctqc_circuit_1, ctqc_circuit_2), capture_output=True)
-        end_time = time.time()
-        execution_time = end_time - start_time
+        res = exec_subprocess_with_memory_limit(self.get_subprocess_args(ctqc_circuit_1, ctqc_circuit_2))
 
-        if res.stderr.decode() != '':
-            raise RuntimeError(res.stderr.decode())
 
-        max_rss_bytes = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
-        try:
-            res = json.loads(res.stdout.decode())
-        except Exception as e:
-            raise RuntimeError(f'Failed parsing output to json: {res.stdout.decode()} \n {e}')
-
-        return {'equivalent': res['equivalent'], 'runtime': execution_time, 'max_rss_bytes': max_rss_bytes}
+        return {'equivalent': res['equivalent'], 'runtime': res['runtime_as_secs'], 'max_rss_bytes': res['max_rss_bytes']}
 
 
 if __name__=='__main__':
