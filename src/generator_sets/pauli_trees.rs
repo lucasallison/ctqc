@@ -521,9 +521,9 @@ impl PauliTrees {
         pgate: Option<&PauliGate>,
         update_root_table: bool,
     ) -> (PauliGate, Option<usize>) {
-        if pgate.is_none() {
+        if !pgate.is_none() {
             self.check_memory_availability(self.depth, 1);
-        }
+        } 
 
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
