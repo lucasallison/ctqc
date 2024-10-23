@@ -6,6 +6,7 @@ import json
 import ast
 import pathlib
 import re
+import psutil
 from multiprocessing import Process, Queue
 from typing import List, Dict
 from pathlib import Path
@@ -13,6 +14,21 @@ from tools.logger import Logger
 from tools.utils import natural_keys, kill_process_tree, find_file
 from simulators.interface import Simulator
 from qiskit import qasm3, QuantumCircuit
+
+
+def kill_user_processes(username, pattern):
+    killed = []
+    for proc in psutil.process_iter(['name', 'username']):
+        try:
+            if (proc.info['username'] == username and 
+                pattern in proc.info['name'].lower()):
+                proc.kill()
+                killed.append(proc.info['name'])
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
+    
+    print(f"Killed {killed}")
+    return killed
 
 
 def circuit_stats(circuit: str) -> Dict:
@@ -199,6 +215,8 @@ def benchmark(circuit_dir: str,
         circuit_benchmark_results['results'] = list()
         for simulator in simulators:
             execute_simulation(circuit_benchmark_results, simulator, circuit, equiv_circuit, timedout, timeout, logger)
+            if simulator.name() == 'QuokkaSharp':
+                kill_user_processes('lucas', 'gpmc')
 
         # Write temporary results
         results_tmp_file = os.path.join(results_dir, f"{benchmark_name}_results.tmp")
