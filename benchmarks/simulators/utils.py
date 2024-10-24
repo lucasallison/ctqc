@@ -14,12 +14,10 @@ def exec_subprocess_with_memory_limit(command, mb_mem_limit=8 * 1024, check_inte
         
         while process.poll() is None:
             try:
-                memory_info = proc.memory_info()
                 all_procs = [proc] + proc.children(recursive=True)
                 total_memory_rss = sum(p.memory_info().rss for p in all_procs)
-
                 max_rss = max(max_rss, total_memory_rss)
-                if memory_info.rss > mb_mem_limit * 1024 * 1024:  # Convert MB to bytes
+                if total_memory_rss > mb_mem_limit * 1024 * 1024:  # Convert MB to bytes
                     process.terminate()
                     process.wait(timeout=3)
                     if process.poll() is None:
