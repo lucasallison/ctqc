@@ -39,6 +39,16 @@ def qasm2_to_ctqc(qasm_file: str):
                 qubit2 = int(match.group(4))
                 ctqc_transpiled += "CNOT " + convert_qubit(qreg1, qubit1, qreg_offset) + " " + convert_qubit(qreg2, qubit2, qreg_offset) + "\n"
 
+            elif re.match(r"swap \w+\[\d+\],\w+\[\d+\];", line):
+                match = re.match(r"swap (\w+)\[(\d+)\],(\w+)\[(\d+)\];", line)
+                qreg1 = match.group(1)
+                qubit1 = int(match.group(2))
+                qreg2 = match.group(3)
+                qubit2 = int(match.group(4))
+                cnot_cq1_tq2 = "CNOT " + convert_qubit(qreg1, qubit1, qreg_offset) + " " + convert_qubit(qreg2, qubit2, qreg_offset) + "\n"
+                cnot_cq2_tq1 = "CNOT " + convert_qubit(qreg2, qubit2, qreg_offset) + " " + convert_qubit(qreg1, qubit1, qreg_offset) + "\n"
+                ctqc_transpiled += cnot_cq1_tq2 + cnot_cq2_tq1 + cnot_cq1_tq2
+
             elif re.match(r"rz(.*) \w+\[\d+\];", line):
                 match = re.match(r"rz\((.*)\) (\w+)\[(\d+)\];", line)
                 angle = match.group(1)
