@@ -4,7 +4,7 @@ from simulators.qcec import QCEC
 from simulators.ctqc import CTQC
 
 # Timeout in seconds
-TIMEOUT = 1 * 60
+TIMEOUT = 5 * 60
 
 # Path to the directory that will contain the benchmark results
 # RESULTS_DIR = 'reproduced_results'
@@ -12,7 +12,6 @@ RESULTS_DIR = 'mqt_scaled_results'
 
 # Simulation benchmarks
 SIM_BENCHMARKS = []
-
 
 qiskit_optimized = ["dj", "ghz", "graphstate", "qft", "qftentangled", "qnn", "qpeexact", "qpeinexact", "realamp", "su", "twolocal", "wstate"]
 optimized_dirs = ['opt']
