@@ -1,0 +1,442 @@
+[
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 63
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "stats": {
+          "equivalent": false,
+          "runtime": 0.038747838,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": false,
+          "runtime": 14.726128809,
+          "max_rss_bytes": 11091968
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 0.088637824,
+          "max_rss_bytes": 1294336
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 0.149024117,
+          "max_rss_bytes": 15732736
+        }
+      },
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "not_equivalent",
+          "runtime": 0.03937840461730957,
+          "max_rss_bytes": 90599424
+        }
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 0.06335854530334473,
+          "max_rss_bytes": 18116608
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "stats": {
+          "equivalent": false,
+          "runtime": 139.73433158,
+          "max_rss_bytes": 871546880
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Failed parsing the result to dict:  \n Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "not_equivalent",
+          "runtime": 14.526811361312866,
+          "max_rss_bytes": 865406976
+        }
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 0.38757753372192383,
+          "max_rss_bytes": 37511168
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1104,
+        "rz_gates": 1488
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 894,
+        "rz_gates": 813
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Failed parsing the result to dict:  \n Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 3.336482524871826,
+          "max_rss_bytes": 146591744
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4256,
+        "rz_gates": 6048
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 2094,
+        "rz_gates": 1933
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 23.7266902923584,
+          "max_rss_bytes": 526458880
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16704,
+        "rz_gates": 24384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 4494,
+        "rz_gates": 4173
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66176,
+        "rz_gates": 97920
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 8910,
+        "rz_gates": 8653
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263424,
+        "rz_gates": 392448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 18126,
+        "rz_gates": 17613
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1051136,
+        "rz_gates": 1571328
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 36558,
+        "rz_gates": 35533
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4199424,
+        "rz_gates": 6288384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/flipped/qftentangled_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 73422,
+        "rz_gates": 71373
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  }
+]
