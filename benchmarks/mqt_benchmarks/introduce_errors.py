@@ -69,7 +69,13 @@ def remove_random_gate_from_qasm(filename):
     removed_instruction = random.choice(instructions)
     removed_instruction_index = instructions.index(removed_instruction)
 
-    new_circuit = QuantumCircuit(circuit.num_qubits)
+    new_circuit = QuantumCircuit()
+
+    for qreg in circuit.qregs:
+        new_circuit.add_register(qreg)
+
+    for creg in circuit.cregs:
+        new_circuit.add_register(creg)
 
     for i, inst in enumerate(instructions):
         if i != removed_instruction_index:
@@ -81,6 +87,7 @@ def remove_random_gate_from_qasm(filename):
                 new_circuit.append(gate, qubits, clbits)
             except Exception as e:
                 raise RuntimeError(f"Failed to append instruction {inst} to the new circuit: {e}")
+
 
     
     return new_circuit
