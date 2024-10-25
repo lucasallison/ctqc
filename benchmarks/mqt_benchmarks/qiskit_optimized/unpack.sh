@@ -8,6 +8,6 @@ done
 
 cp -r dj full
 for alg in "${algorithms[@]}"; do
-    fd "$alg" $algo -e qasm -e ctqc -I  | while read file; do cp $file $(echo $file | sed s"/$alg/full/"); done
+    fd "$alg" $alg -e qasm -e ctqc -I | while read file; do cp $file $(echo $file | sed s"/$alg/full/"); done
 done
 
