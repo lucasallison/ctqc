@@ -5,3 +5,5 @@ algorithms=("dj" "ghz" "graphstate" "qft" "qftentangled" "qnn" "qpeexact" "qpein
 for alg in "${algorithms[@]}"; do
     rm -rf $alg
 done
+
+rm -rf full
