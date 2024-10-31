@@ -27,18 +27,14 @@ def kill_user_processes(username, pattern):
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
     
-    print(f"Killed {killed}")
     return killed
 
 
 def remove_files_from_dir(directory: str, pattern: str):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-
-        # Check if it is a file (and not a directory)
         if os.path.isfile(file_path) and "quokka" in filename:
             os.remove(file_path)
-            print(f'Removed: {file_path}')
 
 
 def circuit_stats(circuit: str) -> Dict:
