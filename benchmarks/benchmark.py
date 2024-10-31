@@ -31,6 +31,16 @@ def kill_user_processes(username, pattern):
     return killed
 
 
+def remove_files_from_dir(directory: str, pattern: str):
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+
+        # Check if it is a file (and not a directory)
+        if os.path.isfile(file_path) and "quokka" in filename:
+            os.remove(file_path)
+            print(f'Removed: {file_path}')
+
+
 def circuit_stats(circuit: str) -> Dict:
     """
     Returns the number of qubits, Clifford gates and Rz gates in a circuit. 
@@ -217,6 +227,8 @@ def benchmark(circuit_dir: str,
             execute_simulation(circuit_benchmark_results, simulator, circuit, equiv_circuit, timedout, timeout, logger)
             if simulator.name() == 'QuokkaSharp':
                 kill_user_processes('lucas', 'gpmc')
+                remove_files_from_dir('/var/tmp', 'quokka')
+
 
         # Write temporary results
         results_tmp_file = os.path.join(results_dir, f"{benchmark_name}_results.tmp")
