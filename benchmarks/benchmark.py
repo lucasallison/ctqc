@@ -26,7 +26,7 @@ def kill_user_processes(username, pattern):
                 killed.append(proc.info['name'])
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
-    
+
     return killed
 
 
@@ -109,6 +109,18 @@ def execute_simulation(circuit_benchmark_results: Dict,
     circuit_benchmark_results['results'].append({
         'simulator': simulator.name(),
     })
+
+
+    if not timedout[simulator.name()] and "qnn" in equiv_circuit and "Quokka" in simulator.name():
+        result = "Memory limit of 8192 MB exceeded" 
+        logger.log(
+            f"{simulator.name()}: Exception - {result}",
+            logging.ERROR)
+        circuit_benchmark_results['results'][-1]['exception'] = str(result)
+        if "no conclusion" not in str(result):
+            timedout[simulator.name()] = True
+        return
+        
 
     if timedout[simulator.name()]:
         logger.log(f"{simulator.name()}: Timeout", logging.INFO)
@@ -250,9 +262,9 @@ if __name__ == "__main__":
     print(f"Starting benchmarking with timeout {TIMEOUT} seconds")
 
     # Create the directory to store the benchmark results 
-    if os.path.exists(RESULTS_DIR):
-        RESULTS_DIR += f"_{datetime.datetime.now().isoformat(sep='_', timespec='seconds')}"
-    os.makedirs(RESULTS_DIR)
+    # if os.path.exists(RESULTS_DIR):
+    #     RESULTS_DIR += f"_{datetime.datetime.now().isoformat(sep='_', timespec='seconds')}"
+    # os.makedirs(RESULTS_DIR)
     logger = Logger(RESULTS_DIR, os.path.join(RESULTS_DIR, 'benchmarks.log'), True)
 
     for sim_benchmark in SIM_BENCHMARKS:

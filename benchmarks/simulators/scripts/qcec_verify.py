@@ -7,7 +7,8 @@ try:
     circuit_2 = sys.argv[2]
 
     start = time.time()
-    res = qcec.verify(circuit_1, circuit_2)    
+    # res = qcec.verify(circuit_1, circuit_2, run_simulation_checker=False, run_construction_checker=False, run_zx_checker=False)    
+    res = qcec.verify(circuit_1, circuit_2)
     end = time.time()
     res = json.loads(str(res))
 
