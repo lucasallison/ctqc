@@ -134,8 +134,8 @@ def execute_simulation(circuit_benchmark_results: Dict,
             f"{simulator.name()}: Exception - {result}",
             logging.ERROR)
         circuit_benchmark_results['results'][-1]['exception'] = str(result)
-        # TODO remove
-        timedout[simulator.name()] = True
+        if "no conclusion" not in str(result):
+            timedout[simulator.name()] = True
         return
 
     if not isinstance(result, dict):
