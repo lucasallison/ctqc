@@ -33,7 +33,7 @@ def kill_user_processes(username, pattern):
 def remove_files_from_dir(directory: str, pattern: str):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path) and "quokka" in filename:
+        if os.path.isfile(file_path) and pattern in filename:
             os.remove(file_path)
 
 
