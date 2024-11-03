@@ -4,3 +4,4 @@ qiskit-aer
 mqt.qcec
 quokka_sharp
 python-dotenv
+mqt.bench

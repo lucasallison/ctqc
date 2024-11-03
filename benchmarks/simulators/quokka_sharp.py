@@ -1,8 +1,7 @@
 import os
 from typing import Dict
-from simulators.utils import exec_subprocess_with_memory_limit
+from simulators.utils import exec_subprocess_with_memory_limit, kill_user_processes, remove_files_from_dir
 from simulators.interface import Simulator
-
 
 class QuokkaSharp(Simulator):
 
@@ -17,4 +16,17 @@ class QuokkaSharp(Simulator):
 
     def equivalence_check(self, circuit_1: str, circuit_2: str) -> Dict:
         cmd = ['python3', self.quokka_sharp_verify_path, circuit_1, circuit_2]
-        return exec_subprocess_with_memory_limit(cmd)
+
+        kill_user_processes('lucas', 'gpmc')
+        remove_files_from_dir('/var/tmp', 'quokka')
+        remove_files_from_dir('/tmp', 'quokka')
+
+        return exec_subprocess_with_memory_limit(cmd, dirs=['/var/tmp', '/tmp'], pattern='quokka')
+
+
+if __name__=='__main__':
+    import sys
+    qs = QuokkaSharp()
+    c1 = sys.argv[1]
+    c2 = sys.argv[2]
+    print(qs.equivalence_check(c1, c2))

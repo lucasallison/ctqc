@@ -6,7 +6,6 @@ import json
 import ast
 import pathlib
 import re
-import psutil
 from multiprocessing import Process, Queue
 from typing import List, Dict
 from pathlib import Path
@@ -14,27 +13,6 @@ from tools.logger import Logger
 from tools.utils import natural_keys, kill_process_tree, find_file
 from simulators.interface import Simulator
 from qiskit import qasm3, QuantumCircuit
-
-
-def kill_user_processes(username, pattern):
-    killed = []
-    for proc in psutil.process_iter(['name', 'username']):
-        try:
-            if (proc.info['username'] == username and 
-                pattern in proc.info['name'].lower()):
-                proc.kill()
-                killed.append(proc.info['name'])
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
-
-    return killed
-
-
-def remove_files_from_dir(directory: str, pattern: str):
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path) and pattern in filename:
-            os.remove(file_path)
 
 
 def circuit_stats(circuit: str) -> Dict:
@@ -146,6 +124,7 @@ def execute_simulation(circuit_benchmark_results: Dict,
             f"{simulator.name()}: Exception - {result}",
             logging.ERROR)
         circuit_benchmark_results['results'][-1]['exception'] = str(result)
+        # TODO remove
         if "no conclusion" not in str(result):
             timedout[simulator.name()] = True
         return
@@ -205,6 +184,9 @@ def benchmark(circuit_dir: str,
             for simulator in simulators:
                 timedout[simulator.name()] = False
         
+        if all(timedout.values()):
+            continue
+        
         prev_circ_name = circ_name
 
         circuit_benchmark_results = {
@@ -233,10 +215,6 @@ def benchmark(circuit_dir: str,
         circuit_benchmark_results['results'] = list()
         for simulator in simulators:
             execute_simulation(circuit_benchmark_results, simulator, circuit, equiv_circuit, timedout, timeout, logger)
-            if simulator.name() == 'QuokkaSharp':
-                kill_user_processes('lucas', 'gpmc')
-                remove_files_from_dir('/var/tmp', 'quokka')
-
 
         # Write temporary results
         results_tmp_file = os.path.join(results_dir, f"{benchmark_name}_results.tmp")
@@ -249,7 +227,15 @@ def benchmark(circuit_dir: str,
         results.append(ast.literal_eval(line))
 
     # Write final results to JSON file
-    with open(os.path.join(results_dir, f"{benchmark_name}_results.json"), 'w') as f:
+    results_file = os.path.join(results_dir, f"{benchmark_name}_results.json")
+    
+    if os.path.exists(results_file):
+        with open(results_file, 'r') as f:
+            existing_results = json.load(f)
+        existing_results.extend(results)
+        results = existing_results
+    
+    with open(results_file, 'w') as f:
         json.dump(results, f, indent=2)
 
     pathlib.Path.unlink(results_tmp_file)
@@ -261,10 +247,7 @@ if __name__ == "__main__":
 
     print(f"Starting benchmarking with timeout {TIMEOUT} seconds")
 
-    # Create the directory to store the benchmark results 
-    # if os.path.exists(RESULTS_DIR):
-    #     RESULTS_DIR += f"_{datetime.datetime.now().isoformat(sep='_', timespec='seconds')}"
-    # os.makedirs(RESULTS_DIR)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     logger = Logger(RESULTS_DIR, os.path.join(RESULTS_DIR, 'benchmarks.log'), True)
 
     for sim_benchmark in SIM_BENCHMARKS:
