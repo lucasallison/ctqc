@@ -45,7 +45,7 @@ def exec_subprocess_with_memory_limit(command, mb_mem_limit=8 * 1024, check_inte
     max_rss = 0
     output = []
 
-    initial_free_space = sum(map(get_disk_space, dirs))
+    initial_free_space = sum(map(get_disk_space, dirs)) if dirs else None
 
     try:
         proc = psutil.Process(process.pid)
@@ -56,8 +56,11 @@ def exec_subprocess_with_memory_limit(command, mb_mem_limit=8 * 1024, check_inte
                 total_memory_rss = sum(p.memory_info().rss for p in all_procs)
                 max_rss = max(max_rss, total_memory_rss)
 
-                file_storage = sum(map(lambda d: calculate_pattern_files_size(d, pattern), dirs))
-                file_storage_limit_exceeded = file_storage > 0.5 * initial_free_space
+                if dirs:
+                    file_storage = sum(map(lambda d: calculate_pattern_files_size(d, pattern), dirs))
+                    file_storage_limit_exceeded = file_storage > 0.5 * initial_free_space
+                else: 
+                    file_storage_limit_exceeded = False
 
                 if total_memory_rss > mb_mem_limit * 1024 * 1024 or file_storage_limit_exceeded:
 
