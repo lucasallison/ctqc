@@ -1,0 +1,890 @@
+Rz(-pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(pi/2) 0
+Rz(-pi/2) 1
+Rz(-pi/2) 1
+H 1
+Rz(-pi/2) 1
+Rz(pi/2) 1
+H 2
+H 3
+Rz(-pi/2) 4
+Rz(-pi/2) 4
+H 4
+Rz(-pi/2) 4
+Rz(pi/2) 4
+Rz(-pi/2) 5
+Rz(-pi/2) 5
+H 5
+Rz(-pi/2) 5
+Rz(pi/2) 5
+Rz(-pi/2) 6
+Rz(-pi/2) 6
+H 6
+Rz(-pi/2) 6
+Rz(pi/2) 6
+H 7
+Rz(-pi/2) 8
+Rz(-pi/2) 8
+H 8
+Rz(-pi/2) 8
+Rz(pi/2) 8
+Rz(-pi/2) 9
+Rz(-pi/2) 9
+H 9
+Rz(-pi/2) 9
+Rz(pi/2) 9
+H 10
+H 11
+H 12
+Rz(-pi/2) 13
+Rz(-pi/2) 13
+H 13
+Rz(-pi/2) 13
+Rz(pi/2) 13
+H 14
+Rz(-pi/2) 15
+Rz(-pi/2) 15
+H 15
+Rz(-pi/2) 15
+Rz(pi/2) 15
+H 16
+H 17
+Rz(-pi/2) 18
+Rz(-pi/2) 18
+H 18
+Rz(-pi/2) 18
+Rz(pi/2) 18
+Rz(-pi/2) 19
+Rz(-pi/2) 19
+H 19
+Rz(-pi/2) 19
+Rz(pi/2) 19
+H 20
+Rz(-pi/2) 21
+Rz(-pi/2) 21
+H 21
+Rz(-pi/2) 21
+Rz(pi/2) 21
+H 22
+H 23
+Rz(-pi/2) 24
+Rz(-pi/2) 24
+H 24
+Rz(-pi/2) 24
+Rz(pi/2) 24
+Rz(-pi/2) 25
+Rz(-pi/2) 25
+H 25
+Rz(-pi/2) 25
+Rz(pi/2) 25
+Rz(-pi/2) 26
+Rz(-pi/2) 26
+H 26
+Rz(-pi/2) 26
+Rz(pi/2) 26
+Rz(-pi/2) 27
+Rz(-pi/2) 27
+H 27
+Rz(-pi/2) 27
+Rz(pi/2) 27
+Rz(-pi/2) 28
+Rz(-pi/2) 28
+H 28
+Rz(-pi/2) 28
+Rz(pi/2) 28
+Rz(-pi/2) 29
+Rz(-pi/2) 29
+H 29
+Rz(-pi/2) 29
+Rz(pi/2) 29
+H 30
+Rz(-pi/2) 31
+Rz(-pi/2) 31
+H 31
+Rz(-pi/2) 31
+Rz(pi/2) 31
+Rz(-pi/2) 32
+Rz(-pi/2) 32
+H 32
+Rz(-pi/2) 32
+Rz(pi/2) 32
+H 33
+Rz(-pi/2) 34
+Rz(-pi/2) 34
+H 34
+Rz(-pi/2) 34
+Rz(pi/2) 34
+Rz(-pi/2) 35
+Rz(-pi/2) 35
+H 35
+Rz(-pi/2) 35
+Rz(pi/2) 35
+H 36
+H 37
+H 38
+Rz(-pi/2) 39
+Rz(-pi/2) 39
+H 39
+Rz(-pi/2) 39
+Rz(pi/2) 39
+Rz(-pi/2) 40
+Rz(-pi/2) 40
+H 40
+Rz(-pi/2) 40
+Rz(pi/2) 40
+H 41
+H 42
+Rz(-pi/2) 43
+Rz(-pi/2) 43
+H 43
+Rz(-pi/2) 43
+Rz(pi/2) 43
+Rz(-pi/2) 44
+Rz(-pi/2) 44
+H 44
+Rz(-pi/2) 44
+Rz(pi/2) 44
+H 45
+H 46
+Rz(-pi/2) 47
+Rz(-pi/2) 47
+H 47
+Rz(-pi/2) 47
+Rz(pi/2) 47
+H 48
+Rz(-pi/2) 49
+Rz(-pi/2) 49
+H 49
+Rz(-pi/2) 49
+Rz(pi/2) 49
+Rz(-pi/2) 50
+Rz(-pi/2) 50
+H 50
+Rz(-pi/2) 50
+Rz(pi/2) 50
+H 51
+Rz(-pi/2) 52
+Rz(-pi/2) 52
+H 52
+Rz(-pi/2) 52
+Rz(pi/2) 52
+H 53
+Rz(-pi/2) 54
+Rz(-pi/2) 54
+H 54
+Rz(-pi/2) 54
+Rz(pi/2) 54
+Rz(-pi/2) 55
+Rz(-pi/2) 55
+H 55
+Rz(-pi/2) 55
+Rz(pi/2) 55
+H 56
+H 57
+Rz(-pi/2) 58
+Rz(-pi/2) 58
+H 58
+Rz(-pi/2) 58
+Rz(pi/2) 58
+Rz(-pi/2) 59
+Rz(-pi/2) 59
+H 59
+Rz(-pi/2) 59
+Rz(pi/2) 59
+H 60
+H 61
+H 62
+H 63
+Rz(-pi/2) 64
+Rz(-pi/2) 64
+H 64
+Rz(-pi/2) 64
+Rz(pi/2) 64
+Rz(-pi/2) 65
+Rz(-pi/2) 65
+H 65
+Rz(-pi/2) 65
+Rz(pi/2) 65
+H 66
+Rz(-pi/2) 67
+Rz(-pi/2) 67
+H 67
+Rz(-pi/2) 67
+Rz(pi/2) 67
+H 68
+H 69
+Rz(-pi/2) 70
+Rz(-pi/2) 70
+H 70
+Rz(-pi/2) 70
+Rz(pi/2) 70
+H 71
+H 72
+H 73
+H 74
+H 75
+H 76
+H 77
+Rz(-pi/2) 78
+Rz(-pi/2) 78
+H 78
+Rz(-pi/2) 78
+Rz(pi/2) 78
+Rz(-pi/2) 79
+Rz(-pi/2) 79
+H 79
+Rz(-pi/2) 79
+Rz(pi/2) 79
+Rz(-pi/2) 80
+Rz(-pi/2) 80
+H 80
+Rz(-pi/2) 80
+Rz(pi/2) 80
+Rz(-pi/2) 81
+Rz(-pi/2) 81
+H 81
+Rz(-pi/2) 81
+Rz(pi/2) 81
+H 82
+Rz(-pi/2) 83
+Rz(-pi/2) 83
+H 83
+Rz(-pi/2) 83
+Rz(pi/2) 83
+H 84
+H 85
+H 86
+H 87
+H 88
+H 89
+H 90
+H 91
+H 92
+Rz(-pi/2) 93
+Rz(-pi/2) 93
+H 93
+Rz(-pi/2) 93
+Rz(pi/2) 93
+Rz(-pi/2) 94
+Rz(-pi/2) 94
+H 94
+Rz(-pi/2) 94
+Rz(pi/2) 94
+H 95
+Rz(-pi/2) 96
+Rz(-pi/2) 96
+H 96
+Rz(-pi/2) 96
+Rz(pi/2) 96
+Rz(-pi/2) 97
+Rz(-pi/2) 97
+H 97
+Rz(-pi/2) 97
+Rz(pi/2) 97
+H 98
+H 99
+Rz(-pi/2) 100
+Rz(-pi/2) 100
+H 100
+Rz(-pi/2) 100
+Rz(pi/2) 100
+H 101
+H 102
+Rz(-pi/2) 103
+Rz(-pi/2) 103
+H 103
+Rz(-pi/2) 103
+Rz(pi/2) 103
+Rz(-pi/2) 104
+Rz(-pi/2) 104
+H 104
+Rz(-pi/2) 104
+Rz(pi/2) 104
+Rz(-pi/2) 105
+Rz(-pi/2) 105
+H 105
+Rz(-pi/2) 105
+Rz(pi/2) 105
+Rz(-pi/2) 106
+Rz(-pi/2) 106
+H 106
+Rz(-pi/2) 106
+Rz(pi/2) 106
+Rz(-pi/2) 107
+Rz(-pi/2) 107
+H 107
+Rz(-pi/2) 107
+Rz(pi/2) 107
+Rz(-pi/2) 108
+Rz(-pi/2) 108
+H 108
+Rz(-pi/2) 108
+Rz(pi/2) 108
+Rz(-pi/2) 109
+Rz(-pi/2) 109
+H 109
+Rz(-pi/2) 109
+Rz(pi/2) 109
+Rz(-pi/2) 110
+Rz(-pi/2) 110
+H 110
+Rz(-pi/2) 110
+Rz(pi/2) 110
+Rz(-pi/2) 111
+Rz(-pi/2) 111
+H 111
+Rz(-pi/2) 111
+Rz(pi/2) 111
+H 112
+H 113
+Rz(-pi/2) 114
+Rz(-pi/2) 114
+H 114
+Rz(-pi/2) 114
+Rz(pi/2) 114
+Rz(-pi/2) 115
+Rz(-pi/2) 115
+H 115
+Rz(-pi/2) 115
+Rz(pi/2) 115
+H 116
+Rz(-pi/2) 117
+Rz(-pi/2) 117
+H 117
+Rz(-pi/2) 117
+Rz(pi/2) 117
+H 118
+H 119
+H 120
+H 121
+Rz(-pi/2) 122
+Rz(-pi/2) 122
+H 122
+Rz(-pi/2) 122
+Rz(pi/2) 122
+Rz(-pi/2) 123
+Rz(-pi/2) 123
+H 123
+Rz(-pi/2) 123
+Rz(pi/2) 123
+Rz(-pi/2) 124
+Rz(-pi/2) 124
+H 124
+Rz(-pi/2) 124
+Rz(pi/2) 124
+H 125
+H 126
+Rz(-3*pi/2) 127
+Rz(-pi/2) 127
+H 127
+Rz(-pi/2) 127
+Rz(-pi/2) 127
+CNOT 0 127
+Rz(-3*pi/2) 0
+Rz(-pi/2) 0
+H 0
+Rz(-pi/2) 0
+Rz(-pi/2) 0
+CNOT 1 127
+Rz(-3*pi/2) 1
+Rz(-pi/2) 1
+H 1
+Rz(-pi/2) 1
+Rz(-pi/2) 1
+CNOT 2 127
+H 2
+CNOT 3 127
+H 3
+CNOT 4 127
+Rz(-3*pi/2) 4
+Rz(-pi/2) 4
+H 4
+Rz(-pi/2) 4
+Rz(-pi/2) 4
+CNOT 5 127
+Rz(-3*pi/2) 5
+Rz(-pi/2) 5
+H 5
+Rz(-pi/2) 5
+Rz(-pi/2) 5
+CNOT 6 127
+Rz(-3*pi/2) 6
+Rz(-pi/2) 6
+H 6
+Rz(-pi/2) 6
+Rz(-pi/2) 6
+CNOT 7 127
+H 7
+CNOT 8 127
+Rz(-3*pi/2) 8
+Rz(-pi/2) 8
+H 8
+Rz(-pi/2) 8
+Rz(-pi/2) 8
+CNOT 9 127
+CNOT 10 127
+H 10
+CNOT 11 127
+H 11
+CNOT 12 127
+H 12
+CNOT 13 127
+Rz(-3*pi/2) 13
+Rz(-pi/2) 13
+H 13
+Rz(-pi/2) 13
+Rz(-pi/2) 13
+CNOT 14 127
+H 14
+CNOT 15 127
+Rz(-3*pi/2) 15
+Rz(-pi/2) 15
+H 15
+Rz(-pi/2) 15
+Rz(-pi/2) 15
+CNOT 16 127
+H 16
+CNOT 17 127
+H 17
+CNOT 18 127
+Rz(-3*pi/2) 18
+Rz(-pi/2) 18
+H 18
+Rz(-pi/2) 18
+Rz(-pi/2) 18
+CNOT 19 127
+Rz(-3*pi/2) 19
+Rz(-pi/2) 19
+H 19
+Rz(-pi/2) 19
+Rz(-pi/2) 19
+CNOT 20 127
+H 20
+CNOT 21 127
+Rz(-3*pi/2) 21
+Rz(-pi/2) 21
+H 21
+Rz(-pi/2) 21
+Rz(-pi/2) 21
+CNOT 22 127
+H 22
+CNOT 23 127
+H 23
+CNOT 24 127
+Rz(-3*pi/2) 24
+Rz(-pi/2) 24
+H 24
+Rz(-pi/2) 24
+Rz(-pi/2) 24
+CNOT 25 127
+Rz(-3*pi/2) 25
+Rz(-pi/2) 25
+H 25
+Rz(-pi/2) 25
+Rz(-pi/2) 25
+CNOT 26 127
+Rz(-3*pi/2) 26
+Rz(-pi/2) 26
+H 26
+Rz(-pi/2) 26
+Rz(-pi/2) 26
+CNOT 27 127
+Rz(-3*pi/2) 27
+Rz(-pi/2) 27
+H 27
+Rz(-pi/2) 27
+Rz(-pi/2) 27
+CNOT 28 127
+Rz(-3*pi/2) 28
+Rz(-pi/2) 28
+H 28
+Rz(-pi/2) 28
+Rz(-pi/2) 28
+CNOT 29 127
+Rz(-3*pi/2) 29
+Rz(-pi/2) 29
+H 29
+Rz(-pi/2) 29
+Rz(-pi/2) 29
+CNOT 30 127
+H 30
+CNOT 31 127
+Rz(-3*pi/2) 31
+Rz(-pi/2) 31
+H 31
+Rz(-pi/2) 31
+Rz(-pi/2) 31
+CNOT 32 127
+Rz(-3*pi/2) 32
+Rz(-pi/2) 32
+H 32
+Rz(-pi/2) 32
+Rz(-pi/2) 32
+CNOT 33 127
+H 33
+CNOT 34 127
+Rz(-3*pi/2) 34
+Rz(-pi/2) 34
+H 34
+Rz(-pi/2) 34
+Rz(-pi/2) 34
+CNOT 35 127
+Rz(-3*pi/2) 35
+Rz(-pi/2) 35
+H 35
+Rz(-pi/2) 35
+Rz(-pi/2) 35
+CNOT 36 127
+H 36
+CNOT 37 127
+H 37
+CNOT 38 127
+H 38
+CNOT 39 127
+Rz(-3*pi/2) 39
+Rz(-pi/2) 39
+H 39
+Rz(-pi/2) 39
+Rz(-pi/2) 39
+CNOT 40 127
+Rz(-3*pi/2) 40
+Rz(-pi/2) 40
+H 40
+Rz(-pi/2) 40
+Rz(-pi/2) 40
+CNOT 41 127
+H 41
+CNOT 42 127
+H 42
+CNOT 43 127
+Rz(-3*pi/2) 43
+Rz(-pi/2) 43
+H 43
+Rz(-pi/2) 43
+Rz(-pi/2) 43
+CNOT 44 127
+Rz(-3*pi/2) 44
+Rz(-pi/2) 44
+H 44
+Rz(-pi/2) 44
+Rz(-pi/2) 44
+CNOT 45 127
+H 45
+CNOT 46 127
+H 46
+CNOT 47 127
+Rz(-3*pi/2) 47
+Rz(-pi/2) 47
+H 47
+Rz(-pi/2) 47
+Rz(-pi/2) 47
+CNOT 48 127
+H 48
+CNOT 49 127
+Rz(-3*pi/2) 49
+Rz(-pi/2) 49
+H 49
+Rz(-pi/2) 49
+Rz(-pi/2) 49
+CNOT 50 127
+Rz(-3*pi/2) 50
+Rz(-pi/2) 50
+H 50
+Rz(-pi/2) 50
+Rz(-pi/2) 50
+CNOT 51 127
+H 51
+CNOT 52 127
+Rz(-3*pi/2) 52
+Rz(-pi/2) 52
+H 52
+Rz(-pi/2) 52
+Rz(-pi/2) 52
+CNOT 53 127
+H 53
+CNOT 54 127
+Rz(-3*pi/2) 54
+Rz(-pi/2) 54
+H 54
+Rz(-pi/2) 54
+Rz(-pi/2) 54
+CNOT 55 127
+Rz(-3*pi/2) 55
+Rz(-pi/2) 55
+H 55
+Rz(-pi/2) 55
+Rz(-pi/2) 55
+CNOT 56 127
+H 56
+CNOT 57 127
+H 57
+CNOT 58 127
+Rz(-3*pi/2) 58
+Rz(-pi/2) 58
+H 58
+Rz(-pi/2) 58
+Rz(-pi/2) 58
+CNOT 59 127
+Rz(-3*pi/2) 59
+Rz(-pi/2) 59
+H 59
+Rz(-pi/2) 59
+Rz(-pi/2) 59
+CNOT 60 127
+H 60
+CNOT 61 127
+H 61
+CNOT 62 127
+H 62
+CNOT 63 127
+H 63
+CNOT 64 127
+Rz(-3*pi/2) 64
+Rz(-pi/2) 64
+H 64
+Rz(-pi/2) 64
+Rz(-pi/2) 64
+CNOT 65 127
+Rz(-3*pi/2) 65
+Rz(-pi/2) 65
+H 65
+Rz(-pi/2) 65
+Rz(-pi/2) 65
+CNOT 66 127
+H 66
+CNOT 67 127
+Rz(-3*pi/2) 67
+Rz(-pi/2) 67
+H 67
+Rz(-pi/2) 67
+Rz(-pi/2) 67
+CNOT 68 127
+H 68
+CNOT 69 127
+H 69
+CNOT 70 127
+Rz(-3*pi/2) 70
+Rz(-pi/2) 70
+H 70
+Rz(-pi/2) 70
+Rz(-pi/2) 70
+CNOT 71 127
+H 71
+CNOT 72 127
+H 72
+CNOT 73 127
+H 73
+CNOT 74 127
+H 74
+CNOT 75 127
+H 75
+CNOT 76 127
+H 76
+CNOT 77 127
+H 77
+CNOT 78 127
+Rz(-3*pi/2) 78
+Rz(-pi/2) 78
+H 78
+Rz(-pi/2) 78
+Rz(-pi/2) 78
+CNOT 79 127
+Rz(-3*pi/2) 79
+Rz(-pi/2) 79
+H 79
+Rz(-pi/2) 79
+Rz(-pi/2) 79
+CNOT 80 127
+Rz(-3*pi/2) 80
+Rz(-pi/2) 80
+H 80
+Rz(-pi/2) 80
+Rz(-pi/2) 80
+CNOT 81 127
+Rz(-3*pi/2) 81
+Rz(-pi/2) 81
+H 81
+Rz(-pi/2) 81
+Rz(-pi/2) 81
+CNOT 82 127
+H 82
+CNOT 83 127
+Rz(-3*pi/2) 83
+Rz(-pi/2) 83
+H 83
+Rz(-pi/2) 83
+Rz(-pi/2) 83
+CNOT 84 127
+H 84
+CNOT 85 127
+H 85
+CNOT 86 127
+H 86
+CNOT 87 127
+H 87
+CNOT 88 127
+H 88
+CNOT 89 127
+H 89
+Rz(-3*pi/2) 9
+Rz(-pi/2) 9
+H 9
+Rz(-pi/2) 9
+Rz(-pi/2) 9
+CNOT 90 127
+H 90
+CNOT 91 127
+H 91
+CNOT 92 127
+H 92
+CNOT 93 127
+Rz(-3*pi/2) 93
+Rz(-pi/2) 93
+H 93
+Rz(-pi/2) 93
+Rz(-pi/2) 93
+CNOT 94 127
+Rz(-3*pi/2) 94
+Rz(-pi/2) 94
+H 94
+Rz(-pi/2) 94
+Rz(-pi/2) 94
+CNOT 95 127
+H 95
+CNOT 96 127
+Rz(-3*pi/2) 96
+Rz(-pi/2) 96
+H 96
+Rz(-pi/2) 96
+Rz(-pi/2) 96
+CNOT 97 127
+Rz(-3*pi/2) 97
+Rz(-pi/2) 97
+H 97
+Rz(-pi/2) 97
+Rz(-pi/2) 97
+CNOT 98 127
+H 98
+CNOT 99 127
+CNOT 100 127
+Rz(-3*pi/2) 100
+Rz(-pi/2) 100
+H 100
+Rz(-pi/2) 100
+Rz(-pi/2) 100
+CNOT 101 127
+H 101
+CNOT 102 127
+H 102
+CNOT 103 127
+Rz(-3*pi/2) 103
+Rz(-pi/2) 103
+H 103
+Rz(-pi/2) 103
+Rz(-pi/2) 103
+CNOT 104 127
+Rz(-3*pi/2) 104
+Rz(-pi/2) 104
+H 104
+Rz(-pi/2) 104
+Rz(-pi/2) 104
+CNOT 105 127
+Rz(-3*pi/2) 105
+Rz(-pi/2) 105
+H 105
+Rz(-pi/2) 105
+Rz(-pi/2) 105
+CNOT 106 127
+Rz(-3*pi/2) 106
+Rz(-pi/2) 106
+H 106
+Rz(-pi/2) 106
+Rz(-pi/2) 106
+CNOT 107 127
+Rz(-3*pi/2) 107
+Rz(-pi/2) 107
+H 107
+Rz(-pi/2) 107
+Rz(-pi/2) 107
+CNOT 108 127
+Rz(-3*pi/2) 108
+Rz(-pi/2) 108
+H 108
+Rz(-pi/2) 108
+Rz(-pi/2) 108
+CNOT 109 127
+Rz(-3*pi/2) 109
+Rz(-pi/2) 109
+H 109
+Rz(-pi/2) 109
+Rz(-pi/2) 109
+CNOT 110 127
+Rz(-3*pi/2) 110
+Rz(-pi/2) 110
+H 110
+Rz(-pi/2) 110
+Rz(-pi/2) 110
+CNOT 111 127
+Rz(-3*pi/2) 111
+Rz(-pi/2) 111
+H 111
+Rz(-pi/2) 111
+Rz(-pi/2) 111
+CNOT 112 127
+H 112
+CNOT 113 127
+H 113
+CNOT 114 127
+Rz(-3*pi/2) 114
+Rz(-pi/2) 114
+H 114
+Rz(-pi/2) 114
+Rz(-pi/2) 114
+CNOT 115 127
+Rz(-3*pi/2) 115
+Rz(-pi/2) 115
+H 115
+Rz(-pi/2) 115
+Rz(-pi/2) 115
+CNOT 116 127
+H 116
+CNOT 117 127
+Rz(-3*pi/2) 117
+Rz(-pi/2) 117
+H 117
+Rz(-pi/2) 117
+Rz(-pi/2) 117
+CNOT 118 127
+H 118
+CNOT 119 127
+H 119
+CNOT 120 127
+H 120
+CNOT 121 127
+H 121
+CNOT 122 127
+Rz(-3*pi/2) 122
+Rz(-pi/2) 122
+H 122
+Rz(-pi/2) 122
+Rz(-pi/2) 122
+CNOT 123 127
+Rz(-3*pi/2) 123
+Rz(-pi/2) 123
+H 123
+Rz(-pi/2) 123
+Rz(-pi/2) 123
+CNOT 124 127
+Rz(-3*pi/2) 124
+Rz(-pi/2) 124
+H 124
+Rz(-pi/2) 124
+Rz(-pi/2) 124
+CNOT 125 127
+H 125
+CNOT 126 127
+H 126
+H 99

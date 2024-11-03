@@ -1,6 +1,6 @@
 #!/bin/bash
 
-algorithms=("dj" "ghz" "graphstate" "qft" "qftentangled" "qnn" "qpeexact" "qpeinexact" "realamp" "su" "twolocal" "wstate")
+algorithms=("ae" "dj" "ghz" "graphstate" "grover" "portfolio" "qaoa" "qft" "qftentangled" "qnn" "qpeexact" "qpeinexact" "qwalk" "realamp" "su" "twolocal" "vqe" "wstate")
 
 for alg in "${algorithms[@]}"; do
     rm -rf $alg
