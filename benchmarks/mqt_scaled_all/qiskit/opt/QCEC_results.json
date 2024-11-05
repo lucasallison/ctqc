@@ -1018,5 +1018,2565 @@
         }
       }
     ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 22,
+        "rz_gates": 44
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 22,
+        "rz_gates": 11
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.024489641189575195,
+          "max_rss_bytes": 81743872
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 46,
+        "rz_gates": 68
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 46,
+        "rz_gates": 17
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.030733108520507812,
+          "max_rss_bytes": 81981440
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 94,
+        "rz_gates": 148
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 94,
+        "rz_gates": 37
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.04383254051208496,
+          "max_rss_bytes": 88989696
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 190,
+        "rz_gates": 276
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 190,
+        "rz_gates": 69
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.07012057304382324,
+          "max_rss_bytes": 147832832
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 382,
+        "rz_gates": 508
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 382,
+        "rz_gates": 127
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.1213521957397461,
+          "max_rss_bytes": 776732672
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 766,
+        "rz_gates": 996
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 766,
+        "rz_gates": 249
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.22992992401123047,
+          "max_rss_bytes": 1333538816
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1534,
+        "rz_gates": 1868
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1534,
+        "rz_gates": 467
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.4627370834350586,
+          "max_rss_bytes": 2726416384
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 3988
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 997
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 1.0207695960998535,
+          "max_rss_bytes": 5958270976
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 7972
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 1993
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 16076
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 4019
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 32484
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 8121
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 8,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 8,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.02593088150024414,
+          "max_rss_bytes": 210288640
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 16,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 16,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.03038620948791504,
+          "max_rss_bytes": 88371200
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 32,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 32,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.04331207275390625,
+          "max_rss_bytes": 88637440
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 64,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 64,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.06972599029541016,
+          "max_rss_bytes": 274722816
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 128,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 128,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.12457776069641113,
+          "max_rss_bytes": 791060480
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 256,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 256,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.23445940017700195,
+          "max_rss_bytes": 1586614272
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.4612386226654053,
+          "max_rss_bytes": 3070722048
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.9386308193206787,
+          "max_rss_bytes": 6094651392
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/ghz_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 32768,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/ghz_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 32768,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 32,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 16,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.024559736251831055,
+          "max_rss_bytes": 88264704
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 64,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 32,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.030568838119506836,
+          "max_rss_bytes": 88670208
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 128,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 64,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.04438281059265137,
+          "max_rss_bytes": 88559616
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 256,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 128,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.07195758819580078,
+          "max_rss_bytes": 548323328
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 256,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.12570858001708984,
+          "max_rss_bytes": 753123328
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.23399758338928223,
+          "max_rss_bytes": 1277816832
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.4896714687347412,
+          "max_rss_bytes": 2813186048
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 1.0076251029968262,
+          "max_rss_bytes": 5790195712
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 32768,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 65536,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 32768,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/graphstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 131072,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/graphstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 65536,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 76,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 76,
+        "rz_gates": 63
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.025914430618286133,
+          "max_rss_bytes": 81387520
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 1.9775805473327637,
+          "max_rss_bytes": 437239808
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1072,
+        "rz_gates": 1488
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 862,
+        "rz_gates": 813
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4192,
+        "rz_gates": 6048
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 2030,
+        "rz_gates": 1933
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16576,
+        "rz_gates": 24384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 4366,
+        "rz_gates": 4173
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 65920,
+        "rz_gates": 97920
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 8654,
+        "rz_gates": 8653
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 262912,
+        "rz_gates": 392448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 17614,
+        "rz_gates": 17613
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1050112,
+        "rz_gates": 1571328
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 35534,
+        "rz_gates": 35533
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qft_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4197376,
+        "rz_gates": 6288384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qft_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 71374,
+        "rz_gates": 71373
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 63
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.02680063247680664,
+          "max_rss_bytes": 81977344
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 1.649406909942627,
+          "max_rss_bytes": 443514880
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1104,
+        "rz_gates": 1488
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 894,
+        "rz_gates": 813
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4256,
+        "rz_gates": 6048
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 2094,
+        "rz_gates": 1933
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16704,
+        "rz_gates": 24384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 4494,
+        "rz_gates": 4173
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66176,
+        "rz_gates": 97920
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 8910,
+        "rz_gates": 8653
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263424,
+        "rz_gates": 392448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 18126,
+        "rz_gates": 17613
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1051136,
+        "rz_gates": 1571328
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 36558,
+        "rz_gates": 35533
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qftentangled_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4199424,
+        "rz_gates": 6288384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qftentangled_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 73422,
+        "rz_gates": 71373
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 167,
+        "rz_gates": 232
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 182,
+        "rz_gates": 141
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.03394150733947754,
+          "max_rss_bytes": 91803648
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 591,
+        "rz_gates": 592
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 606,
+        "rz_gates": 396
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.05126500129699707,
+          "max_rss_bytes": 159969280
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 2207,
+        "rz_gates": 1696
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 2220,
+        "rz_gates": 1292
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.10520076751708984,
+          "max_rss_bytes": 89513984
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 8511,
+        "rz_gates": 5440
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 8524,
+        "rz_gates": 4620
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.29538893699645996,
+          "max_rss_bytes": 382369792
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 33407,
+        "rz_gates": 19072
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 33418,
+        "rz_gates": 17417
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 1.1640353202819824,
+          "max_rss_bytes": 1251708928
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qnn_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 132351,
+        "rz_gates": 70912
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qnn_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 132364,
+        "rz_gates": 67594
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 5.591980695724487,
+          "max_rss_bytes": 2357489664
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.025635957717895508,
+          "max_rss_bytes": 81666048
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.06171059608459473,
+          "max_rss_bytes": 92753920
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1103,
+        "rz_gates": 1488
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1103,
+        "rz_gates": 1488
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4255,
+        "rz_gates": 6048
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4255,
+        "rz_gates": 6048
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16703,
+        "rz_gates": 24384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16703,
+        "rz_gates": 24384
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66175,
+        "rz_gates": 97920
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66175,
+        "rz_gates": 97920
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263423,
+        "rz_gates": 392448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263423,
+        "rz_gates": 392448
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1051135,
+        "rz_gates": 1571328
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 38575,
+        "rz_gates": 36531
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeexact_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4199423,
+        "rz_gates": 6288384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeexact_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 77487,
+        "rz_gates": 73395
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.031378984451293945,
+          "max_rss_bytes": 81895424
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.06095147132873535,
+          "max_rss_bytes": 93364224
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1103,
+        "rz_gates": 1488
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1103,
+        "rz_gates": 1488
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4255,
+        "rz_gates": 6048
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 4255,
+        "rz_gates": 6048
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16703,
+        "rz_gates": 24384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 16703,
+        "rz_gates": 24384
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66175,
+        "rz_gates": 97920
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 66175,
+        "rz_gates": 97920
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263423,
+        "rz_gates": 392448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 263423,
+        "rz_gates": 392448
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1051135,
+        "rz_gates": 1571328
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 38570,
+        "rz_gates": 36524
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/qpeinexact_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4199423,
+        "rz_gates": 6288384
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/qpeinexact_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 77482,
+        "rz_gates": 73388
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 224
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 93
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.027973413467407227,
+          "max_rss_bytes": 89751552
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 488,
+        "rz_gates": 448
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 488,
+        "rz_gates": 192
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.04337000846862793,
+          "max_rss_bytes": 168235008
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1744,
+        "rz_gates": 896
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 1744,
+        "rz_gates": 383
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.08794879913330078,
+          "max_rss_bytes": 387981312
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 6560,
+        "rz_gates": 1792
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 6560,
+        "rz_gates": 767
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.21030950546264648,
+          "max_rss_bytes": 643952640
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 25408,
+        "rz_gates": 3584
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 25408,
+        "rz_gates": 1536
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 0.7618725299835205,
+          "max_rss_bytes": 1137491968
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/su2random_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 99968,
+        "rz_gates": 7168
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/su2random_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 99968,
+        "rz_gates": 3071
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent",
+          "runtime": 3.9336302280426025,
+          "max_rss_bytes": 2230530048
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 60,
+        "rz_gates": 98
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 70,
+        "rz_gates": 71
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.025643348693847656,
+          "max_rss_bytes": 81526784
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 124,
+        "rz_gates": 210
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 150,
+        "rz_gates": 151
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.03554797172546387,
+          "max_rss_bytes": 89767936
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 252,
+        "rz_gates": 434
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 310,
+        "rz_gates": 311
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.05773472785949707,
+          "max_rss_bytes": 302755840
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 508,
+        "rz_gates": 882
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_64.qasm",
+      "stats": {
+        "n_qubits": 64,
+        "clif_gates": 630,
+        "rz_gates": 631
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.1010279655456543,
+          "max_rss_bytes": 607453184
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 1020,
+        "rz_gates": 1778
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_128.qasm",
+      "stats": {
+        "n_qubits": 128,
+        "clif_gates": 1270,
+        "rz_gates": 1271
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.23380541801452637,
+          "max_rss_bytes": 994516992
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 2044,
+        "rz_gates": 3570
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_256.qasm",
+      "stats": {
+        "n_qubits": 256,
+        "clif_gates": 2550,
+        "rz_gates": 2551
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 0.6114537715911865,
+          "max_rss_bytes": 1754841088
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 4092,
+        "rz_gates": 7154
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 5110,
+        "rz_gates": 5111
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 1.4435412883758545,
+          "max_rss_bytes": 2877960192
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 8188,
+        "rz_gates": 14322
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 10230,
+        "rz_gates": 10231
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "equivalent_up_to_global_phase",
+          "runtime": 6.8718719482421875,
+          "max_rss_bytes": 6361059328
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 16380,
+        "rz_gates": 28658
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 20470,
+        "rz_gates": 20471
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 32764,
+        "rz_gates": 57330
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 40950,
+        "rz_gates": 40951
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 65532,
+        "rz_gates": 114674
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 81910,
+        "rz_gates": 81911
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 131068,
+        "rz_gates": 229362
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 163830,
+        "rz_gates": 163831
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/transp/wstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 262140,
+        "rz_gates": 458738
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/full/opt/wstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 327670,
+        "rz_gates": 327671
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
   }
 ]
