@@ -123,6 +123,7 @@ pub struct Circuit {
     gates: Vec<Gate>,
     measurements: HashSet<usize>,
     n_qubits: usize,
+    clifford: bool,
 }
 
 impl Circuit {
@@ -132,6 +133,7 @@ impl Circuit {
             gates: Vec::new(),
             measurements: HashSet::new(),
             n_qubits: 0,
+            clifford: true,
         };
 
         let contents = match fs::read_to_string(file) {
@@ -171,11 +173,13 @@ impl Circuit {
                 qubit_1 = gate_qubits[1].parse::<usize>()?;
                 qubit_2 = Some(gate_qubits[2].parse::<usize>()?);
             } else if T_RE.is_match(line) {
+                self.clifford = false;
                 // Internally we use Rz(pi/4) to represent T
                 gate_type = "Rz".to_string();
                 qubit_1 = line.split(" ").collect::<Vec<&str>>()[1].parse::<usize>()?;
                 angle = Some(std::f64::consts::FRAC_PI_4);
             } else if RZ_RE.is_match(line) {
+                self.clifford = false;
                 gate_type = line[0..2].to_string();
 
                 let expr = RZ_ANGLE_RE.captures(line).unwrap().get(1).unwrap().as_str();
@@ -230,6 +234,10 @@ impl Circuit {
 
     pub fn n_qubits(&self) -> usize {
         self.n_qubits
+    }
+
+    pub fn clifford(&self) -> bool {
+        self.clifford
     }
 
     pub fn name(&self) -> String {

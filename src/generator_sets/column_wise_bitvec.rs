@@ -190,9 +190,6 @@ impl ColumnWiseBitVec {
         self.clear();
 
         for (pstr, coef_list) in map.drain() {
-            if coef_list.is_empty() {
-                continue;
-            }
             for (gate_ind, bslice) in pstr.chunks_exact(2).enumerate() {
                 self.columns[gate_ind].push(bslice[0]);
                 self.columns[gate_ind].push(bslice[1]);

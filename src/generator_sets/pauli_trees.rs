@@ -753,10 +753,6 @@ impl PauliTrees {
         self.generator_info.clear();
 
         for (root_index, c_list) in m.iter_mut() {
-            if c_list.is_empty() {
-                continue;
-            }
-
             let root_node = self.index_to_bitvec(*root_index, self.n_bits_per_root_node());
             self.root_node_table.extend_from_bitslice(&root_node);
             self.generator_info.push(c_list.clone());

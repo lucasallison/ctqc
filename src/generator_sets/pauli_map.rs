@@ -176,17 +176,10 @@ impl PauliMap {
         match map.entry(pstr) {
             Entry::Occupied(mut e) => {
                 let existing_coef_list = e.get_mut();
-
                 existing_coef_list.merge(&coef_list);
-
-                if existing_coef_list.is_empty() {
-                    e.remove_entry();
-                }
             }
             Entry::Vacant(e) => {
-                if !coef_list.is_empty() {
-                    e.insert(coef_list);
-                }
+                e.insert(coef_list);
             }
         }
     }
