@@ -239,7 +239,7 @@ impl MeasurementSampler {
                         coef_list.multiply(&FloatingPointOPC::new_with_ops(1.0 / (2.0 * p0), 3));
                     }
 
-                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list, false);
                 }
                 _ => {
                     // When we measure |0⟩:
@@ -278,8 +278,8 @@ impl MeasurementSampler {
                         5,
                     ));
 
-                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list);
-                    PauliMap::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list)
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list, false);
+                    PauliMap::insert_pstr_bitvec_into_map(&mut map, new_pstr, new_coef_list, false)
                 }
             }
         }

@@ -87,6 +87,15 @@ impl CoefficientList {
         true
     }
 
+    pub fn is_empty_up_to_constant(&self, constant: f64) -> bool {
+        for (_, f) in self.coefficients.iter() {
+            if f.as_f64().abs() > constant {
+                return false;
+            }
+        }
+        true
+    }
+
     /// Returns if the coefficient list would be valid for the ith generator.
     /// This is the case if:
     /// 1. The coefficient list only contains the coefficient of the ith generator

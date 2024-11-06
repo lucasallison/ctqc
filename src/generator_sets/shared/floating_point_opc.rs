@@ -1,3 +1,4 @@
+use core::f64;
 use std::fmt;
 
 /// 'Floating point with operation counter': counts the number of operations
@@ -53,9 +54,9 @@ impl FloatingPointOPC {
         self.f
     }
 
-    pub fn cmp_threshold(&self, other: &FloatingPointOPC) -> f64 {
+    pub fn cmp_threshold(&self, other: &FloatingPointOPC, precision: f64) -> f64 {
         let total_ops = std::cmp::max(1, self.ops + other.ops);
-        f64::EPSILON * (total_ops) as f64
+        precision * (total_ops) as f64
     }
 }
 
@@ -68,13 +69,18 @@ impl PartialEq for FloatingPointOPC {
 
         // We don't have to worry about overflow because the floats we
         // use are between -1.0 and 1.0
-        let res = (self.f - other.f).abs() < self.cmp_threshold(other);
-        res
+        (self.f - other.f).abs() < self.cmp_threshold(other, f64::EPSILON)
     }
 }
 
 impl fmt::Display for FloatingPointOPC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} (ops: {})", self.f, self.ops)
+        write!(
+            f,
+            "{} (ops: {}, threshold: {})",
+            self.f,
+            self.ops,
+            self.cmp_threshold(&FloatingPointOPC::new(0.0), f64::EPSILON)
+        )
     }
 }
