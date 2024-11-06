@@ -321,7 +321,6 @@ impl GeneratorSet for PauliMap {
             if pstr == target_generator.as_bitslice()
                 && !coef_list.is_valid_ith_generator_coef_list(i)
             {
-                println!("generator not present!");
                 return EquivalenceType::NotEquivalent;
             }
 
