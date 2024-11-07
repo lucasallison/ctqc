@@ -13,7 +13,6 @@ use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::EquivalenceType;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -23,17 +22,15 @@ pub struct ColumnWiseBitVec {
     generator_info: Vec<CoefficientList>,
     h_s_conjugations_map: HSConjugationsMap,
     n_qubits: usize,
-    remove_zero_coef: bool,
 }
 
 impl ColumnWiseBitVec {
-    pub fn new(n_qubits: usize, remove_zero_coef: bool) -> ColumnWiseBitVec {
+    pub fn new(n_qubits: usize) -> ColumnWiseBitVec {
         ColumnWiseBitVec {
             columns: vec![bitvec![0; 2*n_qubits]; n_qubits],
             generator_info: Vec::with_capacity(n_qubits),
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             n_qubits,
-            remove_zero_coef,
         }
     }
 
@@ -178,7 +175,7 @@ impl ColumnWiseBitVec {
                 pstr.push(b2);
             }
 
-            PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list, self.remove_zero_coef);
+            PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
         }
 
         for col in self.columns.iter_mut() {
@@ -193,7 +190,7 @@ impl ColumnWiseBitVec {
         self.clear();
 
         for (pstr, coef_list) in map.drain() {
-            if self.remove_zero_coef && coef_list.is_empty() {
+            if coef_list.is_empty(true) {
                 continue;
             }
             for (gate_ind, bslice) in pstr.chunks_exact(2).enumerate() {
@@ -227,26 +224,24 @@ impl GeneratorSet for ColumnWiseBitVec {
         self.generator_info.push(CoefficientList::new(i));
     }
 
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> EquivalenceType {
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.apply_all_h_s_conjugations();
 
         let mut pstrs = self.gather();
         PauliMap::clean_map(&mut pstrs);
         self.scatter(pstrs.clone());
 
-        PauliMap::from_map(pstrs, self.n_qubits, self.remove_zero_coef)
-            .is_x_or_z_generators(check_zero_state)
+        PauliMap::from_map(pstrs, self.n_qubits).is_x_or_z_generators(check_zero_state)
     }
 
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> EquivalenceType {
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
         let mut pstrs = self.gather();
         PauliMap::clean_map(&mut pstrs);
         self.scatter(pstrs.clone());
 
-        PauliMap::from_map(pstrs, self.n_qubits, self.remove_zero_coef)
-            .is_single_x_or_z_generator(check_zero_state, i)
+        PauliMap::from_map(pstrs, self.n_qubits).is_single_x_or_z_generator(check_zero_state, i)
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {

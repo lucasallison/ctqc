@@ -22,7 +22,6 @@ use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::EquivalenceType;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -42,12 +41,11 @@ pub struct RowWiseBitVec {
     n_qubits: usize,
     n_threads: usize,
     size: usize,
-    remove_zero_coef: bool,
 }
 
 impl RowWiseBitVec {
     // Creates and returns an empty RowWiseBitVec
-    pub fn new(n_qubits: usize, n_threads: usize, remove_zero_coef: bool) -> RowWiseBitVec {
+    pub fn new(n_qubits: usize, n_threads: usize) -> RowWiseBitVec {
         RowWiseBitVec {
             pauli_strings: BitVec::new(),
             generator_info: Vec::new(),
@@ -55,7 +53,6 @@ impl RowWiseBitVec {
             n_qubits,
             n_threads,
             size: 0,
-            remove_zero_coef,
         }
     }
 
@@ -438,7 +435,7 @@ impl RowWiseBitVec {
         for (pstr_ind, coef_list) in gen_info.drain(..).enumerate() {
             let pstr = self.pstr_as_bitslice(pstr_ind).to_bitvec();
 
-            PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list, self.remove_zero_coef)
+            PauliMap::insert_pstr_bitvec_into_map(&mut map, pstr, coef_list)
         }
         self.pauli_strings.clear();
         self.size = 0;
@@ -452,7 +449,7 @@ impl RowWiseBitVec {
         self.generator_info.clear();
 
         for (pstr, coefficients) in map.drain() {
-            if self.remove_zero_coef && coefficients.is_empty() {
+            if coefficients.is_empty(true) {
                 continue;
             }
             self.pauli_strings.extend_from_bitslice(&pstr);
@@ -485,7 +482,7 @@ impl GeneratorSet for RowWiseBitVec {
         self.generator_info.push(CoefficientList::new(i));
     }
 
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> EquivalenceType {
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.apply_all_h_s_conjugations();
 
         let mut pstrs = self.gather();
@@ -493,11 +490,10 @@ impl GeneratorSet for RowWiseBitVec {
         // Scatter them back in case we want to apply more gates
         self.scatter(pstrs.clone());
 
-        PauliMap::from_map(pstrs, self.n_qubits, self.remove_zero_coef)
-            .is_x_or_z_generators(check_zero_state)
+        PauliMap::from_map(pstrs, self.n_qubits).is_x_or_z_generators(check_zero_state)
     }
 
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> EquivalenceType {
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
         let mut pstrs = self.gather();
@@ -505,8 +501,7 @@ impl GeneratorSet for RowWiseBitVec {
         // Scatter them back in case we want to apply more gates
         self.scatter(pstrs.clone());
 
-        PauliMap::from_map(pstrs, self.n_qubits, self.remove_zero_coef)
-            .is_single_x_or_z_generator(check_zero_state, i)
+        PauliMap::from_map(pstrs, self.n_qubits).is_single_x_or_z_generator(check_zero_state, i)
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {

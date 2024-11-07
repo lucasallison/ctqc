@@ -13,7 +13,6 @@ use super::shared::floating_point_opc::FloatingPointOPC;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
-use super::EquivalenceType;
 use super::GeneratorSet;
 
 use crate::circuit::{Gate, GateType};
@@ -61,13 +60,11 @@ pub struct PauliTrees {
     garbage_collection_threshold_leafs: usize,
 
     n_qubits: usize,
-    remove_zero_coef: bool,
 }
 
 impl PauliTrees {
     pub fn new(
         n_qubits: usize,
-        remove_zero_coef: bool,
         n_node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
@@ -92,7 +89,6 @@ impl PauliTrees {
             garbage_collection_threshold_nodes: 0,
             garbage_collection_threshold_leafs: 0,
             n_qubits,
-            remove_zero_coef,
         };
 
         p.set_default();
@@ -527,7 +523,7 @@ impl PauliTrees {
     ) -> (PauliGate, Option<usize>) {
         if !pgate.is_none() {
             self.check_memory_availability(self.depth, 1);
-        }
+        } 
 
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
         let n_leaf_nodes = pgates_per_pstr / self.pgates_per_leaf;
@@ -682,7 +678,7 @@ impl PauliTrees {
 
         for pstr_ind in 0..self.size() {
             let (pstr, coef_list) = self.get_pstr_with_hs_conjugations(pstr_ind);
-            PauliMap::insert_pstr_bitvec_into_map(&mut m, pstr, coef_list, self.remove_zero_coef);
+            PauliMap::insert_pstr_bitvec_into_map(&mut m, pstr, coef_list);
         }
 
         m
@@ -710,7 +706,6 @@ impl PauliTrees {
     fn garbage_collection(&mut self) {
         let mut new_ptrees = PauliTrees::new(
             self.n_qubits,
-            self.remove_zero_coef,
             Some(self.n_node_body_bits),
             Some(self.pgates_per_leaf),
         );
@@ -728,7 +723,7 @@ impl PauliTrees {
         *self = new_ptrees;
     }
 
-    fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
+   fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
         // Map from root index to Pauli string index
         let mut m = HashMap::<usize, CoefficientList, FxBuildHasher>::with_capacity_and_hasher(
             self.size(),
@@ -751,13 +746,14 @@ impl PauliTrees {
         m
     }
 
+
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
         // Scatter all unique Pauli strings
         self.root_node_table.clear();
         self.generator_info.clear();
 
         for (root_index, c_list) in m.iter_mut() {
-            if self.remove_zero_coef && c_list.is_empty() {
+            if c_list.is_empty(true) {
                 continue;
             }
             let root_node = self.index_to_bitvec(*root_index, self.n_bits_per_root_node());
@@ -771,7 +767,6 @@ impl PauliTrees {
 
         let mut resized_ptrees = PauliTrees::new(
             self.n_qubits,
-            self.remove_zero_coef,
             Some(new_n_node_body_bits),
             Some(self.pgates_per_leaf),
         );
@@ -933,21 +928,13 @@ impl GeneratorSet for PauliTrees {
         self.insert_pstr(pstr, c_list)
     }
 
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> EquivalenceType {
-        let mut pstr_map = PauliMap::from_map(
-            self.get_pstr_to_coef_map(),
-            self.n_qubits,
-            self.remove_zero_coef,
-        );
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
+        let mut pstr_map = PauliMap::from_map(self.get_pstr_to_coef_map(), self.n_qubits);
         pstr_map.is_x_or_z_generators(check_zero_state)
     }
 
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> EquivalenceType {
-        let mut pstr_map = PauliMap::from_map(
-            self.get_pstr_to_coef_map(),
-            self.n_qubits,
-            self.remove_zero_coef,
-        );
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
+        let mut pstr_map = PauliMap::from_map(self.get_pstr_to_coef_map(), self.n_qubits);
         pstr_map.is_single_x_or_z_generator(check_zero_state, i)
     }
 

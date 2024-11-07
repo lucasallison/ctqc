@@ -29,10 +29,10 @@ pub trait GeneratorSet: Display + Any {
     fn init_single_generator(&mut self, i: usize, zero_state_generator: bool);
 
     /// Returns true if the generator set contains exactly the generators of the all zero/plust state.
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> EquivalenceType;
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool;
 
     /// Returns true if the generator set contains only the ith generator of the all zero/plust state.
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> EquivalenceType;
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool;
 
     /// Conjugates all stored Pauli strings with the provided gate.
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool);
@@ -75,35 +75,20 @@ impl GeneratorSetImplementation {
 pub fn get_generator_set(
     generator_set: &GeneratorSetImplementation,
     n_qubits: usize,
-    remove_zero_coef: bool,
     n_threads: usize,
     n_node_body_bits: Option<usize>,
     pgates_per_leaf: Option<usize>,
 ) -> Box<dyn GeneratorSet> {
     match generator_set {
-        GeneratorSetImplementation::PauliMap => {
-            return Box::new(PauliMap::new(n_qubits, remove_zero_coef))
-        }
+        GeneratorSetImplementation::PauliMap => return Box::new(PauliMap::new(n_qubits)),
         GeneratorSetImplementation::ColumnWiseBitVec => {
-            return Box::new(ColumnWiseBitVec::new(n_qubits, remove_zero_coef))
+            return Box::new(ColumnWiseBitVec::new(n_qubits))
         }
         GeneratorSetImplementation::RowWiseBitVec => {
-            return Box::new(RowWiseBitVec::new(n_qubits, n_threads, remove_zero_coef))
+            return Box::new(RowWiseBitVec::new(n_qubits, n_threads))
         }
         GeneratorSetImplementation::PauliTrees => {
-            return Box::new(PauliTrees::new(
-                n_qubits,
-                remove_zero_coef,
-                n_node_body_bits,
-                pgates_per_leaf,
-            ))
+            return Box::new(PauliTrees::new(n_qubits, n_node_body_bits, pgates_per_leaf))
         }
     };
-}
-
-#[derive(PartialEq)]
-pub enum EquivalenceType {
-    Equivalent,
-    NotEquivalent,
-    Uncertain,
 }

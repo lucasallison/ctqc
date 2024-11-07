@@ -36,14 +36,6 @@ struct Args {
     #[arg(short, long, default_value_t = 10, verbatim_doc_comment)]
     conjugations_before_clean: usize,
 
-    /// To save memory each Pauli string that has a coefficient 
-    /// of 0 (up to some precision) it is removed or "pruned" from the 
-    /// data structure. In some cases this can lead to incorrect results, 
-    /// however, in most cases it will have no effect and significantly
-    /// speeds up the simulation.
-    #[arg(long, default_value_t = false, verbatim_doc_comment)]
-    no_pruning: bool,
-
     /// Provide number of threads to use. When 0 is provided
     /// the number of threads will equal the number of CPU cores.
     #[arg(short, long, default_value_t = 0, verbatim_doc_comment)]
@@ -98,7 +90,6 @@ fn main() {
         args.conjugations_before_clean,
         args.threads,
         args.progress_bar,
-        !args.no_pruning,
         node_body_bits,
         pgates_per_leaf,
     );

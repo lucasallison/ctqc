@@ -78,18 +78,13 @@ impl CoefficientList {
     }
 
     /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
-    pub fn is_empty(&self) -> bool {
+    pub fn is_empty(&self, consider_extremely_small_floats_as_non_zero: bool) -> bool {
         for (_, f) in self.coefficients.iter() {
-            if !(f.eq(&FloatingPointOPC::new(0.0))) {
+            if consider_extremely_small_floats_as_non_zero && f.is_extremely_small() {
                 return false;
             }
-        }
-        true
-    }
 
-    pub fn is_empty_up_to_constant(&self, constant: f64) -> bool {
-        for (_, f) in self.coefficients.iter() {
-            if f.as_f64().abs() > constant {
+            if !(f.eq(&FloatingPointOPC::new(0.0))) {
                 return false;
             }
         }

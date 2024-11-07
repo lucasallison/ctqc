@@ -1,5 +1,6 @@
-use core::f64;
 use std::fmt;
+
+const EXTREMELY_SMALL_THRESHOLD: f64 = f64::EPSILON * 100.0;
 
 /// 'Floating point with operation counter': counts the number of operations
 /// performed on it to make accurate floating point error margin calculations.
@@ -7,15 +8,16 @@ use std::fmt;
 pub struct FloatingPointOPC {
     f: f64,
     ops: usize,
+    extremely_small: bool,
 }
 
 impl FloatingPointOPC {
     pub fn new(f: f64) -> FloatingPointOPC {
-        FloatingPointOPC { f: f, ops: 0 }
+        FloatingPointOPC { f: f, ops: 0, extremely_small: false }
     }
 
     pub fn new_with_ops(f: f64, ops: usize) -> FloatingPointOPC {
-        FloatingPointOPC { f: f, ops: ops }
+        FloatingPointOPC { f: f, ops: ops, extremely_small: false }
     }
 
     pub fn add(&mut self, fp: &FloatingPointOPC) {
@@ -29,6 +31,11 @@ impl FloatingPointOPC {
     }
 
     pub fn mul(&mut self, fp: &FloatingPointOPC) {
+
+        if !fp.eq(&FloatingPointOPC::new(0.0)) && fp.f.abs() < EXTREMELY_SMALL_THRESHOLD {
+            self.extremely_small = true;
+        }
+
         self.f = self.f * fp.f;
         if fp.f.abs() != 1.0 {
             self.ops += 1 + fp.ops;
@@ -54,9 +61,13 @@ impl FloatingPointOPC {
         self.f
     }
 
-    pub fn cmp_threshold(&self, other: &FloatingPointOPC, precision: f64) -> f64 {
+    pub fn cmp_threshold(&self, other: &FloatingPointOPC) -> f64 {
         let total_ops = std::cmp::max(1, self.ops + other.ops);
-        precision * (total_ops) as f64
+        f64::EPSILON * (total_ops) as f64
+    }
+
+    pub fn is_extremely_small(&self) -> bool {
+        self.extremely_small
     }
 }
 
@@ -69,18 +80,13 @@ impl PartialEq for FloatingPointOPC {
 
         // We don't have to worry about overflow because the floats we
         // use are between -1.0 and 1.0
-        (self.f - other.f).abs() < self.cmp_threshold(other, f64::EPSILON)
+        let res = (self.f - other.f).abs() < self.cmp_threshold(other);
+        res
     }
 }
 
 impl fmt::Display for FloatingPointOPC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{} (ops: {}, threshold: {})",
-            self.f,
-            self.ops,
-            self.cmp_threshold(&FloatingPointOPC::new(0.0), f64::EPSILON)
-        )
+        write!(f, "{} (ops: {})", self.f, self.ops)
     }
 }

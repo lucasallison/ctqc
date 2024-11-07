@@ -9,14 +9,11 @@ use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::{PauliGate, PauliString};
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
+use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
 use super::GeneratorSet;
-use super::{utils as Utils, EquivalenceType};
 
 use crate::circuit::{Gate, GateType};
-
-const LIKELY_ZERO_THRESHOLD: f64 = 1e-12;
-const MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE: usize = 10;
 
 /// Stores a map of Pauli strings and their associated coefficient lists.
 pub struct PauliMap {
@@ -24,17 +21,15 @@ pub struct PauliMap {
     pauli_strings_dst: HashMap<BitVec, CoefficientList, FxBuildHasher>,
     h_s_conjugations_map: HSConjugationsMap,
     n_qubits: usize,
-    remove_zero_coef: bool,
 }
 
 impl PauliMap {
-    pub fn new(n_qubits: usize, remove_zero_coef: bool) -> PauliMap {
+    pub fn new(n_qubits: usize) -> PauliMap {
         PauliMap {
             pauli_strings_src: Self::empty_map(n_qubits),
             pauli_strings_dst: Self::empty_map(n_qubits),
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             n_qubits,
-            remove_zero_coef,
         }
     }
 
@@ -57,12 +52,7 @@ impl PauliMap {
             for gate_ind in 0..self.n_qubits {
                 self.apply_h_s_conjugations(&mut pstr, &mut coef_list, gate_ind);
             }
-            Self::insert_pstr_bitvec_into_map(
-                &mut self.pauli_strings_dst,
-                pstr,
-                coef_list,
-                self.remove_zero_coef,
-            );
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list)
         }
 
         self.pauli_strings_src = std::mem::take(&mut pstrs_src);
@@ -115,12 +105,7 @@ impl PauliMap {
             );
             PauliUtils::set_pauli_gate_in_bitslice(&mut pstr, look_up_output.q2_p_gate, qubit_2);
 
-            Self::insert_pstr_bitvec_into_map(
-                &mut self.pauli_strings_dst,
-                pstr,
-                coef_list,
-                self.remove_zero_coef,
-            );
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
         }
 
         self.pauli_strings_src = std::mem::take(&mut pstrs_src);
@@ -158,18 +143,8 @@ impl PauliMap {
             coef_list.multiply(&x_mult);
             new_coef_list.multiply(&y_mult);
 
-            Self::insert_pstr_bitvec_into_map(
-                &mut self.pauli_strings_dst,
-                pstr,
-                coef_list,
-                self.remove_zero_coef,
-            );
-            Self::insert_pstr_bitvec_into_map(
-                &mut self.pauli_strings_dst,
-                new_pstr,
-                new_coef_list,
-                self.remove_zero_coef,
-            );
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, pstr, coef_list);
+            Self::insert_pstr_bitvec_into_map(&mut self.pauli_strings_dst, new_pstr, new_coef_list);
         }
 
         // Take back ownership of the source map, which is now empty
@@ -187,7 +162,7 @@ impl PauliMap {
 
     /// Removes all Pauli strings with zero coefficients from the map
     pub fn clean_map(map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>) {
-        map.retain(|_, coef_list| !coef_list.is_empty());
+        map.retain(|_, coef_list| !coef_list.is_empty(true));
     }
 
     /// Inserts the Pauli string into the map or merges the coefficient list with
@@ -197,7 +172,6 @@ impl PauliMap {
         map: &mut HashMap<BitVec, CoefficientList, FxBuildHasher>,
         pstr: BitVec,
         coef_list: CoefficientList,
-        ignore_zero_coef: bool,
     ) {
         match map.entry(pstr) {
             Entry::Occupied(mut e) => {
@@ -205,10 +179,9 @@ impl PauliMap {
                 existing_coef_list.merge(&coef_list);
             }
             Entry::Vacant(e) => {
-                if ignore_zero_coef && coef_list.is_empty() {
-                    return;
+                if !coef_list.is_empty(true) {
+                    e.insert(coef_list);
                 }
-                e.insert(coef_list);
             }
         }
     }
@@ -218,7 +191,6 @@ impl PauliMap {
     pub fn from_map(
         map: HashMap<BitVec, CoefficientList, FxBuildHasher>,
         n_qubits: usize,
-        remove_zero_coef: bool,
     ) -> PauliMap {
         let dst_map_size = map.len();
         PauliMap {
@@ -229,7 +201,6 @@ impl PauliMap {
             ),
             h_s_conjugations_map: HSConjugationsMap::new(n_qubits),
             n_qubits,
-            remove_zero_coef,
         }
     }
 
@@ -269,8 +240,12 @@ impl GeneratorSet for PauliMap {
         self.pauli_strings_src.insert(pstr, coef_list);
     }
 
-    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> EquivalenceType {
+    fn is_x_or_z_generators(&mut self, check_zero_state: bool) -> bool {
         self.apply_all_h_s_conjugations();
+
+        if self.size() == 0 {
+            return false;
+        }
 
         let mut target_generators =
             HashMap::with_capacity_and_hasher(self.n_qubits, FxBuildHasher::default());
@@ -283,52 +258,28 @@ impl GeneratorSet for PauliMap {
             target_generators.insert(BitVec::from_bitslice(target_generator.as_bitslice()), i);
         }
 
-        let mut equivalence_type = EquivalenceType::Equivalent;
-        // Will be set to true once we find a summand that provides evidence that the
-        // generator set is not equivalent to the target generators
-        let mut likely_not_equivalent = false;
-        let mut uncertain_summands = 0;
-
         for (pstr, coef_list) in &self.pauli_strings_src {
             if target_generators.contains_key(pstr) {
                 let i = target_generators.get(pstr).unwrap();
                 if !coef_list.is_valid_ith_generator_coef_list(*i) {
-                    equivalence_type = EquivalenceType::NotEquivalent;
+                    return false;
                 }
             } else {
-                if !coef_list.is_empty() {
-                    if coef_list.is_empty_up_to_constant(LIKELY_ZERO_THRESHOLD) {
-                        equivalence_type = EquivalenceType::Uncertain;
-                        uncertain_summands += 1;
-                    } else {
-                        equivalence_type = EquivalenceType::NotEquivalent;
-                    }
+                if !coef_list.is_empty(false) {
+                    return false;
                 }
             }
         }
 
-        if uncertain_summands > self.size() * MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE / 100 {
-            equivalence_type = EquivalenceType::Uncertain;
-        }
-
-        equivalence_type
+        true
     }
 
-    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> EquivalenceType {
+    fn is_single_x_or_z_generator(&mut self, check_zero_state: bool, i: usize) -> bool {
         self.apply_all_h_s_conjugations();
 
         if self.size() == 0 {
-            return EquivalenceType::NotEquivalent;
+            return false;
         }
-
-        let mut equivalence_type = EquivalenceType::Equivalent;
-
-        // Will be set to true once we find a summand that provides evidence that the
-        // generator set is not equivalent to the target generators
-        let mut likely_not_equivalent = false;
-
-        // Keep track of the number of uncertain summands, 
-        let mut uncertain_summands = 0;
 
         let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
         let mut target_generator = PauliString::new(self.n_qubits);
@@ -338,33 +289,19 @@ impl GeneratorSet for PauliMap {
             if pstr == target_generator.as_bitslice()
                 && !coef_list.is_valid_ith_generator_coef_list(i)
             {
-                likely_not_equivalent = true
+                return false;
             }
 
-            if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
+            if pstr != target_generator.as_bitslice() && coef_list.is_empty(false) {
                 continue;
             }
 
-            if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
-                if coef_list.is_empty_up_to_constant(LIKELY_ZERO_THRESHOLD) {
-                    equivalence_type = EquivalenceType::Uncertain;
-                    uncertain_summands += 1;
-                } else {
-                    likely_not_equivalent = true;
-                }
+            if pstr != target_generator.as_bitslice() && !coef_list.is_empty(false) {
+                return false;
             }
         }
 
-        if uncertain_summands > 0 { // self.size() * MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE / 100 {
-            equivalence_type = EquivalenceType::Uncertain;
-        }
-
-        if likely_not_equivalent {
-            equivalence_type = EquivalenceType::NotEquivalent;
-        }
-
-        equivalence_type
-
+        true
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {

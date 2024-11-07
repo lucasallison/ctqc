@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use bitvec::ptr::read;
 use fxhash::FxBuildHasher;
 use log::debug;
 use rand::prelude::*;
@@ -14,9 +15,7 @@ use crate::generator_sets::pauli_string::PauliGate;
 use crate::generator_sets::pauli_string::PauliString;
 use crate::generator_sets::shared::coefficient_list::CoefficientList;
 use crate::generator_sets::shared::floating_point_opc::FloatingPointOPC;
-use crate::generator_sets::{
-    get_generator_set, EquivalenceType, GeneratorSet, GeneratorSetImplementation,
-};
+use crate::generator_sets::{get_generator_set, GeneratorSet, GeneratorSetImplementation};
 
 mod utils;
 use utils::optional_progress_bar::OptionalProgressBar;
@@ -35,9 +34,6 @@ pub struct Simulator {
     /// Print progress bar to the terminal
     progress_bar: bool,
 
-    /// Remove Pauli strings with zero coefficients
-    pruning: bool,
-
     /// Applicable if we are simulating using
     /// the Pauli trees datastructure
     node_body_bits: Option<usize>,
@@ -50,7 +46,6 @@ impl Simulator {
         conjugations_before_clean: usize,
         threads: usize,
         progress_bar: bool,
-        pruning: bool,
         node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
@@ -60,7 +55,6 @@ impl Simulator {
             conjugations_before_clean,
             threads,
             progress_bar,
-            pruning,
             node_body_bits,
             pgates_per_leaf,
         }
@@ -69,7 +63,7 @@ impl Simulator {
     //*********** Circuit Equivalence Verification ************//
 
     /// Returns true if the two circuits, U and V, are equivalent, false otherwise. It does so by
-    /// conjugating the circuit with UV^† twice, once for the all-zero state generators, once for the all-plus state generators.
+    /// conjugating the circuit with UV^† twice, once for the all zero state generators, once for the all plus state generators.
     /// If, in both cases, the generators produced by the conjugations are the generators we started with, we know
     /// the circuits are equivalent.
     pub fn equivalence_check(
@@ -114,68 +108,43 @@ impl Simulator {
         circuit_2: &Circuit,
         check_zero_state_generators: bool,
     ) -> bool {
+        let mut generator_set = get_generator_set(
+            &self.generator_set,
+            circuit_1.n_qubits(),
+            self.threads,
+            self.node_body_bits,
+            self.pgates_per_leaf,
+        );
+        generator_set.init_generators(check_zero_state_generators);
 
-        let remove_zero_coef_options = if self.pruning { vec![true, false] } else { vec![false] };
+        let progress_bar = self.progress_bar_for_equiv_check(
+            circuit_1.len() + circuit_2.len(),
+            "gates",
+            check_zero_state_generators,
+        );
 
-        for remove_zero_coef in remove_zero_coef_options.iter() {
-            let mut generator_set = get_generator_set(
-                &self.generator_set,
-                circuit_1.n_qubits(),
-                *remove_zero_coef,
-                self.threads,
-                self.node_body_bits,
-                self.pgates_per_leaf,
-            );
+        // First we simulate the first circuit with the all zero/plus state generators
+        Self::conjugate_circuit_gates(
+            &mut generator_set,
+            circuit_1,
+            false,
+            &progress_bar,
+            self.conjugations_before_clean,
+        );
 
-            generator_set.init_generators(check_zero_state_generators);
+        // Then we simulate the inverse second circuit with the generators produced by the simulation
+        // of the first circuit
+        Self::conjugate_circuit_gates(
+            &mut generator_set,
+            circuit_2,
+            true,
+            &progress_bar,
+            self.conjugations_before_clean,
+        );
 
-            let prefix = if *remove_zero_coef { "" } else { "(New attempt: no removal of zero coefficients)\n" };
-            let progress_bar = self.progress_bar_for_equiv_check(
-                circuit_1.len() + circuit_2.len(),
-                "gates",
-                check_zero_state_generators,
-                &prefix
-            );
+        progress_bar.finish();
 
-            // First we simulate the first circuit with the all zero/plus state generators
-            Self::conjugate_circuit_gates(
-                &mut generator_set,
-                circuit_1,
-                false,
-                &progress_bar,
-                self.conjugations_before_clean,
-            );
-
-            // Then we simulate the inverse second circuit with the generators produced by the simulation
-            // of the first circuit
-            Self::conjugate_circuit_gates(
-                &mut generator_set,
-                circuit_2,
-                true,
-                &progress_bar,
-                self.conjugations_before_clean,
-            );
-
-
-            progress_bar.finish();
-
-            // Do an exact simulation without removing Pauli strings with zero coefficients
-            if *remove_zero_coef
-                && generator_set.is_x_or_z_generators(check_zero_state_generators)
-                    == EquivalenceType::Uncertain
-            {
-                continue;
-            }
-
-            //Check if the resulting generator is equivalent to the generator we started with
-            if generator_set.is_x_or_z_generators(check_zero_state_generators)
-                == EquivalenceType::Equivalent 
-            {
-                return true;         
-            }
-
-        }
-        true
+        generator_set.is_x_or_z_generators(check_zero_state_generators)
     }
 
     /// Conjugates the gates of the circuit UV^† iteratively to all the generators of the all
@@ -188,68 +157,42 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> bool {
         let progress_bar = self.progress_bar_for_equiv_check(
-            circuit_1.n_qubits() * 2 * (circuit_1.len() + circuit_2.len()),
+            circuit_1.n_qubits() * (circuit_1.len() + circuit_2.len()),
             "gates",
             check_zero_state_generators,
-            "",
         );
 
-        let remove_zero_coef_options = if self.pruning { vec![true, false] } else { vec![false] };
-
         let res = (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
-            for remove_zero_coef in remove_zero_coef_options.iter() {
-                let mut generator_set = get_generator_set(
-                    &self.generator_set,
-                    circuit_1.n_qubits(),
-                    *remove_zero_coef,
-                    1,
-                    self.node_body_bits,
-                    self.pgates_per_leaf,
-                );
+            let mut generator_set = get_generator_set(
+                &self.generator_set,
+                circuit_1.n_qubits(),
+                1,
+                self.node_body_bits,
+                self.pgates_per_leaf,
+            );
 
-                generator_set.init_single_generator(i, check_zero_state_generators);
+            generator_set.init_single_generator(i, check_zero_state_generators);
 
-                // Conjugate gates of U
-                Self::conjugate_circuit_gates(
-                    &mut generator_set,
-                    circuit_1,
-                    false,
-                    &progress_bar,
-                    self.conjugations_before_clean,
-                );
+            // Conjugate gates of U
+            Self::conjugate_circuit_gates(
+                &mut generator_set,
+                circuit_1,
+                false,
+                &progress_bar,
+                self.conjugations_before_clean,
+            );
 
-                // Conjugate gates of V^†
-                Self::conjugate_circuit_gates(
-                    &mut generator_set,
-                    circuit_2,
-                    true,
-                    &progress_bar,
-                    self.conjugations_before_clean,
-                );
+            // Conjugate gates of V^†
+            Self::conjugate_circuit_gates(
+                &mut generator_set,
+                circuit_2,
+                true,
+                &progress_bar,
+                self.conjugations_before_clean,
+            );
 
-                // If we removed Pauli strings with empty coefficients, we might have to do an additional simulation without
-                // removing them
-                if *remove_zero_coef
-                    && generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
-                        == EquivalenceType::Uncertain
-                {
-                    println!("Lets try again");
-                    continue;
-                } 
-
-                if *remove_zero_coef {
-                    println!("Good in one go");
-                    progress_bar.inc((circuit_1.len() + circuit_2.len()) as u64);
-                }
-
-                generator_set.clean();
-                println!("GS: {}", generator_set);
-
-                // We want to check if the resulting generator is equivalent to the generator we started with
-                return generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
-                    != EquivalenceType::NotEquivalent;
-            }
-            true
+            // We want to check if any of the simulations does NOT yield the generator we started with
+            generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
         });
 
         progress_bar.finish();
@@ -279,11 +222,9 @@ impl Simulator {
         n_progress_items: usize,
         progress_items: &str,
         check_zero_state_generators: bool,
-        additonal_prefix: &str, 
     ) -> OptionalProgressBar {
         let prefix = format!(
-            "{}Simulating V^{}(U{}U^{})V",
-            additonal_prefix,
+            "Simulating V^{}(U{}U^{})V",
             *DAG_CHAR,
             z_x_print_char(check_zero_state_generators),
             *DAG_CHAR
@@ -310,11 +251,7 @@ impl Simulator {
 
         for (i, gate) in circuit.iter(inverse).enumerate() {
             // Clean the generator set every `self.conjugations_before_clean` gates, if the value is not 0
-            if !circuit.clifford()
-                && conjugations_before_clean != 0
-                && i != 0
-                && i % conjugations_before_clean == 0
-            {
+            if !circuit.clifford() && conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
                 generator_set.clean();
             }
 
@@ -351,7 +288,6 @@ impl Simulator {
         let mut generator_set = get_generator_set(
             &self.generator_set,
             circuit.n_qubits(),
-            self.pruning,
             self.threads,
             self.node_body_bits,
             self.pgates_per_leaf,
@@ -438,7 +374,7 @@ impl Simulator {
         for qubit in qubits_to_measure {
             // Convert the unconjugated summands to a PauliMap to perform conjugations
             let mut unconjugated_observable_summands_pmap =
-                PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits(), self.pruning);
+                PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits());
 
             let progress_bar = OptionalProgressBar::new(
                 self.progress_bar,
