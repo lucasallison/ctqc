@@ -9,16 +9,15 @@ pub struct FloatingPointOPC {
     // Keep track of the cumulative multiplications, this way we know if the number is extremely small
     // due to multiple multiplications. This helps us to avoid incorrectly considering it as zero.
     cumulative_multiplications: f64,
-    extremely_small: bool,
 }
 
 impl FloatingPointOPC {
     pub fn new(f: f64) -> FloatingPointOPC {
-        FloatingPointOPC { f: f, ops: 0, cumulative_multiplications: 1.0, extremely_small: false }
+        FloatingPointOPC { f: f, ops: 0, cumulative_multiplications: 1.0}
     }
 
     pub fn new_with_ops(f: f64, ops: usize) -> FloatingPointOPC {
-        FloatingPointOPC { f: f, ops: ops, cumulative_multiplications: 1.0, extremely_small: false }
+        FloatingPointOPC { f: f, ops: ops, cumulative_multiplications: 1.0}
     }
 
     pub fn add(&mut self, fp: &FloatingPointOPC) {
@@ -39,11 +38,6 @@ impl FloatingPointOPC {
 
         if !fp.eq(&FloatingPointOPC::new(0.0)) && !fp.eq(&FloatingPointOPC::new(1.0)) && !fp.eq(&FloatingPointOPC::new(-1.0)) {
             self.cumulative_multiplications = self.cumulative_multiplications * fp.f.abs();
-        }
-
-        // Overestimate by a factor of 100 to prevent boundary cases
-        if !fp.eq(&FloatingPointOPC::new(0.0)) && self.cumulative_multiplications < 100.0 * f64::EPSILON * self.ops as f64 {
-            self.extremely_small = true;
         }
 
         self.f = self.f * fp.f;
@@ -77,7 +71,7 @@ impl FloatingPointOPC {
     }
 
     pub fn is_extremely_small(&self) -> bool {
-        self.extremely_small
+        self.cumulative_multiplications < 100.0 * f64::EPSILON * self.ops as f64
     }
 }
 
