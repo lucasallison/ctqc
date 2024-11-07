@@ -16,6 +16,7 @@ use super::{utils as Utils, EquivalenceType};
 use crate::circuit::{Gate, GateType};
 
 const LIKELY_ZERO_THRESHOLD: f64 = 1e-12;
+const MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE: usize = 10;
 
 /// Stores a map of Pauli strings and their associated coefficient lists.
 pub struct PauliMap {
@@ -283,22 +284,31 @@ impl GeneratorSet for PauliMap {
         }
 
         let mut equivalence_type = EquivalenceType::Equivalent;
+        // Will be set to true once we find a summand that provides evidence that the
+        // generator set is not equivalent to the target generators
+        let mut likely_not_equivalent = false;
+        let mut uncertain_summands = 0;
 
         for (pstr, coef_list) in &self.pauli_strings_src {
             if target_generators.contains_key(pstr) {
                 let i = target_generators.get(pstr).unwrap();
                 if !coef_list.is_valid_ith_generator_coef_list(*i) {
-                    return EquivalenceType::NotEquivalent;
+                    equivalence_type = EquivalenceType::NotEquivalent;
                 }
             } else {
                 if !coef_list.is_empty() {
                     if coef_list.is_empty_up_to_constant(LIKELY_ZERO_THRESHOLD) {
-                        equivalence_type = EquivalenceType::LikelyEquivalent;
+                        equivalence_type = EquivalenceType::Uncertain;
+                        uncertain_summands += 1;
                     } else {
-                        return EquivalenceType::NotEquivalent;
+                        equivalence_type = EquivalenceType::NotEquivalent;
                     }
                 }
             }
+        }
+
+        if uncertain_summands > self.size() * MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE / 100 {
+            equivalence_type = EquivalenceType::Uncertain;
         }
 
         equivalence_type
@@ -313,6 +323,13 @@ impl GeneratorSet for PauliMap {
 
         let mut equivalence_type = EquivalenceType::Equivalent;
 
+        // Will be set to true once we find a summand that provides evidence that the
+        // generator set is not equivalent to the target generators
+        let mut likely_not_equivalent = false;
+
+        // Keep track of the number of uncertain summands, 
+        let mut uncertain_summands = 0;
+
         let pgate = PauliUtils::generator_non_identity_gate(check_zero_state);
         let mut target_generator = PauliString::new(self.n_qubits);
         target_generator.set_pauli_gate(i, pgate);
@@ -321,7 +338,7 @@ impl GeneratorSet for PauliMap {
             if pstr == target_generator.as_bitslice()
                 && !coef_list.is_valid_ith_generator_coef_list(i)
             {
-                return EquivalenceType::NotEquivalent;
+                likely_not_equivalent = true
             }
 
             if pstr != target_generator.as_bitslice() && coef_list.is_empty() {
@@ -330,14 +347,24 @@ impl GeneratorSet for PauliMap {
 
             if pstr != target_generator.as_bitslice() && !coef_list.is_empty() {
                 if coef_list.is_empty_up_to_constant(LIKELY_ZERO_THRESHOLD) {
-                    equivalence_type = EquivalenceType::LikelyEquivalent;
+                    equivalence_type = EquivalenceType::Uncertain;
+                    uncertain_summands += 1;
                 } else {
-                    return EquivalenceType::NotEquivalent;
+                    likely_not_equivalent = true;
                 }
             }
         }
 
+        if uncertain_summands > 0 { // self.size() * MAX_NUM_UNCERTAIN_SUMMANDS_PERCENTAGE / 100 {
+            equivalence_type = EquivalenceType::Uncertain;
+        }
+
+        if likely_not_equivalent {
+            equivalence_type = EquivalenceType::NotEquivalent;
+        }
+
         equivalence_type
+
     }
 
     fn conjugate(&mut self, gate: &Gate, conjugate_dagger: bool) {

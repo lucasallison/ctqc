@@ -105,5 +105,5 @@ pub fn get_generator_set(
 pub enum EquivalenceType {
     Equivalent,
     NotEquivalent,
-    LikelyEquivalent,
+    Uncertain,
 }

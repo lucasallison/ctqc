@@ -35,6 +35,9 @@ pub struct Simulator {
     /// Print progress bar to the terminal
     progress_bar: bool,
 
+    /// Remove Pauli strings with zero coefficients
+    pruning: bool,
+
     /// Applicable if we are simulating using
     /// the Pauli trees datastructure
     node_body_bits: Option<usize>,
@@ -47,6 +50,7 @@ impl Simulator {
         conjugations_before_clean: usize,
         threads: usize,
         progress_bar: bool,
+        pruning: bool,
         node_body_bits: Option<usize>,
         pgates_per_leaf: Option<usize>,
     ) -> Self {
@@ -56,6 +60,7 @@ impl Simulator {
             conjugations_before_clean,
             threads,
             progress_bar,
+            pruning,
             node_body_bits,
             pgates_per_leaf,
         }
@@ -110,7 +115,9 @@ impl Simulator {
         check_zero_state_generators: bool,
     ) -> bool {
 
-        for remove_zero_coef in [true, false].iter() {
+        let remove_zero_coef_options = if self.pruning { vec![true, false] } else { vec![false] };
+
+        for remove_zero_coef in remove_zero_coef_options.iter() {
             let mut generator_set = get_generator_set(
                 &self.generator_set,
                 circuit_1.n_qubits(),
@@ -155,7 +162,7 @@ impl Simulator {
             // Do an exact simulation without removing Pauli strings with zero coefficients
             if *remove_zero_coef
                 && generator_set.is_x_or_z_generators(check_zero_state_generators)
-                    == EquivalenceType::LikelyEquivalent
+                    == EquivalenceType::Uncertain
             {
                 continue;
             }
@@ -187,8 +194,10 @@ impl Simulator {
             "",
         );
 
+        let remove_zero_coef_options = if self.pruning { vec![true, false] } else { vec![false] };
+
         let res = (0..circuit_1.n_qubits()).into_par_iter().all(|i| {
-            for remove_zero_coef in [true, false].iter() {
+            for remove_zero_coef in remove_zero_coef_options.iter() {
                 let mut generator_set = get_generator_set(
                     &self.generator_set,
                     circuit_1.n_qubits(),
@@ -222,14 +231,19 @@ impl Simulator {
                 // removing them
                 if *remove_zero_coef
                     && generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
-                        == EquivalenceType::LikelyEquivalent
+                        == EquivalenceType::Uncertain
                 {
+                    println!("Lets try again");
                     continue;
                 } 
 
                 if *remove_zero_coef {
+                    println!("Good in one go");
                     progress_bar.inc((circuit_1.len() + circuit_2.len()) as u64);
                 }
+
+                generator_set.clean();
+                println!("GS: {}", generator_set);
 
                 // We want to check if the resulting generator is equivalent to the generator we started with
                 return generator_set.is_single_x_or_z_generator(check_zero_state_generators, i)
@@ -337,7 +351,7 @@ impl Simulator {
         let mut generator_set = get_generator_set(
             &self.generator_set,
             circuit.n_qubits(),
-            true,
+            self.pruning,
             self.threads,
             self.node_body_bits,
             self.pgates_per_leaf,
@@ -424,7 +438,7 @@ impl Simulator {
         for qubit in qubits_to_measure {
             // Convert the unconjugated summands to a PauliMap to perform conjugations
             let mut unconjugated_observable_summands_pmap =
-                PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits(), true);
+                PauliMap::from_map(unconjugated_observable_summands, circuit.n_qubits(), self.pruning);
 
             let progress_bar = OptionalProgressBar::new(
                 self.progress_bar,
