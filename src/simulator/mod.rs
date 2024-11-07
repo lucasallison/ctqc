@@ -1,5 +1,4 @@
 use bitvec::prelude::*;
-use bitvec::ptr::read;
 use fxhash::FxBuildHasher;
 use log::debug;
 use rand::prelude::*;
