@@ -1,4 +1,4 @@
-use std::{f32::EPSILON, fmt};
+use std::fmt;
 
 /// 'Floating point with operation counter': counts the number of operations
 /// performed on it to make accurate floating point error margin calculations.
@@ -41,7 +41,8 @@ impl FloatingPointOPC {
             self.cumulative_multiplications = self.cumulative_multiplications * fp.f.abs();
         }
 
-        if !fp.eq(&FloatingPointOPC::new(0.0)) && self.cumulative_multiplications < f64::EPSILON * self.ops as f64 {
+        // Overestimate by a factor of 100 to prevent boundary cases
+        if !fp.eq(&FloatingPointOPC::new(0.0)) && self.cumulative_multiplications < 100.0 * f64::EPSILON * self.ops as f64 {
             self.extremely_small = true;
         }
 
