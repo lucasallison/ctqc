@@ -275,7 +275,6 @@ impl Simulator {
             + progress_items
             + " ({percent}%) -- {msg}"
     }
-
     //*********** Circuit Simulation ************//
 
     /// Simulates the provided circuit by conjugating the Pauli stabilizer generators of the

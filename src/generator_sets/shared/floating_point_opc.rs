@@ -71,8 +71,14 @@ impl FloatingPointOPC {
     }
 
     pub fn is_extremely_small(&self) -> bool {
+        // Not extremely small anymore, just zero
+        if self.f < f64::MIN_POSITIVE {
+            return false;
+        }
+        // Overestimate by a factor 100 to avoid boundary cases 
         self.cumulative_multiplications < 100.0 * f64::EPSILON * self.ops as f64
     }
+
 }
 
 impl PartialEq for FloatingPointOPC {
