@@ -13,6 +13,9 @@ if [ ! -d ".gpmc" ]; then
     echo "TIMEOUT=900" >> simulators/scripts/.env
 fi
 
+echo unpacking benchmarks...
+./mqt_benchmarks/qiskit_optimized/unpack.sh
+
 echo "Building CTQC..."
 cargo build --release
 cp ../target/release/ctqc simulators/ctqc_bin

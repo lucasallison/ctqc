@@ -1,4 +1,5 @@
 #!/bin/sh
 
 ./setup.sh
-./run.sh
+source .venv/bin/activate
+python benchmark.py

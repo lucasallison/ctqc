@@ -1,0 +1,726 @@
+[
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ae/transp/ae_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 100,
+        "rz_gates": 196
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ae/shift7/ae_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 100,
+        "rz_gates": 196
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ae/transp/ae_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 332,
+        "rz_gates": 592
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ae/shift7/ae_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 332,
+        "rz_gates": 592
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 22,
+        "rz_gates": 44
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift7/dj_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 22,
+        "rz_gates": 11
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "stats": {
+          "equivalence": "not_equivalent",
+          "runtime": 0.026145219802856445,
+          "max_rss_bytes": 85770240
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 46,
+        "rz_gates": 68
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift7/dj_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 46,
+        "rz_gates": 17
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 94,
+        "rz_gates": 148
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift7/dj_32.qasm",
+      "stats": {
+        "n_qubits": 32,
+        "clif_gates": 94,
+        "rz_gates": 37
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/grover/transp/grover-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4048,
+        "rz_gates": 6688
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/grover/shift7/grover-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4048,
+        "rz_gates": 6688
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/grover/transp/grover-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 11,
+        "clif_gates": 2974,
+        "rz_gates": 4825
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/grover/shift7/grover-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 11,
+        "clif_gates": 2932,
+        "rz_gates": 4825
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/portfolio/transp/portfolioqaoa_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 224,
+        "rz_gates": 284
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/portfolio/shift7/portfolioqaoa_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 224,
+        "rz_gates": 284
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/portfolio/transp/portfoliovqe_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 316,
+        "rz_gates": 224
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/portfolio/shift7/portfoliovqe_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 190,
+        "rz_gates": 224
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qaoa/transp/qaoa_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 72,
+        "rz_gates": 128
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qaoa/shift7/qaoa_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 72,
+        "rz_gates": 128
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qaoa/transp/qaoa_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 144,
+        "rz_gates": 256
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qaoa/shift7/qaoa_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 144,
+        "rz_gates": 256
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/transp/qft_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 76,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/shift7/qft_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 76,
+        "rz_gates": 63
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/transp/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/shift7/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/shift7/qftentangled_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 84,
+        "rz_gates": 63
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/shift7/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qnn/transp/qnn_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 167,
+        "rz_gates": 232
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qnn/shift7/qnn_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 182,
+        "rz_gates": 141
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qnn/transp/qnn_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 591,
+        "rz_gates": 592
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qnn/shift7/qnn_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 606,
+        "rz_gates": 396
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeexact/transp/qpeexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeexact/shift7/qpeexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeexact/transp/qpeexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeexact/shift7/qpeexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeinexact/transp/qpeinexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeinexact/shift7/qpeinexact_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 83,
+        "rz_gates": 84
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeinexact/transp/qpeinexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qpeinexact/shift7/qpeinexact_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 295,
+        "rz_gates": 360
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/transp/qwalk-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4197,
+        "rz_gates": 6740
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/shift7/qwalk-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4173,
+        "rz_gates": 6740
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/transp/qwalk-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 13,
+        "clif_gates": 1357,
+        "rz_gates": 980
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/shift7/qwalk-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 13,
+        "clif_gates": 1105,
+        "rz_gates": 980
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/realamp/transp/realamprandom_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 224
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/realamp/shift7/realamprandom_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 93
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/su/transp/su2random_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 224
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/su/shift7/su2random_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 93
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/twolocal/transp/twolocalrandom_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 224
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/twolocal/shift7/twolocalrandom_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 148,
+        "rz_gates": 224
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/vqe/transp/vqe_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 62,
+        "rz_gates": 168
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/vqe/shift7/vqe_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 62,
+        "rz_gates": 168
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/vqe/transp/vqe_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 126,
+        "rz_gates": 336
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/vqe/shift7/vqe_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 126,
+        "rz_gates": 336
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/wstate/transp/wstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 60,
+        "rz_gates": 98
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/wstate/shift7/wstate_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 70,
+        "rz_gates": 71
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Error from subprocess: The ZX checker suggests that the circuits are not equivalent, but the simulation checker suggests that they are probably equivalent. Thus, no conclusion can be drawn.\n"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/wstate/transp/wstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 124,
+        "rz_gates": 210
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/wstate/shift7/wstate_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 150,
+        "rz_gates": 151
+      }
+    },
+    "results": [
+      {
+        "simulator": "QCEC",
+        "exception": "Timeout"
+      }
+    ]
+  }
+]

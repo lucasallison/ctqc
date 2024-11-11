@@ -164,7 +164,7 @@ def benchmark(circuit_dir: str,
     if not os.path.isdir(circuit_dir):
         raise ValueError(f"{circuit_dir} is not a directory.")
 
-    logger.log(f"Starting benchmark '{benchmark_name}'")
+    logger.log(f"Starting benchmark '{benchmark_name} with timeout {timeout}'")
 
     # Get all circuits and sort them
     circuits = [str(path) for path in Path(circuit_dir).rglob('*.qasm')]
@@ -243,9 +243,8 @@ def benchmark(circuit_dir: str,
 
 
 if __name__ == "__main__":
-    from config import TIMEOUT, RESULTS_DIR, SIM_BENCHMARKS, EQUIV_BENCHMARKS
+    from config import RESULTS_DIR, SIM_BENCHMARKS, EQUIV_BENCHMARKS
 
-    print(f"Starting benchmarking with timeout {TIMEOUT} seconds")
 
     os.makedirs(RESULTS_DIR, exist_ok=True)
     logger = Logger(RESULTS_DIR, os.path.join(RESULTS_DIR, 'benchmarks.log'), True)
@@ -255,6 +254,7 @@ if __name__ == "__main__":
         benchmark_name = sim_benchmark['benchmark_name']
         out_dir = os.path.join(RESULTS_DIR, sim_benchmark['results_subdir'])
         simulators = sim_benchmark['simulators']
+        timeout = sim_benchmark['timeout']
 
         os.makedirs(out_dir, exist_ok=True)
 
@@ -265,7 +265,7 @@ if __name__ == "__main__":
                 simulators,
                 out_dir,
                 benchmark_name,
-                TIMEOUT,
+                timeout,
                 logger)
         except Exception as e:
             print(
@@ -277,6 +277,7 @@ if __name__ == "__main__":
         benchmark_name = equiv_benchmark['benchmark_name']
         out_dir = os.path.join(RESULTS_DIR, equiv_benchmark['results_subdir'])
         equiv_checkers = equiv_benchmark['equiv_checkers']
+        timeout = equiv_benchmark['timeout']
 
         os.makedirs(out_dir, exist_ok=True)
 
@@ -287,7 +288,7 @@ if __name__ == "__main__":
                 equiv_checkers,
                 out_dir,
                 benchmark_name,
-                TIMEOUT,
+                timeout,
                 logger)
         except Exception as e:
             print(
