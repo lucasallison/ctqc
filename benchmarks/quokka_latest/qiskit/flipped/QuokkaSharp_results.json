@@ -1,0 +1,382 @@
+[
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1534,
+        "rz_gates": 1868
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/flipped/dj_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1534,
+        "rz_gates": 467
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 10.038410186767578,
+          "max_rss_bytes": 345915392
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 3988
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/flipped/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 997
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 13.742795705795288,
+          "max_rss_bytes": 1302261760
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 7972
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/flipped/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 1993
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 34.90619349479675,
+          "max_rss_bytes": 392232960
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 16076
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/flipped/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 4019
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 512,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 0.5091347694396973,
+          "max_rss_bytes": 64372736
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 1.7282724380493164,
+          "max_rss_bytes": 160010240
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 6.706411361694336,
+          "max_rss_bytes": 531091456
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 21.11654496192932,
+          "max_rss_bytes": 1358282752
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 128.00162839889526,
+          "max_rss_bytes": 7496101888
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_512.qasm",
+      "stats": {
+        "n_qubits": 512,
+        "clif_gates": 1024,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 0.9829506874084473,
+          "max_rss_bytes": 88805376
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 2048,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 2.215973138809204,
+          "max_rss_bytes": 136650752
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 4096,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 10.870356559753418,
+          "max_rss_bytes": 253054976
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 16384,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 8192,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
+      }
+    ]
+  }
+]
