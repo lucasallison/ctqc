@@ -27,7 +27,8 @@ struct Args {
     /// - cbitvec: (column-wise bitvector) The Pauli gates of each Pauli string at a certain
     ///            index are saved sequentially in a separate bitvector.
     /// - ptrees:  Pauli strings are saved in a binary tree structure.
-    #[arg(short='d', long, default_value_t = String::from("map"), verbatim_doc_comment)]
+    /// 
+    #[arg(short='d', long, default_value_t = String::from("None"), verbatim_doc_comment)]
     generator_set: String,
 
     /// Provide after how many gates the simulator should "clean" the
@@ -84,9 +85,30 @@ fn main() {
     let node_body_bits = if args.nbb == 0 { None } else { Some(args.nbb) };
     let pgates_per_leaf = if args.pgl == 0 { None } else { Some(args.pgl) };
 
+    // Parse the provided circuit(s)
+    let circuit = Circuit::from_file(&args.circuit_file);
+    let equiv_circuit = if args.equiv_circuit_file != "None" {
+        Some(Circuit::from_file(&args.equiv_circuit_file))
+    } else {
+        None
+    };
+
+    // Determine the generator set to use
+    let generator_set = match args.generator_set.as_str() {
+        "None" => {
+            let equiv_is_clifford = equiv_circuit.as_ref().map_or(true, |c| c.clifford());
+            if circuit.clifford() && equiv_is_clifford {
+                "rbitvec"
+            } else {
+                "map"
+            }
+        }
+        other => other,
+    };
+
     // Initialize the simulator
     let mut simulator = Simulator::new(
-        args.generator_set,
+        generator_set.to_string(),
         args.conjugations_before_clean,
         args.threads,
         args.progress_bar,
@@ -94,26 +116,22 @@ fn main() {
         pgates_per_leaf,
     );
 
-    // Parse the provided circuit
-    let circuit = Circuit::from_file(&args.circuit_file);
-
     // Simulate, or run an equivalence check
-    match args.equiv_circuit_file.as_str() {
-        "None" => {
+    match equiv_circuit {
+        Some(equiv) => {
+            if args.sample_measurements {
+                eprintln!("Sampling measurements can only be done when running a normal simulation, not an equivalence check.");
+            } else {
+                simulator.equivalence_check(&circuit, &equiv, args.equiv_all_generators);
+            }
+        },
+        None => {
             if args.sample_measurements {
                 simulator.simulate_with_sampler(&circuit);
             } else {
                 simulator.simulate_backwards(&circuit);
             }
-        }
-        _ => {
-            if args.sample_measurements {
-                eprintln!("Sampling measurements can only be done when running a normal simulation, not an equivalence check.");
-            }
-
-            let equiv_circuit = Circuit::from_file(&args.equiv_circuit_file);
-            simulator.equivalence_check(&circuit, &equiv_circuit, args.equiv_all_generators);
-        }
+        },
     }
 
     std::process::exit(0);
