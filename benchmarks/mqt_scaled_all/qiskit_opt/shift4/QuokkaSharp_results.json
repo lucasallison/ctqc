@@ -211,7 +211,91 @@
     "results": [
       {
         "simulator": "QuokkaSharp",
-        "exception": "int too large to convert to float"
+        "stats": {
+          "equivalence": false,
+          "runtime": 4.162145137786865,
+          "max_rss_bytes": 376360960
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 3988
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift4/dj_1024.qasm",
+      "stats": {
+        "n_qubits": 1024,
+        "clif_gates": 3070,
+        "rz_gates": 997
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 17.116296529769897,
+          "max_rss_bytes": 1388482560
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 7972
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift4/dj_2048.qasm",
+      "stats": {
+        "n_qubits": 2048,
+        "clif_gates": 6142,
+        "rz_gates": 1993
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "stats": {
+          "equivalence": false,
+          "runtime": 67.76682615280151,
+          "max_rss_bytes": 5359497216
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 16076
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift4/dj_4096.qasm",
+      "stats": {
+        "n_qubits": 4096,
+        "clif_gates": 12286,
+        "rz_gates": 4019
+      }
+    },
+    "results": [
+      {
+        "simulator": "QuokkaSharp",
+        "exception": "Timeout"
       }
     ]
   },

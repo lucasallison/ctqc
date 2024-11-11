@@ -24,6 +24,26 @@
           "runtime": 3.936333315,
           "max_rss_bytes": 89161728
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 32.505233374,
+          "max_rss_bytes": 1398870016
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 21.685318853,
+          "max_rss_bytes": 1446612992
+        }
       }
     ]
   },
@@ -47,6 +67,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -74,6 +106,30 @@
         "stats": {
           "equivalent": true,
           "runtime": 0.001237032,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.003790184,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.002254323,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001710168,
           "max_rss_bytes": 0
         }
       }
@@ -104,6 +160,30 @@
           "runtime": 0.001937971,
           "max_rss_bytes": 0
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.004558263,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.002785254,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001785054,
+          "max_rss_bytes": 0
+        }
       }
     ]
   },
@@ -130,6 +210,30 @@
         "stats": {
           "equivalent": true,
           "runtime": 0.00247268,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.010195325,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.012172345,
+          "max_rss_bytes": 5292032
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.006851707,
           "max_rss_bytes": 0
         }
       }
@@ -160,6 +264,30 @@
           "runtime": 0.00528499,
           "max_rss_bytes": 0
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.024541474,
+          "max_rss_bytes": 5513216
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.020648222,
+          "max_rss_bytes": 5775360
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.010919497,
+          "max_rss_bytes": 0
+        }
       }
     ]
   },
@@ -187,6 +315,30 @@
           "equivalent": true,
           "runtime": 0.020928193,
           "max_rss_bytes": 5455872
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.11270567,
+          "max_rss_bytes": 5423104
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.067210668,
+          "max_rss_bytes": 6029312
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.013166908,
+          "max_rss_bytes": 5287936
         }
       }
     ]
@@ -216,6 +368,30 @@
           "runtime": 0.128409477,
           "max_rss_bytes": 5984256
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.228308932,
+          "max_rss_bytes": 5750784
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.273655995,
+          "max_rss_bytes": 7073792
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.081882925,
+          "max_rss_bytes": 5427200
+        }
       }
     ]
   },
@@ -243,6 +419,30 @@
           "equivalent": true,
           "runtime": 0.902050861,
           "max_rss_bytes": 7241728
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.41358153,
+          "max_rss_bytes": 7012352
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.17947512,
+          "max_rss_bytes": 9461760
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.298398441,
+          "max_rss_bytes": 6660096
         }
       }
     ]
@@ -272,6 +472,30 @@
           "runtime": 6.978055643,
           "max_rss_bytes": 9715712
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 12.009253096,
+          "max_rss_bytes": 10522624
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 6.351996371,
+          "max_rss_bytes": 14270464
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.775155483,
+          "max_rss_bytes": 7303168
+        }
       }
     ]
   },
@@ -299,6 +523,30 @@
           "equivalent": true,
           "runtime": 53.659302169,
           "max_rss_bytes": 14585856
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 103.249315885,
+          "max_rss_bytes": 22990848
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 38.991701234,
+          "max_rss_bytes": 23461888
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 12.881155325,
+          "max_rss_bytes": 9740288
         }
       }
     ]
@@ -328,6 +576,62 @@
           "runtime": 423.302739661,
           "max_rss_bytes": 18616320
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 246.93138547,
+          "max_rss_bytes": 40820736
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 95.259364445,
+          "max_rss_bytes": 14041088
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 32484
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/opt/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 8121
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
       }
     ]
   },
@@ -351,6 +655,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.000795224,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.002503201,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001343997,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.001043839,
@@ -381,6 +709,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.000936845,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001151357,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.004649449,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.002698515,
           "max_rss_bytes": 0
         }
@@ -407,6 +759,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001576716,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001914786,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.006266661,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.001904589,
@@ -437,6 +813,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.003575246,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.006540989,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.009512709,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.002114306,
           "max_rss_bytes": 0
         }
@@ -463,6 +863,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.007910912,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.015023569,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.032184221,
+          "max_rss_bytes": 5795840
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.007371199,
@@ -493,6 +917,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.035128862,
+          "max_rss_bytes": 5500928
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.048720822,
+          "max_rss_bytes": 5275648
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.130223161,
+          "max_rss_bytes": 6688768
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.017105369,
           "max_rss_bytes": 5001216
         }
@@ -519,6 +967,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.264709131,
+          "max_rss_bytes": 6660096
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.13298234,
+          "max_rss_bytes": 6438912
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.624359845,
+          "max_rss_bytes": 8712192
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.067290175,
@@ -549,6 +1021,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 2.018387434,
+          "max_rss_bytes": 8835072
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.300416761,
+          "max_rss_bytes": 9875456
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 3.245665871,
+          "max_rss_bytes": 13365248
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.147886123,
           "max_rss_bytes": 6549504
         }
@@ -575,6 +1071,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 15.772812855,
+          "max_rss_bytes": 12865536
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.163595414,
+          "max_rss_bytes": 21602304
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 18.56084102,
+          "max_rss_bytes": 26214400
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.623941024,
@@ -605,6 +1125,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 124.694103157,
+          "max_rss_bytes": 21716992
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 5.826652887,
+          "max_rss_bytes": 63057920
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 125.656529766,
+          "max_rss_bytes": 49700864
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 2.389127095,
           "max_rss_bytes": 11796480
         }
@@ -631,6 +1175,22 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 33.164515624,
+          "max_rss_bytes": 223215616
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 10.649041818,
@@ -659,6 +1219,22 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 222.842215043,
+          "max_rss_bytes": 841814016
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 42.564331901,
@@ -687,6 +1263,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 176.437945029,
@@ -717,6 +1305,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.001110052,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001220404,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001422618,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.00108764,
           "max_rss_bytes": 0
         }
@@ -743,6 +1355,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.003077986,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001734197,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.004346112,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.00186684,
@@ -773,6 +1409,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.004339577,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.001963696,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.003604851,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.002634421,
           "max_rss_bytes": 0
         }
@@ -799,6 +1459,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.006153818,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.002748815,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.013255671,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.005336847,
@@ -829,6 +1513,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.011624139,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.021517989,
+          "max_rss_bytes": 0
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.033803179,
+          "max_rss_bytes": 6205440
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.010705356,
           "max_rss_bytes": 0
         }
@@ -855,6 +1563,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.046760158,
+          "max_rss_bytes": 5570560
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.078682273,
+          "max_rss_bytes": 5267456
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.139354175,
+          "max_rss_bytes": 6848512
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.033389769,
@@ -885,6 +1617,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 0.318371711,
+          "max_rss_bytes": 6873088
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.179043831,
+          "max_rss_bytes": 6426624
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.654310447,
+          "max_rss_bytes": 8933376
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 0.13829174,
           "max_rss_bytes": 5373952
         }
@@ -911,6 +1667,30 @@
     "results": [
       {
         "simulator": "CTQC",
+        "stats": {
+          "equivalent": true,
+          "runtime": 2.393414465,
+          "max_rss_bytes": 8998912
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.486732375,
+          "max_rss_bytes": 9846784
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 3.335865839,
+          "max_rss_bytes": 13393920
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 0.372713516,
@@ -941,6 +1721,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 16.776962485,
+          "max_rss_bytes": 13426688
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.9564564660000001,
+          "max_rss_bytes": 21704704
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 18.175562079,
+          "max_rss_bytes": 21893120
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 1.346729864,
           "max_rss_bytes": 8441856
         }
@@ -969,6 +1773,30 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": true,
+          "runtime": 127.791885916,
+          "max_rss_bytes": 15867904
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 8.961080307,
+          "max_rss_bytes": 64495616
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 108.216481977,
+          "max_rss_bytes": 38993920
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
           "runtime": 5.427305571,
           "max_rss_bytes": 12836864
         }
@@ -995,6 +1823,22 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 43.096335014,
+          "max_rss_bytes": 224882688
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 22.390935174,
@@ -1023,6 +1867,22 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 253.120429384,
+          "max_rss_bytes": 846467072
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 90.080595035,
@@ -1051,6 +1911,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": true,
           "runtime": 364.783639195,
@@ -1080,6 +1952,18 @@
       {
         "simulator": "CTQC",
         "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
       }
     ]
   },
@@ -1103,6 +1987,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1132,6 +2028,26 @@
           "runtime": 39.491004891,
           "max_rss_bytes": 255041536
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 199.128970079,
+          "max_rss_bytes": 3090694144
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 151.071659135,
+          "max_rss_bytes": 3143213056
+        }
       }
     ]
   },
@@ -1155,6 +2071,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1184,6 +2112,26 @@
           "runtime": 26.505876235,
           "max_rss_bytes": 215875584
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 162.146587614,
+          "max_rss_bytes": 2673414144
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 117.897883082,
+          "max_rss_bytes": 2773868544
+        }
       }
     ]
   },
@@ -1207,6 +2155,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1236,6 +2196,30 @@
           "runtime": 0.289940924,
           "max_rss_bytes": 36429824
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.871066757,
+          "max_rss_bytes": 501637120
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "stats": {
+          "equivalent": true,
+          "runtime": 8.71076892,
+          "max_rss_bytes": 87367680
+        }
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.312768331,
+          "max_rss_bytes": 501104640
+        }
       }
     ]
   },
@@ -1263,6 +2247,26 @@
           "equivalent": true,
           "runtime": 0.730280639,
           "max_rss_bytes": 60592128
+        }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 4.906081546,
+          "max_rss_bytes": 868130816
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 2.8207289429999998,
+          "max_rss_bytes": 841498624
         }
       }
     ]
@@ -1292,6 +2296,62 @@
           "runtime": 0.393390092,
           "max_rss_bytes": 20160512
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.877889175,
+          "max_rss_bytes": 87838720
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.643331817,
+          "max_rss_bytes": 77668352
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/transp/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qft/opt/qft_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 280,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
   },
@@ -1320,6 +2380,62 @@
           "runtime": 0.545326879,
           "max_rss_bytes": 34971648
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.851729572,
+          "max_rss_bytes": 165384192
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.298125708,
+          "max_rss_bytes": 182951936
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/transp/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 360
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qftentangled/opt/qftentangled_16.qasm",
+      "stats": {
+        "n_qubits": 16,
+        "clif_gates": 296,
+        "rz_gates": 255
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
   },
@@ -1348,6 +2464,26 @@
           "runtime": 23.708221255,
           "max_rss_bytes": 230858752
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 98.333459004,
+          "max_rss_bytes": 2700689408
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 73.405190638,
+          "max_rss_bytes": 2837766144
+        }
       }
     ]
   },
@@ -1371,6 +2507,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1400,6 +2548,26 @@
           "runtime": 0.272410496,
           "max_rss_bytes": 15917056
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.029816076,
+          "max_rss_bytes": 80142336
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 0.750394043,
+          "max_rss_bytes": 84627456
+        }
       }
     ]
   },
@@ -1423,6 +2591,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1452,6 +2632,26 @@
           "runtime": 0.468419999,
           "max_rss_bytes": 20697088
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.618657252,
+          "max_rss_bytes": 112517120
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 1.191140558,
+          "max_rss_bytes": 101785600
+        }
       }
     ]
   },
@@ -1475,6 +2675,90 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/transp/qwalk-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4197,
+        "rz_gates": 6740
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/opt/qwalk-noancilla_8.qasm",
+      "stats": {
+        "n_qubits": 8,
+        "clif_gates": 4173,
+        "rz_gates": 6740
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "exception": "Timeout"
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/transp/qwalk-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 13,
+        "clif_gates": 1357,
+        "rz_gates": 980
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/qwalk/opt/qwalk-v-chain_8.qasm",
+      "stats": {
+        "n_qubits": 13,
+        "clif_gates": 1105,
+        "rz_gates": 980
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1504,6 +2788,26 @@
           "runtime": 13.119710288,
           "max_rss_bytes": 238022656
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 49.864968698,
+          "max_rss_bytes": 1438679040
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 36.529516462,
+          "max_rss_bytes": 1485180928
+        }
       }
     ]
   },
@@ -1527,6 +2831,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1556,6 +2872,26 @@
           "runtime": 14.400051813,
           "max_rss_bytes": 229539840
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 49.444641477,
+          "max_rss_bytes": 1492557824
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 35.257903228,
+          "max_rss_bytes": 1582882816
+        }
       }
     ]
   },
@@ -1579,6 +2915,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1608,6 +2956,26 @@
           "runtime": 21.697086237,
           "max_rss_bytes": 254750720
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 129.699522001,
+          "max_rss_bytes": 2510123008
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 92.320620354,
+          "max_rss_bytes": 2402770944
+        }
       }
     ]
   },
@@ -1631,6 +2999,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1660,6 +3040,26 @@
           "runtime": 10.408175109,
           "max_rss_bytes": 231452672
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 87.110405121,
+          "max_rss_bytes": 2546724864
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 60.324528013,
+          "max_rss_bytes": 2876137472
+        }
       }
     ]
   },
@@ -1683,6 +3083,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
@@ -1712,6 +3124,26 @@
           "runtime": 1.308751802,
           "max_rss_bytes": 134897664
         }
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 4.167953734,
+          "max_rss_bytes": 555343872
+        }
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": true,
+          "runtime": 2.8604823809999997,
+          "max_rss_bytes": 680972288
+        }
       }
     ]
   },
@@ -1735,6 +3167,18 @@
     "results": [
       {
         "simulator": "CTQC",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__cbitvec",
+        "exception": "Memory limit of 8192 MB exceeded."
+      },
+      {
+        "simulator": "CTQC__ptrees",
+        "exception": "Timeout"
+      },
+      {
+        "simulator": "CTQC__rbitvec",
         "exception": "Memory limit of 8192 MB exceeded."
       }
     ]
