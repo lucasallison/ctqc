@@ -9,19 +9,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_8.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_8.qasm",
       "stats": {
         "n_qubits": 8,
-        "clif_gates": 8,
+        "clif_gates": 7,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.00154407,
+          "runtime": 0.001147791,
           "max_rss_bytes": 0
         }
       }
@@ -37,19 +37,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_16.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_16.qasm",
       "stats": {
         "n_qubits": 16,
-        "clif_gates": 16,
+        "clif_gates": 15,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.007622327,
+          "runtime": 0.002167874,
           "max_rss_bytes": 0
         }
       }
@@ -65,19 +65,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_32.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_32.qasm",
       "stats": {
         "n_qubits": 32,
-        "clif_gates": 32,
+        "clif_gates": 31,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.003697026,
+          "runtime": 0.002770609,
           "max_rss_bytes": 0
         }
       }
@@ -93,19 +93,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_64.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_64.qasm",
       "stats": {
         "n_qubits": 64,
-        "clif_gates": 64,
+        "clif_gates": 63,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.007665655,
+          "runtime": 0.00210369,
           "max_rss_bytes": 0
         }
       }
@@ -121,20 +121,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_128.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_128.qasm",
       "stats": {
         "n_qubits": 128,
-        "clif_gates": 128,
+        "clif_gates": 127,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.039958147,
-          "max_rss_bytes": 5107712
+          "runtime": 0.003407367,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -149,20 +149,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_256.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_256.qasm",
       "stats": {
         "n_qubits": 256,
-        "clif_gates": 256,
+        "clif_gates": 255,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.193047686,
-          "max_rss_bytes": 5066752
+          "runtime": 0.003941646,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -177,20 +177,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_512.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_512.qasm",
       "stats": {
         "n_qubits": 512,
-        "clif_gates": 512,
+        "clif_gates": 511,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.257628204,
-          "max_rss_bytes": 5644288
+          "runtime": 0.009051471,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -205,20 +205,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_1024.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_1024.qasm",
       "stats": {
         "n_qubits": 1024,
-        "clif_gates": 1024,
+        "clif_gates": 1023,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.517152461,
-          "max_rss_bytes": 6684672
+          "runtime": 0.053046815,
+          "max_rss_bytes": 6447104
         }
       }
     ]
@@ -233,20 +233,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_2048.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_2048.qasm",
       "stats": {
         "n_qubits": 2048,
-        "clif_gates": 2048,
+        "clif_gates": 2047,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 5.260810485,
-          "max_rss_bytes": 8151040
+          "runtime": 0.013786624,
+          "max_rss_bytes": 8134656
         }
       }
     ]
@@ -261,20 +261,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_4096.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_4096.qasm",
       "stats": {
         "n_qubits": 4096,
-        "clif_gates": 4096,
+        "clif_gates": 4095,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 1.04283881,
-          "max_rss_bytes": 12034048
+          "runtime": 0.834669633,
+          "max_rss_bytes": 11452416
         }
       }
     ]
@@ -289,20 +289,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_8192.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_8192.qasm",
       "stats": {
         "n_qubits": 8192,
-        "clif_gates": 8192,
+        "clif_gates": 8191,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 31.240160515,
-          "max_rss_bytes": 16257024
+          "runtime": 3.611977043,
+          "max_rss_bytes": 16932864
         }
       }
     ]
@@ -317,17 +317,49 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/ghz/flipped/ghz_16384.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_16384.qasm",
       "stats": {
         "n_qubits": 16384,
-        "clif_gates": 16384,
+        "clif_gates": 16383,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
-        "exception": "Timeout"
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 5.547798934,
+          "max_rss_bytes": 29777920
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/transp/ghz_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 32768,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/ghz/gm/ghz_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 32767,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 10.838659382,
+          "max_rss_bytes": 52174848
+        }
       }
     ]
   },
@@ -341,19 +373,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_8.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_8.qasm",
       "stats": {
         "n_qubits": 8,
-        "clif_gates": 16,
+        "clif_gates": 15,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.001621763,
+          "runtime": 0.000977721,
           "max_rss_bytes": 0
         }
       }
@@ -369,19 +401,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_16.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_16.qasm",
       "stats": {
         "n_qubits": 16,
-        "clif_gates": 32,
+        "clif_gates": 31,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.003639466,
+          "runtime": 0.002579318,
           "max_rss_bytes": 0
         }
       }
@@ -397,19 +429,19 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_32.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_32.qasm",
       "stats": {
         "n_qubits": 32,
-        "clif_gates": 64,
+        "clif_gates": 63,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.007277356,
+          "runtime": 0.003086497,
           "max_rss_bytes": 0
         }
       }
@@ -425,20 +457,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_64.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_64.qasm",
       "stats": {
         "n_qubits": 64,
-        "clif_gates": 128,
+        "clif_gates": 127,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.020300412,
-          "max_rss_bytes": 5033984
+          "runtime": 0.002360281,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -453,20 +485,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_128.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_128.qasm",
       "stats": {
         "n_qubits": 128,
-        "clif_gates": 256,
+        "clif_gates": 255,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.048182551,
-          "max_rss_bytes": 5173248
+          "runtime": 0.003523364,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -481,20 +513,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_256.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_256.qasm",
       "stats": {
         "n_qubits": 256,
-        "clif_gates": 512,
+        "clif_gates": 511,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.344515356,
-          "max_rss_bytes": 5218304
+          "runtime": 0.003639267,
+          "max_rss_bytes": 0
         }
       }
     ]
@@ -509,20 +541,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_512.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_512.qasm",
       "stats": {
         "n_qubits": 512,
-        "clif_gates": 1024,
+        "clif_gates": 1023,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 1.030405252,
-          "max_rss_bytes": 5173248
+          "runtime": 0.015108516,
+          "max_rss_bytes": 5066752
         }
       }
     ]
@@ -537,20 +569,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_1024.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_1024.qasm",
       "stats": {
         "n_qubits": 1024,
-        "clif_gates": 2048,
+        "clif_gates": 2047,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 8.714968926,
-          "max_rss_bytes": 6492160
+          "runtime": 0.081636219,
+          "max_rss_bytes": 6696960
         }
       }
     ]
@@ -565,20 +597,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_2048.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_2048.qasm",
       "stats": {
         "n_qubits": 2048,
-        "clif_gates": 4096,
+        "clif_gates": 4095,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 27.708379217,
-          "max_rss_bytes": 8630272
+          "runtime": 0.289053194,
+          "max_rss_bytes": 8646656
         }
       }
     ]
@@ -593,20 +625,20 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_4096.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_4096.qasm",
       "stats": {
         "n_qubits": 4096,
-        "clif_gates": 8192,
+        "clif_gates": 8191,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
+        "simulator": "CTQC__rbitvec",
         "stats": {
           "equivalent": false,
-          "runtime": 0.771440947,
-          "max_rss_bytes": 12902400
+          "runtime": 1.133464951,
+          "max_rss_bytes": 12668928
         }
       }
     ]
@@ -621,17 +653,77 @@
       }
     },
     "equiv_circuit": {
-      "file": "mqt_benchmarks/qiskit_optimized/graphstate/flipped/graphstate_8192.qasm",
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_8192.qasm",
       "stats": {
         "n_qubits": 8192,
-        "clif_gates": 16384,
+        "clif_gates": 16383,
         "rz_gates": 0
       }
     },
     "results": [
       {
-        "simulator": "CTQC__rbitvec_",
-        "exception": "Timeout"
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 9.584467932999999,
+          "max_rss_bytes": 18649088
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 65536,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_16384.qasm",
+      "stats": {
+        "n_qubits": 16384,
+        "clif_gates": 32767,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 15.147497291,
+          "max_rss_bytes": 34373632
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/transp/graphstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 131072,
+        "rz_gates": 0
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/graphstate/gm/graphstate_32768.qasm",
+      "stats": {
+        "n_qubits": 32768,
+        "clif_gates": 65535,
+        "rz_gates": 0
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC__rbitvec",
+        "stats": {
+          "equivalent": false,
+          "runtime": 59.853757547,
+          "max_rss_bytes": 61976576
+        }
       }
     ]
   }
