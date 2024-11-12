@@ -14,7 +14,9 @@ if [ ! -d ".gpmc" ]; then
 fi
 
 echo unpacking benchmarks...
-./mqt_benchmarks/qiskit_optimized/unpack.sh
+cd mqt_benchmarks/qiskit_optimized/
+./unpack.sh
+cd ../../
 
 echo "Building CTQC..."
 cargo build --release
@@ -26,5 +28,3 @@ if [ ! -d ".venv" ]; then
     python3 -m venv .venv
     pip install -r requirements.txt
 fi
-
-. .venv/bin/activate

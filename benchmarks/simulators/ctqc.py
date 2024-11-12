@@ -17,7 +17,7 @@ class CTQC(Simulator):
 
 
     def name(self) -> str:
-        return 'CTQC' if self.cmd_line_args is None else 'CTQC_' + '_'.join('' if s.startswith('-') else s for s in self.cmd_line_args)
+        return 'CTQC' if self.cmd_line_args is None else 'CTQC' + '_'.join('' if s.startswith('-') else s for s in self.cmd_line_args)
 
 
     def simulate(self):

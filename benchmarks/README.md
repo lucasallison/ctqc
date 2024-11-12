@@ -1,6 +1,9 @@
 # Benchmarks
 
-The results of the benchmarks which are represented in the thesis can be found in the `results` directory. They can be easily reproduce by running the script `reproduce.sh`, after which the reproduced results will be stored in the directory `reproduced_results`. The only prerequisite is that [GPMC](https://git.trs.css.i.nagoya-u.ac.jp/k-hasimt/GPMC) should be installed, which is a dependency of [Quokka-Sharp](https://github.com/System-Verification-Lab/Quokka-Sharp)
+The results of the benchmarks which are represented in the thesis can be found in the `mqt_results` directory. They can be easily reproduce by executing the `reproduce.sh` script, after which the reproduced results will be stored in the directory `mqt_results_reproduced`. 
+<!--
+The only prerequisite is that [GPMC](https://git.trs.css.i.nagoya-u.ac.jp/k-hasimt/GPMC) should be installed, which is a dependency of [Quokka-Sharp](https://github.com/System-Verification-Lab/Quokka-Sharp) 
+-->
 
 The following sections will outline the structure of the code that is used to run the benchmarks and transpile the circuits.
 
