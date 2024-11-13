@@ -26,7 +26,7 @@ EQUIV_BENCHMARKS = [
     'benchmark_name': '_'.join(ec.name() for ec in equiv_checkers),
     'results_subdir': f'{optimizer}/{ed}', 
     'equiv_checkers': equiv_checkers,
-    'timeout': 10 * 60 - 599 if ed == 'opt' else 3 * 60
+    'timeout': 10 * 60 if ed == 'opt' else 3 * 60
     }
     for ed in equiv_dirs for algorithm in algorithms 
 ]
