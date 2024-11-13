@@ -504,10 +504,9 @@ impl PauliTrees {
         gate_index: usize,
         pgate: &PauliGate,
         update_root_table: bool,
-    ) -> usize {
-        self.access_pgate(pstr_index, gate_index, Some(pgate), update_root_table)
-            .1
-            .unwrap()
+    ) -> (usize, bool) {
+        let res = self.access_pgate(pstr_index, gate_index, Some(pgate), update_root_table);
+        (res.1.unwrap(), res.2)
     }
 
     /// Get or set the ith Pauli gate of the pstr_index Pauli string.
@@ -520,9 +519,10 @@ impl PauliTrees {
         gate_index: usize,
         pgate: Option<&PauliGate>,
         update_root_table: bool,
-    ) -> (PauliGate, Option<usize>) {
+    ) -> (PauliGate, Option<usize>, bool) {
+        let mut data_structure_changed = false;
         if !pgate.is_none() {
-            self.check_memory_availability(self.depth, 1);
+            data_structure_changed = self.check_memory_availability(self.depth, 1);
         } 
 
         let pgates_per_pstr = self.n_qubits + (self.n_pad_bits() / 2);
@@ -537,7 +537,7 @@ impl PauliTrees {
             }
         }
 
-        (result.0, result.1)
+        (result.0, result.1, data_structure_changed)
     }
 
     fn recursive_access_pgate(
@@ -689,18 +689,26 @@ impl PauliTrees {
     /// The function checks whether there is a sufficient amount of memory to store
     /// the number of nodes and leafs given through the parameter. If not, it triggers garbage collection.
     /// Each function inserting nodes into the node table should call this function.
-    fn check_memory_availability(&mut self, n_nodes_to_store: usize, n_leafs_to_store: usize) {
+    /// The function returns whether the data structure has been garbage collected/resized.
+    fn check_memory_availability(&mut self, n_nodes_to_store: usize, n_leafs_to_store: usize) -> bool {
+        
+        let mut clean_up = false;
+
         if (self.n_nodes_stored + n_nodes_to_store >= self.max_storable_nodes())
             || (self.n_leafs_stored + n_leafs_to_store >= self.max_storable_leafs())
         {
             self.garbage_collection();
+            clean_up = true;
         }
 
         if (self.n_nodes_stored + n_nodes_to_store >= self.max_storable_nodes())
             || (self.n_leafs_stored + n_leafs_to_store >= self.max_storable_leafs())
         {
             self.resize();
+            clean_up = true;
         }
+
+        clean_up
     }
 
     fn garbage_collection(&mut self) {
@@ -720,7 +728,6 @@ impl PauliTrees {
             self.n_node_body_bits
         };
 
-
         let mut new_ptrees = PauliTrees::new(
             self.n_qubits,
             Some(new_n_node_body_bits),
@@ -732,8 +739,6 @@ impl PauliTrees {
             let c_list = self.generator_info[pstr_index].clone();
             new_ptrees.insert_pstr(pstr, c_list)
         }
-
-        std::mem::swap(&mut new_ptrees.h_s_conjugations_map, &mut self.h_s_conjugations_map);
 
         std::mem::swap(
             &mut new_ptrees.h_s_conjugations_map,
@@ -829,6 +834,20 @@ impl PauliTrees {
         self.h_s_conjugations_map.reset(qubit_2);
     }
 
+    fn get_root_table_map(&self, max_index: usize) -> HashMap<usize, usize, FxBuildHasher> {
+        let mut m = HashMap::<usize, usize, FxBuildHasher>::with_capacity_and_hasher(
+            self.size(),
+            FxBuildHasher::default(),
+        );
+
+        for pstr_index in 0..=max_index {
+            let root_node_index = self.root_node_index(pstr_index);
+            m.insert(root_node_index, pstr_index);
+        }
+
+        m
+    } 
+
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
         // To ensure we do not store duplicate root table entries, we collect all of them into a map
         // and scatter them back after the conjugation.
@@ -843,7 +862,12 @@ impl PauliTrees {
 
             // Apply the H/S conjugations
             self.generator_info[pstr_index].multiply(&coef_mul);
-            let root_index = self.set_pgate(pstr_index, rz.qubit_1, &actual_pgate, true);
+            let (root_index, data_structure_changed) = self.set_pgate(pstr_index, rz.qubit_1, &actual_pgate, true);
+            
+            if data_structure_changed {
+                root_table_map = self.get_root_table_map(pstr_index);
+            }
+
             root_table_map.insert(root_index, pstr_index);
 
             // The Rz gate has no effect on the Pauli string, we can insert it directly
@@ -859,8 +883,12 @@ impl PauliTrees {
 
             // Create the new Pauli string
             let mut new_coef_list = self.generator_info[pstr_index].clone();
-            let new_root_node_index =
+            let (new_root_node_index, data_structure_changed)=
                 self.set_pgate(pstr_index, rz.qubit_1, &new_pstr_pgate, false);
+            
+            if data_structure_changed {
+                root_table_map = self.get_root_table_map(pstr_index);
+            }
 
             // Account for the current conjugation of the Rz
             let (x_mult, y_mult) =
