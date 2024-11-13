@@ -1,7 +1,6 @@
 use std::collections::{hash_map::Entry, HashMap};
 
 use bitvec::prelude::*;
-use bitvec::ptr;
 use fxhash;
 use fxhash::FxBuildHasher;
 
@@ -11,7 +10,6 @@ use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::floating_point_opc::FloatingPointOPC;
-use super::shared::h_s_conjugations_map;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
