@@ -2,8 +2,14 @@
 
 source ../.bench/bin/activate
 
-for num_t_gates in 1 10001; do
-    angle=0.00000000001
+for num_t_gates in 1 $((8*100+1)); do
+# for num_t_gates in 1; do
+
+    # angle=0.0001 -> all correct
+    # angle=0.00001 -> quokka incorrect 10^-4
+    # angle=0.00000001 -> qcec incorrect 10^-5
+    # angle=0.000000000000001 -> ctqc incorrect 10^-15
+    angle=0.00000000000001
 
     python generate_qasm.py "$num_t_gates" "$angle"
     python ../mqt_benchmarks/generate_ctqc_file.py -f fp_error.qasm > /dev/null 2>&1
