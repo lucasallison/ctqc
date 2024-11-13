@@ -1,6 +1,7 @@
 use std::collections::{hash_map::Entry, HashMap};
 
 use bitvec::prelude::*;
+use bitvec::ptr;
 use fxhash;
 use fxhash::FxBuildHasher;
 
@@ -10,6 +11,7 @@ use super::pauli_string::utils as PauliUtils;
 use super::pauli_string::PauliGate;
 use super::shared::coefficient_list::CoefficientList;
 use super::shared::floating_point_opc::FloatingPointOPC;
+use super::shared::h_s_conjugations_map;
 use super::shared::h_s_conjugations_map::HSConjugationsMap;
 use super::utils as Utils;
 use super::utils::conjugation_look_up_tables::CNOT_CONJ_UPD_RULES;
@@ -696,17 +698,34 @@ impl PauliTrees {
             self.garbage_collection();
         }
 
-        if (self.n_nodes_stored + n_nodes_to_store > self.max_storable_nodes())
-            || (self.n_leafs_stored + n_leafs_to_store > self.max_storable_leafs())
+        if (self.n_nodes_stored + n_nodes_to_store >= self.max_storable_nodes())
+            || (self.n_leafs_stored + n_leafs_to_store >= self.max_storable_leafs())
         {
             self.resize();
         }
     }
 
     fn garbage_collection(&mut self) {
+        self.keep_unique(false);
+    }
+
+    fn resize(&mut self) {
+        self.keep_unique(true);
+    }
+
+    /// Keep only the unique Pauli strings in the PauliTrees object.
+    fn keep_unique(&mut self, resize: bool) {
+
+        let new_n_node_body_bits = if resize {
+            self.n_node_body_bits + 8
+        } else {
+            self.n_node_body_bits
+        };
+
+
         let mut new_ptrees = PauliTrees::new(
             self.n_qubits,
-            Some(self.n_node_body_bits),
+            Some(new_n_node_body_bits),
             Some(self.pgates_per_leaf),
         );
 
@@ -716,12 +735,15 @@ impl PauliTrees {
             new_ptrees.insert_pstr(pstr, c_list)
         }
 
+        std::mem::swap(&mut new_ptrees.h_s_conjugations_map, &mut self.h_s_conjugations_map);
+
         std::mem::swap(
             &mut new_ptrees.h_s_conjugations_map,
             &mut self.h_s_conjugations_map,
         );
         *self = new_ptrees;
     }
+
 
    fn gather(&self) -> HashMap<usize, CoefficientList, FxBuildHasher> {
         // Map from root index to Pauli string index
@@ -746,7 +768,6 @@ impl PauliTrees {
         m
     }
 
-
     fn scatter(&mut self, m: &mut HashMap<usize, CoefficientList, FxBuildHasher>) {
         // Scatter all unique Pauli strings
         self.root_node_table.clear();
@@ -760,28 +781,6 @@ impl PauliTrees {
             self.root_node_table.extend_from_bitslice(&root_node);
             self.generator_info.push(c_list.clone());
         }
-    }
-
-    fn resize(&mut self) {
-        let new_n_node_body_bits = self.n_node_body_bits + 8;
-
-        let mut resized_ptrees = PauliTrees::new(
-            self.n_qubits,
-            Some(new_n_node_body_bits),
-            Some(self.pgates_per_leaf),
-        );
-
-        for pstr_index in 0..self.size() {
-            let pstr = self.pstr_as_bitvec(pstr_index);
-            let c_list = self.generator_info[pstr_index].clone();
-            resized_ptrees.insert_pstr(pstr, c_list)
-        }
-
-        std::mem::swap(
-            &mut resized_ptrees.h_s_conjugations_map,
-            &mut self.h_s_conjugations_map,
-        );
-        *self = resized_ptrees;
     }
 
     // ------- Conjugation Functions ------- //
