@@ -78,7 +78,6 @@ impl FloatingPointOPC {
         // Overestimate by a factor 100 to avoid boundary cases 
         self.cumulative_multiplications.abs() < 100.0 * f64::EPSILON * self.ops as f64
     }
-
 }
 
 impl PartialEq for FloatingPointOPC {
