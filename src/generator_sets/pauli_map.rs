@@ -116,11 +116,6 @@ impl PauliMap {
     }
 
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
-
-        if self.h_s_conjugations_map.conditionally_apply_rz(rz, conjugate_dagger) {
-            return;
-        }
-
         let mut pstrs_src = std::mem::take(&mut self.pauli_strings_src);
 
         // Reserve addtional memory for potential new Pauli strings

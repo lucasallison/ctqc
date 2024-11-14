@@ -314,11 +314,6 @@ impl RowWiseBitVec {
     }
 
     fn seq_conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
-
-        if self.h_s_conjugations_map.conditionally_apply_rz(rz, conjugate_dagger) {
-            return;
-        }
-
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, rz.qubit_1);
 
@@ -328,9 +323,6 @@ impl RowWiseBitVec {
                 continue;
             }
 
-            let (x_mult, y_mult) =
-                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
-            
             // We create a new Pauli string
             // And ensure the original Pauli string has an X gate at the target qubit
             // and ensure the copied Pauli string has an Y gate at the target qubit
@@ -343,6 +335,8 @@ impl RowWiseBitVec {
 
             self.size += 1;
 
+            let (x_mult, y_mult) =
+                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
 
             self.generator_info[pstr_index].multiply(&x_mult);
             self.generator_info.last_mut().unwrap().multiply(&y_mult);

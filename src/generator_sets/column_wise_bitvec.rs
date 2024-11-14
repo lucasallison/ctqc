@@ -128,11 +128,6 @@ impl ColumnWiseBitVec {
     /// Conjugate each Pauli string in the bitvec with a T gate.
     /// We use the update rules to adjust the Pauli gates and coefficients.
     fn conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
-
-        if self.h_s_conjugations_map.conditionally_apply_rz(rz, conjugate_dagger) {
-            return;
-        }
-
         for pstr_ind in 0..self.size() {
             self.apply_h_s_conjugations(pstr_ind, rz.qubit_1);
             let target_pgate = self.get_pauli_gate(pstr_ind, rz.qubit_1);
