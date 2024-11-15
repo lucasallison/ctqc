@@ -22,7 +22,7 @@ EQUIV_BENCHMARKS = [
 
     # Scaled MQT benchmarks   
     {
-    'dirs': (f'mqt_benchmarks/{optimizer}_optimized/{algorithm}/transp/', f'mqt_benchmarks/{optimizer}_optimized/{algorithm}/{ed}'),
+    'dirs': (f'mqt_circuits/{optimizer}_optimized/{algorithm}/transp/', f'mqt_circuits/{optimizer}_optimized/{algorithm}/{ed}'),
     'benchmark_name': '_'.join(ec.name() for ec in equiv_checkers),
     'results_subdir': f'{optimizer}/{ed}', 
     'equiv_checkers': equiv_checkers,

@@ -21,8 +21,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 3.241476642,
-          "max_rss_bytes": 88649728
+          "runtime": 2.032264204,
+          "max_rss_bytes": 91742208
         }
       }
     ]
@@ -73,7 +73,7 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.00076909,
+          "runtime": 0.000810757,
           "max_rss_bytes": 0
         }
       }
@@ -101,7 +101,7 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.001113657,
+          "runtime": 0.0014909,
           "max_rss_bytes": 0
         }
       }
@@ -129,7 +129,7 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.001502563,
+          "runtime": 0.001959615,
           "max_rss_bytes": 0
         }
       }
@@ -157,7 +157,7 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.003103988,
+          "runtime": 0.002565514,
           "max_rss_bytes": 0
         }
       }
@@ -185,8 +185,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.010863287,
-          "max_rss_bytes": 5349376
+          "runtime": 0.007469845,
+          "max_rss_bytes": 5373952
         }
       }
     ]
@@ -213,8 +213,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.065934393,
-          "max_rss_bytes": 5808128
+          "runtime": 0.030646726,
+          "max_rss_bytes": 5701632
         }
       }
     ]
@@ -241,8 +241,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.437712055,
-          "max_rss_bytes": 6942720
+          "runtime": 0.218865381,
+          "max_rss_bytes": 6836224
         }
       }
     ]
@@ -269,8 +269,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 3.165081967,
-          "max_rss_bytes": 9756672
+          "runtime": 1.534834986,
+          "max_rss_bytes": 9437184
         }
       }
     ]
@@ -297,8 +297,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 23.192964308,
-          "max_rss_bytes": 14426112
+          "runtime": 12.169180259,
+          "max_rss_bytes": 14647296
         }
       }
     ]
@@ -318,6 +318,34 @@
         "n_qubits": 4096,
         "clif_gates": 12286,
         "rz_gates": 4019
+      }
+    },
+    "results": [
+      {
+        "simulator": "CTQC",
+        "stats": {
+          "equivalent": false,
+          "runtime": 17.888336514,
+          "max_rss_bytes": 17362944
+        }
+      }
+    ]
+  },
+  {
+    "circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/transp/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 32484
+      }
+    },
+    "equiv_circuit": {
+      "file": "mqt_benchmarks/qiskit_optimized/dj/shift4/dj_8192.qasm",
+      "stats": {
+        "n_qubits": 8192,
+        "clif_gates": 24574,
+        "rz_gates": 8121
       }
     },
     "results": [
@@ -371,7 +399,7 @@
     "results": [
       {
         "simulator": "CTQC",
-        "exception": "Memory limit of 8192 MB exceeded."
+        "exception": "Timeout"
       }
     ]
   },
@@ -397,8 +425,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 22.898570604,
-          "max_rss_bytes": 193781760
+          "runtime": 19.993826042,
+          "max_rss_bytes": 190144512
         }
       }
     ]
@@ -449,8 +477,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 13.856825841,
-          "max_rss_bytes": 174555136
+          "runtime": 10.239355149,
+          "max_rss_bytes": 173842432
         }
       }
     ]
@@ -501,8 +529,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.379567807,
-          "max_rss_bytes": 45232128
+          "runtime": 0.359950578,
+          "max_rss_bytes": 42864640
         }
       }
     ]
@@ -529,8 +557,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.901561585,
-          "max_rss_bytes": 80375808
+          "runtime": 0.96709463,
+          "max_rss_bytes": 99729408
         }
       }
     ]
@@ -557,8 +585,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.242452217,
-          "max_rss_bytes": 17453056
+          "runtime": 0.240953394,
+          "max_rss_bytes": 18690048
         }
       }
     ]
@@ -609,8 +637,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.285398715,
-          "max_rss_bytes": 24883200
+          "runtime": 0.278801941,
+          "max_rss_bytes": 24944640
         }
       }
     ]
@@ -661,8 +689,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 13.850106868,
-          "max_rss_bytes": 178577408
+          "runtime": 10.328741797,
+          "max_rss_bytes": 197140480
         }
       }
     ]
@@ -713,8 +741,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.142185334,
-          "max_rss_bytes": 13459456
+          "runtime": 0.123671761,
+          "max_rss_bytes": 11763712
         }
       }
     ]
@@ -739,7 +767,7 @@
     "results": [
       {
         "simulator": "CTQC",
-        "exception": "Memory limit of 8192 MB exceeded."
+        "exception": "Timeout"
       }
     ]
   },
@@ -765,8 +793,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.22833913,
-          "max_rss_bytes": 15982592
+          "runtime": 0.256879963,
+          "max_rss_bytes": 14974976
         }
       }
     ]
@@ -865,8 +893,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 7.020243517,
-          "max_rss_bytes": 179343360
+          "runtime": 4.793633515,
+          "max_rss_bytes": 176459776
         }
       }
     ]
@@ -917,8 +945,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 6.565595245,
-          "max_rss_bytes": 188948480
+          "runtime": 5.714678884,
+          "max_rss_bytes": 194068480
         }
       }
     ]
@@ -969,8 +997,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 11.332369403,
-          "max_rss_bytes": 189603840
+          "runtime": 8.521687105,
+          "max_rss_bytes": 173416448
         }
       }
     ]
@@ -1021,8 +1049,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 5.156007404,
-          "max_rss_bytes": 176152576
+          "runtime": 3.523733605,
+          "max_rss_bytes": 168337408
         }
       }
     ]
@@ -1073,8 +1101,8 @@
         "simulator": "CTQC",
         "stats": {
           "equivalent": false,
-          "runtime": 0.63338633,
-          "max_rss_bytes": 62849024
+          "runtime": 0.585259337,
+          "max_rss_bytes": 65048576
         }
       }
     ]
