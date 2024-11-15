@@ -309,8 +309,6 @@ impl RowWiseBitVec {
         } else {
             self.seq_conjugate_rz(rz, conjugate_dagger)
         }
-
-        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     fn seq_conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
@@ -343,10 +341,11 @@ impl RowWiseBitVec {
 
             self.size += 1;
 
-
             self.generator_info[pstr_index].multiply(&x_mult);
             self.generator_info.last_mut().unwrap().multiply(&y_mult);
         }
+
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     fn par_conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
@@ -423,6 +422,7 @@ impl RowWiseBitVec {
         self.pauli_strings.extend_from_bitslice(&new_data.pstrs);
         self.generator_info.extend_from_slice(&new_data.gen_info);
         self.size = self.generator_info.len();
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     // -------------------------- Clean Up ------------------------- //
@@ -514,7 +514,7 @@ impl GeneratorSet for RowWiseBitVec {
         match gate.gate_type {
             GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
+            GateType::Rz | GateType::RzPi | GateType::RzHalfPi => self.conjugate_rz(gate, conjugate_dagger),
         }
     }
 

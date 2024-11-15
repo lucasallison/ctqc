@@ -78,52 +78,50 @@ impl HSConjugationsMap {
 
     /// Check if we can apply the Rz gate to the map, if so return true
     pub fn conditionally_apply_rz(&mut self, rz: &Gate, conjugate_dagger: bool) -> bool {
-        if (rz.angle.unwrap() % std::f64::consts::PI).abs() < f64::EPSILON {
 
-            if rz.angle.unwrap().cos() < 0.0 {
-                for e in self.map[rz.qubit_1].iter_mut() {
-                    match e.0 {
-                        PauliGate::X => {
-                            e.1 *= -1.0;
+        match rz.gate_type {
+            GateType::RzPi => {
+                if rz.angle.unwrap().cos() < 0.0 {
+                    for e in self.map[rz.qubit_1].iter_mut() {
+                        match e.0 {
+                            PauliGate::X | PauliGate::Y => {
+                                e.1 *= -1.0;
+                            }
+                            _ => {}
                         }
-                        PauliGate::Y => {
-                            e.1 *= -1.0;
+                    }
+                }
+                return true;
+            }
+            GateType::RzHalfPi => {
+
+                let negative_angle_offset = if rz.angle.unwrap().sin() < 0.0 {-1.0} else {1.0};
+
+                for e in self.map[rz.qubit_1].iter_mut() {
+                    let target_pauli_gate = e.0;
+                    match (target_pauli_gate, conjugate_dagger){
+                        (PauliGate::X, false) => {
+                            e.0 = PauliGate::Y;
+                            e.1 *= negative_angle_offset;
+                        }
+                        (PauliGate::Y, false) => {
+                            e.0 = PauliGate::X;
+                            e.1 *= -1.0 * negative_angle_offset;
+                        }
+                        (PauliGate::X, true) => {
+                            e.0 = PauliGate::Y;
+                            e.1 *= -1.0 * negative_angle_offset;
+                        }
+                        (PauliGate::Y, true) => {
+                            e.0 = PauliGate::X;
+                            e.1 *= negative_angle_offset;
                         }
                         _ => {}
                     }
                 }
+                return true;
             }
-            
-            return true;
-        }
-
-        if ((rz.angle.unwrap() * 2.0) % std::f64::consts::PI).abs() < f64::EPSILON {
-
-            let negative_angle_offset = if rz.angle.unwrap().sin() < 0.0 {-1.0} else {1.0};
-
-            for e in self.map[rz.qubit_1].iter_mut() {
-                let target_pauli_gate = e.0;
-                match (target_pauli_gate, conjugate_dagger){
-                    (PauliGate::X, false) => {
-                        e.0 = PauliGate::Y;
-                        e.1 *= negative_angle_offset;
-                    }
-                    (PauliGate::Y, false) => {
-                        e.0 = PauliGate::X;
-                        e.1 *= -1.0 * negative_angle_offset;
-                    }
-                    (PauliGate::X, true) => {
-                        e.0 = PauliGate::Y;
-                        e.1 *= -1.0 * negative_angle_offset;
-                    }
-                    (PauliGate::Y, true) => {
-                        e.0 = PauliGate::X;
-                        e.1 *= negative_angle_offset;
-                    }
-                    _ => {}
-                }
-            }
-            return true;
+            _ => {}
         }
 
         false

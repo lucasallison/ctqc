@@ -96,8 +96,9 @@ fn main() {
     // Determine the generator set to use
     let generator_set = match args.generator_set.as_str() {
         "None" => {
-            let equiv_is_clifford = equiv_circuit.as_ref().map_or(true, |c| c.clifford());
-            if circuit.clifford() && equiv_is_clifford {
+            let equiv_is_practically_clifford = equiv_circuit.as_ref().map_or(true, |c| c.practically_clifford());
+
+            if circuit.practically_clifford() && equiv_is_practically_clifford {
                 "rbitvec"
             } else {
                 "map"
