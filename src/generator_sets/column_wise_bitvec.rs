@@ -248,7 +248,7 @@ impl GeneratorSet for ColumnWiseBitVec {
         match gate.gate_type {
             GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
+            GateType::Rz | GateType::RzPi | GateType::RzHalfPi => self.conjugate_rz(gate, conjugate_dagger),
         }
     }
 

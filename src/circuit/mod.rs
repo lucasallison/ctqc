@@ -12,6 +12,8 @@ pub enum GateType {
     CNOT,
     S,
     Rz,
+    RzPi,
+    RzHalfPi,
 }
 
 impl fmt::Display for GateType {
@@ -21,6 +23,8 @@ impl fmt::Display for GateType {
             GateType::CNOT => write!(f, "CNOT"),
             GateType::S => write!(f, "S"),
             GateType::Rz => write!(f, "Rz"),
+            GateType::RzPi => write!(f, "Rz(pi)"),
+            GateType::RzHalfPi => write!(f, "Rz(pi/2)"),
         }
     }
 }
@@ -56,7 +60,16 @@ impl Gate {
                 if angle.is_none() {
                     return Err(CircuitError::RzMissingAngle {});
                 }
-                GateType::Rz
+
+                let mut gate = GateType::Rz;
+
+                if (angle.unwrap() % std::f64::consts::PI).abs() < f64::EPSILON {
+                    gate = GateType::RzPi;
+                } else if ((angle.unwrap() * 2.0) % std::f64::consts::PI).abs() < f64::EPSILON {
+                    gate = GateType::RzHalfPi;
+                }
+
+                gate
             }
             gate_type => {
                 return Err(CircuitError::GateNotImplemented {
@@ -69,10 +82,6 @@ impl Gate {
             return Err(CircuitError::TwoQubitsSingleQubitGate {
                 gate_type: gate_type.to_string(),
             });
-        }
-
-        if gate_type != GateType::Rz && angle.is_some() {
-            return Err(CircuitError::AngleProvidedForNonRzGate {});
         }
 
         Ok(Gate {
@@ -123,7 +132,7 @@ pub struct Circuit {
     gates: Vec<Gate>,
     measurements: HashSet<usize>,
     n_qubits: usize,
-    clifford: bool,
+    practically_clifford: bool,
 }
 
 impl Circuit {
@@ -133,7 +142,7 @@ impl Circuit {
             gates: Vec::new(),
             measurements: HashSet::new(),
             n_qubits: 0,
-            clifford: true,
+            practically_clifford: true,
         };
 
         let contents = match fs::read_to_string(file) {
@@ -173,13 +182,11 @@ impl Circuit {
                 qubit_1 = gate_qubits[1].parse::<usize>()?;
                 qubit_2 = Some(gate_qubits[2].parse::<usize>()?);
             } else if T_RE.is_match(line) {
-                self.clifford = false;
                 // Internally we use Rz(pi/4) to represent T
                 gate_type = "Rz".to_string();
                 qubit_1 = line.split(" ").collect::<Vec<&str>>()[1].parse::<usize>()?;
                 angle = Some(std::f64::consts::FRAC_PI_4);
             } else if RZ_RE.is_match(line) {
-                self.clifford = false;
                 gate_type = line[0..2].to_string();
 
                 let expr = RZ_ANGLE_RE.captures(line).unwrap().get(1).unwrap().as_str();
@@ -218,6 +225,10 @@ impl Circuit {
     ) -> Result<(), CircuitError> {
         let new_gate = Gate::new(gate_type, qubit_1, qubit_2, angle)?;
 
+        if new_gate.gate_type == GateType::Rz {
+            self.practically_clifford = false;
+        }
+
         self.n_qubits = cmp::max(self.n_qubits, qubit_1 + 1);
 
         if let Some(qubit_2) = qubit_2 {
@@ -236,8 +247,8 @@ impl Circuit {
         self.n_qubits
     }
 
-    pub fn clifford(&self) -> bool {
-        self.clifford
+    pub fn practically_clifford(&self) -> bool {
+        self.practically_clifford
     }
 
     pub fn name(&self) -> String {
@@ -318,9 +329,6 @@ pub enum CircuitError {
 
     #[snafu(display("A valid angle must be specified to construct an Rz gate."))]
     RzMissingAngle {},
-
-    #[snafu(display("An angle should only be provided for an Rz gate."))]
-    AngleProvidedForNonRzGate {},
 
     #[snafu(display("CNOT control and target qubit cannot be the same."))]
     SameControlAndTargetQubit {},

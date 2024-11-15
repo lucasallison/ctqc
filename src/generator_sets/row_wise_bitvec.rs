@@ -309,11 +309,14 @@ impl RowWiseBitVec {
         } else {
             self.seq_conjugate_rz(rz, conjugate_dagger)
         }
-
-        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     fn seq_conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
+
+        if self.h_s_conjugations_map.conditionally_apply_rz(rz, conjugate_dagger) {
+            return;
+        }
+
         for pstr_index in 0..self.size {
             self.apply_h_s_conjugations(pstr_index, rz.qubit_1);
 
@@ -323,6 +326,9 @@ impl RowWiseBitVec {
                 continue;
             }
 
+            let (x_mult, y_mult) =
+                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
+            
             // We create a new Pauli string
             // And ensure the original Pauli string has an X gate at the target qubit
             // and ensure the copied Pauli string has an Y gate at the target qubit
@@ -335,12 +341,11 @@ impl RowWiseBitVec {
 
             self.size += 1;
 
-            let (x_mult, y_mult) =
-                Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
-
             self.generator_info[pstr_index].multiply(&x_mult);
             self.generator_info.last_mut().unwrap().multiply(&y_mult);
         }
+
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     fn par_conjugate_rz(&mut self, rz: &Gate, conjugate_dagger: bool) {
@@ -417,6 +422,7 @@ impl RowWiseBitVec {
         self.pauli_strings.extend_from_bitslice(&new_data.pstrs);
         self.generator_info.extend_from_slice(&new_data.gen_info);
         self.size = self.generator_info.len();
+        self.h_s_conjugations_map.reset(rz.qubit_1);
     }
 
     // -------------------------- Clean Up ------------------------- //
@@ -508,7 +514,7 @@ impl GeneratorSet for RowWiseBitVec {
         match gate.gate_type {
             GateType::H | GateType::S => self.h_s_conjugations_map.update(gate, conjugate_dagger),
             GateType::CNOT => self.conjugate_cnot(gate),
-            GateType::Rz => self.conjugate_rz(gate, conjugate_dagger),
+            GateType::Rz | GateType::RzPi | GateType::RzHalfPi => self.conjugate_rz(gate, conjugate_dagger),
         }
     }
 
