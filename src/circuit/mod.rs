@@ -132,7 +132,7 @@ pub struct Circuit {
     gates: Vec<Gate>,
     measurements: HashSet<usize>,
     n_qubits: usize,
-    practically_clifford: bool,
+    clifford: bool,
 }
 
 impl Circuit {
@@ -142,7 +142,7 @@ impl Circuit {
             gates: Vec::new(),
             measurements: HashSet::new(),
             n_qubits: 0,
-            practically_clifford: true,
+            clifford: true,
         };
 
         let contents = match fs::read_to_string(file) {
@@ -226,7 +226,7 @@ impl Circuit {
         let new_gate = Gate::new(gate_type, qubit_1, qubit_2, angle)?;
 
         if new_gate.gate_type == GateType::Rz {
-            self.practically_clifford = false;
+            self.clifford = false;
         }
 
         self.n_qubits = cmp::max(self.n_qubits, qubit_1 + 1);
@@ -247,8 +247,8 @@ impl Circuit {
         self.n_qubits
     }
 
-    pub fn practically_clifford(&self) -> bool {
-        self.practically_clifford
+    pub fn clifford(&self) -> bool {
+        self.clifford
     }
 
     pub fn name(&self) -> String {

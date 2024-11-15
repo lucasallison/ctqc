@@ -250,7 +250,7 @@ impl Simulator {
 
         for (i, gate) in circuit.iter(inverse).enumerate() {
             // Clean the generator set every `self.conjugations_before_clean` gates, if the value is not 0
-            if !circuit.practically_clifford() && conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
+            if !circuit.clifford() && conjugations_before_clean != 0 && i != 0 && i % conjugations_before_clean == 0 {
                 generator_set.clean();
             }
 
