@@ -139,7 +139,7 @@ impl PauliMap {
 
             let (x_mult, y_mult) =
                 Utils::rz_conj_coef_multipliers(rz, &target_pgate, conjugate_dagger);
-
+            
             coef_list.multiply(&x_mult);
             new_coef_list.multiply(&y_mult);
 

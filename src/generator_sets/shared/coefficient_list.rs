@@ -42,7 +42,7 @@ impl CoefficientList {
         sum.as_f64()
     }
 
-    /// Merge the provided coeffiencts list with the current one.
+    /// Merge the provided coefficients list with the current one.
     /// Ensures that the coefficients are sorted by (generator) index.
     pub fn merge(&mut self, other: &CoefficientList) {
         let mut merged_coefficients =
@@ -77,7 +77,7 @@ impl CoefficientList {
         self.coefficients = merged_coefficients;
     }
 
-    /// Returns true if the Coeffients list is empty, i.e. all coefficients are zero.
+    /// Returns true if the Coefficients list is empty, i.e. all coefficients are zero.
     pub fn is_empty(&self, consider_extremely_small_floats_as_non_zero: bool) -> bool {
         for (_, f) in self.coefficients.iter() {
             if consider_extremely_small_floats_as_non_zero && f.is_extremely_small() {
