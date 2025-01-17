@@ -1,10 +1,10 @@
 # CTQC: Clifford + T Quantum Circuit Equivalence Verifier
 
-A Rust implementation of a quantum circuit equivalence verification tool based on the stabilizer formalism. The theory behind the code and the code itself is explained in more detail [here](thesis.pdf).
+A Rust implementation of a quantum circuit equivalence verification tool based on the generalized stabilizer formalism. This project was conducted as part of my master’s thesis and both the underlying theory and the implementation details are discussed extensively in the [thesis](thesis.pdf). 
 
 ## Usage
 
-In the future we will explore the possibility of packaging the code as a library or providing Python bindings, but for now the code has to be compiled manually. This can be done using the `cargo build` command. The application can also be run directly using `cargo run`. To check whether two circuits are equivalent the following command can be used:
+The code can be compiled using the `cargo build` command. The application can also be run directly using `cargo run`. To check whether two circuits are equivalent the following command can be used:
 
 ```
 cargo run --release -- -f circuit1.ctqc -e circuit2.ctqc 
@@ -39,7 +39,7 @@ H 3
 
 ### OpenQASM 
 
-In a future version, we plan to integrate OpenQASM circuits. However, for the current proof of concept, we only require a few operations, so a simplified file format is used. You can convert QASM files to this format using the `qasm_to_ctqc.py` script. To do so, first install Qiskit:
+Since the current proof of concept requires only a few operations, quantum circuits can be represented using a simplified file format instead of the more comprehensive OpenQASM file format. QASM files can be converted to the custom file format by using the `qasm_to_ctqc.py` script. To do so, first install Qiskit:
 
 ```
 pip install qiskit
